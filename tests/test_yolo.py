@@ -103,3 +103,18 @@ def test_decode_rejects_a_tensor_without_enough_classes():
 def test_decode_rejects_a_non_positive_scale():
     with pytest.raises(ValueError):
         decode(np.zeros((1, 7, 2), dtype=float), scale=0.0)
+
+
+def test_letterbox_rejects_a_non_positive_size():
+    with pytest.raises(ValueError):
+        letterbox(np.zeros((480, 640, 3), dtype=np.uint8), 0)
+
+
+def test_decode_rejects_an_empty_class_list():
+    with pytest.raises(ValueError):
+        decode(np.zeros((1, 7, 2), dtype=float), classes=())
+
+
+def test_decode_rejects_a_one_dimensional_tensor():
+    with pytest.raises(ValueError):
+        decode(np.zeros((7,), dtype=float), classes=(0,))

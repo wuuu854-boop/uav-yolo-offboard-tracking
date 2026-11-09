@@ -44,3 +44,15 @@ ignore = ["E501"]
 pythonpath = [".", "src"]
 testpaths = ["tests"]
 addopts = "-q"
+
+[tool.coverage.run]
+# The two ROS nodes need rclpy and a running middleware; they are exercised by
+# the `ROS build` workflow instead, so they are excluded from the unit-coverage
+# gate rather than dragging it to zero.
+omit = ["*/detector_node.py", "*/offboard_node.py"]
+source = ["uav_tracking"]
+
+[tool.coverage.report]
+fail_under = 95
+show_missing = true
+skip_covered = false

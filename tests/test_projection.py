@@ -117,3 +117,25 @@ def test_camera_offset_increases_the_projection_height():
 def test_camera_below_ground_is_rejected():
     with pytest.raises(ValueError):
         estimate_target_enu((0.0, 0.0), 320, 240, 0.05, K, offset_body=(0.0, 0.0, -1.0))
+
+
+def test_non_finite_intrinsics_are_rejected():
+    bad = K.copy()
+    bad[0, 2] = np.nan
+    with pytest.raises(ValueError):
+        pixel_to_ground(320, 240, 5.0, bad)
+
+
+def test_infinite_height_is_rejected():
+    with pytest.raises(ValueError):
+        pixel_to_ground(320, 240, float("inf"), K)
+
+
+def test_target_estimate_needs_a_position():
+    with pytest.raises(ValueError):
+        estimate_target_enu((0.0,), 320, 240, 5.0, K)
+
+
+def test_camera_offset_needs_three_components():
+    with pytest.raises(ValueError):
+        camera_offset_enu((0.0, 0.0), yaw=0.0)

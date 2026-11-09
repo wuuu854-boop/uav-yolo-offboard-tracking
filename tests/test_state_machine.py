@@ -90,3 +90,14 @@ def test_jump_filter_holds_last_position_when_detection_disappears():
 def test_jump_filter_rejects_a_non_positive_limit():
     with pytest.raises(ValueError):
         TargetJumpFilter(0.0)
+
+
+def test_hover_does_not_land_when_landing_is_disabled():
+    sm = MissionStateMachine(MissionConfig(hover_duration_s=10.0, land_after_hover=False))
+    _arm_and_take_off(sm)
+    sm.step(Observation(3.0, 5.0, armed=True))
+    sm.step(Observation(4.0, 5.0, armed=True, distance_to_target_m=0.2))
+
+    assert (
+        sm.step(Observation(30.0, 5.0, armed=True, distance_to_target_m=0.2)).state is State.HOVER
+    )

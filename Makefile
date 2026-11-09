@@ -35,7 +35,7 @@ check: ## everything CI runs, locally
 	$(PY) scripts/check_world_targets.py
 	$(PY) scripts/check_links.py
 	$(PY) scripts/check_doc_claims.py
-	$(PY) -m pytest -q
+	$(PY) -m pytest -q --cov=uav_tracking --cov-report=term-missing
 
 install-world: ## copy the target world into PX4's simulation tree
 	@test -d "$(PX4_DIR)/Tools/simulation/gz/worlds" || { echo "PX4 gazebo tree not found at $(PX4_DIR); see sim/README.md"; exit 1; }

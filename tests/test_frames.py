@@ -56,3 +56,8 @@ def test_wrap_to_pi_keeps_values_in_range():
 def test_quaternion_of_wrong_length_is_rejected():
     with pytest.raises(ValueError):
         quaternion_to_heading_ned(np.array([1.0, 0.0, 0.0]))
+
+
+def test_short_position_is_rejected():
+    with pytest.raises(ValueError):
+        ned_position_to_enu([1.0, 2.0])

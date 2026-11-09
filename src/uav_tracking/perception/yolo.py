@@ -127,27 +127,34 @@ class YoloOnnxDetector:
 
     def __init__(
         self,
-        model_path: Path,
+        model_path: Path | str | None = None,
         input_size: int = 640,
         conf_threshold: float = 0.35,
         iou_threshold: float = 0.45,
         classes: tuple[int, ...] = (0,),
         max_detections: int = 10,
+        session: object | None = None,
     ) -> None:
-        model_path = Path(model_path)
-        if not model_path.exists():
-            raise FileNotFoundError(
-                f"model not found: {model_path}\n"
-                "Export it first with `python3 scripts/export_onnx.py` "
-                "and put the .onnx file under models/."
-            )
-        try:
-            import onnxruntime as ort  # noqa: PLC0415 - optional, keeps the module importable
-        except ImportError as exc:  # pragma: no cover - depends on the environment
-            raise ImportError(
-                "the yolo backend needs ONNX Runtime: pip install onnxruntime"
-            ) from exc
-        self.session = ort.InferenceSession(str(model_path), providers=["CPUExecutionProvider"])
+        """``session`` exists so tests can inject a fake ONNX Runtime session."""
+        if session is None:
+            if model_path is None:
+                raise ValueError("model_path or session is required")
+            model_path = Path(model_path)
+            if not model_path.exists():
+                raise FileNotFoundError(
+                    f"model not found: {model_path}\n"
+                    "Export it first with `python3 scripts/export_onnx.py` "
+                    "and put the .onnx file under models/."
+                )
+            try:
+                import onnxruntime as ort  # noqa: PLC0415 - optional, keeps the module importable
+            except ImportError as exc:  # pragma: no cover - depends on the environment
+                raise ImportError(
+                    "the yolo backend needs ONNX Runtime: pip install onnxruntime"
+                ) from exc
+            session = ort.InferenceSession(str(model_path), providers=["CPUExecutionProvider"])
+
+        self.session = session
         self.input_name = self.session.get_inputs()[0].name
         self.input_size = int(input_size)
         self.conf_threshold = float(conf_threshold)
