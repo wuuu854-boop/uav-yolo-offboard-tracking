@@ -29,6 +29,13 @@ almost entirely **setup** problems, not algorithm problems:
 | [#19](https://github.com/monemati/PX4-ROS2-Gazebo-YOLOv8/issues/19) | Preflight check failed | Compass / GCS link missing in SITL |
 | [#20](https://github.com/monemati/PX4-ROS2-Gazebo-YOLOv8/issues/20) | `COMMAND_DENIED` when arming | Arming before the controller owns the mode |
 
+There is also direct demand evidence: a contributor opened
+[PR #40](https://github.com/monemati/PX4-ROS2-Gazebo-YOLOv8/pull/40) adding
+"autonomous car tracking using YOLOv11 + PX4 offboard mode" with a state machine
+and CSV logging — i.e. exactly the closed loop plus measurement. **It was closed
+without being merged**, so `main` still has no closed loop. Someone wanted this;
+nobody shipped it there.
+
 Read that table again: **the bottleneck in this stack is not the model, it is
 getting to a state where you can trust a number.**
 

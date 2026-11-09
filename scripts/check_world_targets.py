@@ -42,7 +42,48 @@ def yaml_poses(path: Path) -> dict[str, tuple[float, float]]:
     return {item["model"]: (float(item["x"]), float(item["y"])) for item in data["targets"]}
 
 
+def structure_problems(path: Path) -> list[str]:
+    """Checks that catch the mistakes which silently break a PX4 world."""
+    world = ET.parse(path).getroot().find("world")
+    if world is None:
+        return ["no <world> element"]
+
+    problems: list[str] = []
+
+    plugins = list(world.iter("plugin"))
+    if plugins:
+        names = ", ".join(plugin.get("filename", "?") for plugin in plugins)
+        problems.append(
+            f"{len(plugins)} <plugin> element(s) ({names}); "
+            "PX4 loads systems from server.config, declaring them again double-loads them"
+        )
+
+    physics = world.find("physics")
+    if physics is None:
+        problems.append("no <physics> element")
+    else:
+        step = physics.findtext("max_step_size")
+        rate = physics.findtext("real_time_update_rate")
+        if step != "0.004":
+            problems.append(f"max_step_size={step!r}, PX4 worlds use '0.004'")
+        if rate != "250":
+            problems.append(f"real_time_update_rate={rate!r}, PX4 worlds use '250'")
+
+    if not list(world.iter("light")):
+        problems.append("no <light>; the camera would render a black scene")
+    if world.find("spherical_coordinates") is None:
+        problems.append("no <spherical_coordinates>; NavSat has no origin")
+
+    return problems
+
+
 def main() -> int:
+    structure = structure_problems(WORLD)
+    if structure:
+        print(f"{WORLD.name} structure:")
+        for problem in structure:
+            print(f"  - {problem}")
+
     world = world_poses(WORLD)
     truth = yaml_poses(TARGETS)
 
@@ -50,7 +91,7 @@ def main() -> int:
         print(f"no target_* models found in {WORLD}")
         return 1
 
-    failures = 0
+    failures = len(structure)
     for name, (x, y) in sorted(world.items()):
         if name not in truth:
             print(f"MISSING in {TARGETS.name}: {name} at ({x}, {y})")
@@ -69,7 +110,7 @@ def main() -> int:
         print(f"\n{failures} problem(s). Fix the world or the YAML before running trials.")
         return 1
 
-    print(f"OK: {len(world)} targets agree between the world and the YAML")
+    print(f"OK: {len(world)} targets agree, world structure matches PX4 conventions")
     return 0
 
 

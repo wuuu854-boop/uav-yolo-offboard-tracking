@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it using the metadata below."
+title: "uav-yolo-offboard-tracking"
+abstract: >-
+  A closed-loop UAV vision pipeline in PX4 SITL and Gazebo: detection to
+  pixel-to-ground projection to ROS 2 Offboard approach, with a reproducible
+  trial harness, benchmark summariser and environment doctor.
+type: software
+authors:
+  - name: "wuuu854-boop"
+repository-code: "https://github.com/wuuu854-boop/uav-yolo-offboard-tracking"
+url: "https://github.com/wuuu854-boop/uav-yolo-offboard-tracking"
+license: MIT
+keywords:
+  - uav
+  - px4
+  - gazebo
+  - ros2
+  - yolo
+  - offboard
+  - simulation
