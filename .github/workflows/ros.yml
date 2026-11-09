@@ -2,8 +2,12 @@ name: ROS build
 
 # Verifies the half of the code base that the unit tests cannot touch: that the
 # ROS 2 packages build and that both nodes import against real message
-# definitions. Deliberately manual-only while it is being brought up, so a red
-# run never lands on main.
+# definitions.
+#
+# Runs inside the official ROS image instead of using ros-tooling/setup-ros:
+# that action downloads its installer from raw.githubusercontent.com, which
+# returned 504 on every attempt. Manual dispatch only while it is being brought
+# up, so a red run never lands on main.
 
 on:
   workflow_dispatch:
@@ -11,43 +15,46 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    container:
+      image: ros:humble-ros-base
     timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: ros-tooling/setup-ros@v0.7
-        with:
-          required-ros-distributions: humble
-
-      - name: Install build and runtime dependencies
+      - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            ros-humble-cv-bridge python3-colcon-common-extensions
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            python3-pip git cmake build-essential \
+            ros-humble-cv-bridge ros-humble-rosidl-default-generators \
+            python3-colcon-common-extensions \
+            libgl1 libglib2.0-0
           python3 -m pip install --upgrade pip
           python3 -m pip install -r requirements-dev.txt
 
       - name: Build px4_msgs and the interfaces package
+        shell: bash
         run: |
           source /opt/ros/humble/setup.bash
           mkdir -p ros_ws/src
           cp -r src/uav_interfaces ros_ws/src/
           git clone --depth 1 --branch release/1.15 https://github.com/PX4/px4_msgs.git ros_ws/src/px4_msgs
           cd ros_ws
-          colcon build --packages-select px4_msgs uav_interfaces --event-handlers console_direct+
+          colcon build --packages-select px4_msgs uav_interfaces
 
       - name: Import both nodes against the built interfaces
+        shell: bash
         run: |
           source /opt/ros/humble/setup.bash
           source ros_ws/install/setup.bash
-          python3 - <<'PY'
+          python3 -c "
           import src.perception.detector_node as detector
           import src.control.offboard_node as offboard
-          print("detector node:", detector.DetectorNode.__name__)
-          print("offboard node:", offboard.OffboardNode.__name__)
-          print("imports ok")
-          PY
+          print('detector:', detector.DetectorNode.__name__)
+          print('offboard:', offboard.OffboardNode.__name__)
+          print('imports ok')
+          "
 
-      - name: Import the offline path (no ROS needed at runtime)
+      - name: Import the offline path without ROS on the path
         run: python3 -c "import src.control.offline_sim, src.perception.projection; print('offline imports ok')"
