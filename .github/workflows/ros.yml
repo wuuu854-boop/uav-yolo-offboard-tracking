@@ -14,6 +14,7 @@ on:
     branches: [main]
     paths:
       - "src/**"
+      - "tests/ros/**"
       - "requirements*.txt"
       - "pyproject.toml"
       - ".github/workflows/ros.yml"
