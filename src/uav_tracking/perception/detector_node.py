@@ -36,6 +36,7 @@ from sensor_msgs.msg import Image  # noqa: E402
 
 from uav_interfaces.msg import Target, TargetArray  # noqa: E402
 from uav_tracking.perception.color_baseline import detect_color_centroid  # noqa: E402
+from uav_tracking.perception.tracking import IouTracker  # noqa: E402
 from uav_tracking.perception.yolo import YoloOnnxDetector  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -71,6 +72,7 @@ class DetectorNode(Node):
             raise ValueError(f"unknown backend {self.backend!r}: expected 'yolo' or 'baseline'")
 
         self.bridge = CvBridge()
+        self.tracker = IouTracker()
         self.min_period_s = 1.0 / float(config.get("publish_rate_hz", 5))
         self._last_publish_s = 0.0
         self._frames = 0
@@ -112,6 +114,11 @@ class DetectorNode(Node):
             detections = self.detector.infer(frame)
         elapsed_ms = (time.perf_counter() - started) * 1000.0
 
+        # Identity is assigned here, after detection, so the message carries a
+        # stable id for the same object across frames. 0 would mean "untracked";
+        # the tracker starts at 1.
+        detections = self.tracker.update(detections, time.monotonic())
+
         message = TargetArray()
         # The image header (stamp and frame_id) is passed through unchanged. The
         # consumer measures latency against this stamp, so re-stamping here would
@@ -128,6 +135,7 @@ class DetectorNode(Node):
             target.bbox_h = detection["bbox_h"]
             target.image_width = frame.shape[1]
             target.image_height = frame.shape[0]
+            target.track_id = int(detection.get("track_id", 0))
             message.targets.append(target)
 
         # Published even when empty, on purpose: an empty array says "I am

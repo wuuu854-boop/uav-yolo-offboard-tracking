@@ -8,6 +8,9 @@ Notable changes to this project. The format follows
 
 ### Added
 
+- `perception/tracking.py`: greedy IoU tracker with a stable `track_id` on every
+  detection, so a momentary miss does not look like a new target and distinct
+  objects can be counted.
 - `control/search.py`: a lawnmower pattern and a walker for it. When the target
   stays lost for `search_after_s` the mission sweeps the area around the last
   sighting instead of hovering forever, and resumes the approach on reacquisition.

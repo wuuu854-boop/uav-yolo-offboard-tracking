@@ -7,3 +7,4 @@ float32 bbox_w
 float32 bbox_h
 uint32 image_width
 uint32 image_height
+int32 track_id
