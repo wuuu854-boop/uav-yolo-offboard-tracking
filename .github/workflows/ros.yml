@@ -18,6 +18,13 @@ on:
       - "requirements*.txt"
       - "pyproject.toml"
       - ".github/workflows/ros.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/ros/**"
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - ".github/workflows/ros.yml"
   workflow_dispatch:
 
 jobs:

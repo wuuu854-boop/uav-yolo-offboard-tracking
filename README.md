@@ -36,7 +36,7 @@ Source: [`results/detection_bench.csv`](results/detection_bench.csv) ·
 
 | Layer | Status | Evidence |
 |---|---|---|
-| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (136 tests) + `make demo` |
+| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (148 tests) + `make demo` |
 | YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
 | ROS 2 packages build, both nodes run | ✅ verified in CI | `ROS build` workflow on `ros:humble`: detector against synthetic images, controller against fake PX4 traffic |
 | Version matrix, world structure, camera intrinsics | ✅ checked | `make doctor`, `check_world_targets.py` in CI |
@@ -169,6 +169,7 @@ docs/             坐标约定、实验协议、先例分析、故障排查、�
 - 推理在 x86 CPU 上完成，**未在 Jetson / RK3588 上实测**。
 - 假设目标静止、地面水平、相机严格下视；roll/pitch 未补偿。
 - 单目标；多目标跟踪属于 v0.2.0 范围。
+- 搜索是固定方形草坪扫描（20 m、间距 8.9 m），不含重规划，也不覆盖大面积区域。
 - 默认 world 是合成彩色方块，COCO 预训练 YOLO 对其**零样本检测率为 0**，
   因此闭环演示使用 `backend: baseline`，YOLO 只用于延迟/部署基准；
   用 Gazebo 渲染帧自动标注并微调是 v0.2.0 的任务（见 `sim/README.md`）。

@@ -77,16 +77,24 @@ stateDiagram-v2
   GOTO --> HOVER: distance <= 1.0 m (arrived)
   GOTO --> HOVER: target lost 2 s (target_lost)
   HOVER --> GOTO: target reacquired
+  HOVER --> SEARCH: still lost after 8 s
+  SEARCH --> GOTO: target reacquired
   HOVER --> LAND: hover 10 s
   LAND --> IDLE: altitude <= 0.2 m
   TAKEOFF --> IDLE: disarmed
   GOTO --> IDLE: disarmed
   HOVER --> IDLE: disarmed
+  SEARCH --> IDLE: disarmed
 ```
 
 The three `disarmed` edges exist because PX4 can disarm in flight (failsafe,
 battery, a manual kill). Without them the node would keep commanding a climb or
 an approach to a vehicle that is no longer flying.
+
+`SEARCH` sweeps a lawnmower pattern around the point where the target was last
+seen: hovering forever only works if the target comes back on its own. Lanes are
+spaced at `coverage_spacing(11.9 m, 0.25)` — the footprint from
+`docs/scenario.md` minus a quarter overlap — so consecutive passes are contiguous.
 
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a
