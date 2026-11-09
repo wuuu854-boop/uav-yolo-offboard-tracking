@@ -110,15 +110,29 @@ def test_baseline_backend_publishes_a_detection(rig):
     assert target.image_height == HEIGHT
 
 
-def test_empty_frame_publishes_an_empty_array(rig):
+def test_the_same_target_keeps_its_track_id(rig):
     executor, publisher, received = rig
-    received.clear()
+    image = _image_with_square(700, 420)
 
-    arrived = _pump_until(
+    received.clear()
+    assert _pump_until(
         executor,
         publisher,
-        _image_with_square(640, 480, side=0),
+        image,
         received,
-        predicate=lambda message: len(message.targets) == 0,
-    )
-    assert arrived, "no empty TargetArray within the timeout"
+        predicate=lambda message: len(message.targets) == 1 and message.targets[0].track_id > 0,
+    ), "no tracked detection arrived"
+    first_id = received[-1].targets[0].track_id
+
+    # A fresh message for the same scene must reuse the id, not allocate a new one.
+    received.clear()
+    assert _pump_until(
+        executor,
+        publisher,
+        image,
+        received,
+        predicate=lambda message: (
+            len(message.targets) == 1 and message.targets[0].track_id == first_id
+        ),
+        timeout_s=3.0,
+    ), "the track id changed between two frames of the same target"

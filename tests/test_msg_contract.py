@@ -30,6 +30,8 @@ def test_target_message_keeps_the_fields_both_nodes_use():
         assert fields[name] == "float32", f"{name} must stay float32"
     assert fields["image_width"] == "uint32"
     assert fields["image_height"] == "uint32"
+    # 0 means "not tracked"; ids start at 1 so that default is unambiguous.
+    assert fields["track_id"] == "int32"
 
 
 def test_detection_array_wraps_targets():
