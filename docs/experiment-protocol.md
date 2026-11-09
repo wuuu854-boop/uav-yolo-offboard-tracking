@@ -15,9 +15,22 @@ protocol. It is deliberately boring: the point is that someone else can repeat i
 | Altitude | 5.0 m | `config/mission.yaml` |
 | Speed limit | 1.0 m/s | `config/mission.yaml` |
 | Detection rate | 5 Hz | `config/detector.yaml` |
-| Target poses | 3 fixed cubes | `config/targets.yaml` |
+| Target poses | 3 fixed cubes, 20 m apart | `config/targets.yaml` |
 
 If anything in this table changes, start a new series and say so in the README.
+
+## Spawn pose per trial
+
+The nadir camera sees 11.9 × 8.9 m at 5 m, so one trial starts 3.5 m west of the
+target under test and no other target is in view:
+
+| Trial target | Command |
+|---|---|
+| `target_0` | `make sim` (default `POSE=-3.5,0,0.05`) |
+| `target_1` | `make sim POSE="16.5,0,0.05"` |
+| `target_2` | `make sim POSE="0,16.5,0.05"` |
+
+Restart the simulation between targets; do not teleport a running vehicle.
 
 ## Trial procedure
 

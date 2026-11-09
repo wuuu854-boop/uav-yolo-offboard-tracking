@@ -247,16 +247,34 @@ def check_px4_msgs(px4_version: str, expected_branch: str = "") -> Check:
     return Check("px4_msgs", PASS, branch)
 
 
-def check_world(px4_dir: Path, world: str = "target_tracking") -> Check:
-    path = px4_dir / "Tools" / "simulation" / "gz" / "worlds" / f"{world}.sdf"
-    if path.is_file():
-        return Check("world", PASS, str(path))
-    return Check(
-        "world",
-        FAIL,
-        f"missing: {path}",
-        'cp sim/worlds/target_tracking.sdf "$PX4_DIR/Tools/simulation/gz/worlds/"',
-    )
+def check_gz_assets(px4_dir: Path, world: str = "target_tracking") -> Check:
+    """World file and camera model, which live in a PX4 git submodule."""
+    gz_root = px4_dir / "Tools" / "simulation" / "gz"
+    world_file = gz_root / "worlds" / f"{world}.sdf"
+    model_dir = gz_root / "models" / "x500_mono_cam_down"
+
+    if not (gz_root / "worlds").is_dir():
+        return Check(
+            "gz assets",
+            FAIL,
+            f"{gz_root}/worlds is missing or empty",
+            'Tools/simulation/gz is a submodule: git -C "$PX4_DIR" submodule update --init --recursive',
+        )
+    if not world_file.is_file():
+        return Check(
+            "gz assets",
+            FAIL,
+            f"missing {world_file}",
+            'cp sim/worlds/target_tracking.sdf "$PX4_DIR/Tools/simulation/gz/worlds/"',
+        )
+    if not model_dir.is_dir():
+        return Check(
+            "gz assets",
+            FAIL,
+            "x500_mono_cam_down model missing",
+            'submodule is outdated: git -C "$PX4_DIR" submodule update --remote Tools/simulation/gz',
+        )
+    return Check("gz assets", PASS, f"{world}.sdf + x500_mono_cam_down")
 
 
 def check_camera_topic(topic: str = "/camera/image_raw") -> Check:
@@ -303,7 +321,7 @@ def collect(versions: dict, static: bool = False) -> list[Check]:
             check_gazebo(str(versions.get("gz_sim", "8"))),
             px4_check,
             check_px4_msgs(str(versions.get("px4", "")), str(versions.get("px4_msgs", ""))),
-            check_world(px4_dir),
+            check_gz_assets(px4_dir),
             check_camera_topic(),
         ]
     )

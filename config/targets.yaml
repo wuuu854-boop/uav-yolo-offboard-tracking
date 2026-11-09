@@ -4,22 +4,26 @@
 # sim/worlds/target_tracking.sdf, NOT from the detector output. Using detections
 # as ground truth makes the acceptance test meaningless.
 #
-# Verify with: gz model -m target_0 --pose
-#          or: gz topic -e -t /world/target_tracking/pose/info
+# scripts/check_world_targets.py fails CI when this file and the SDF disagree.
+#
+# The targets are 20 m apart on purpose. The nadir camera at 5 m altitude sees a
+# 11.9 x 8.9 m patch, so with 20 m spacing exactly one target is in view per
+# trial and "nearest target" is never ambiguous. Each trial spawns the vehicle
+# 3.5 m from the target under test (see docs/experiment-protocol.md).
 frame_id: map
 targets:
   - id: 0
     model: target_0
-    x: 8.0
-    y: -3.0
+    x: 0.0
+    y: 0.0
     z: 0.0
   - id: 1
     model: target_1
-    x: 6.0
-    y: 4.0
+    x: 20.0
+    y: 0.0
     z: 0.0
   - id: 2
     model: target_2
-    x: 12.0
-    y: 0.0
+    x: 0.0
+    y: 20.0
     z: 0.0

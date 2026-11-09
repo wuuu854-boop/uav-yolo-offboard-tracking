@@ -14,7 +14,7 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 
 WORLD = "target_tracking"
-MODEL = "x500_mono_cam_0"  # PX4 appends _0 to the model name
+MODEL = "x500_mono_cam_down_0"  # PX4 appends _0 to the model name
 SENSOR = "camera"
 LINK = "camera_link"
 

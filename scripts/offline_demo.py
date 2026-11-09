@@ -80,7 +80,7 @@ def main() -> int:
     parser.add_argument(
         "--target", nargs=2, type=float, default=(5.0, 2.0), metavar=("EAST", "NORTH")
     )
-    parser.add_argument("--altitude", type=float, default=15.0, help="cruise altitude in metres")
+    parser.add_argument("--altitude", type=float, default=10.0, help="cruise altitude in metres")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--csv", default="results/offline_demo.csv")
     parser.add_argument("--plot", default="results/offline_demo.png")

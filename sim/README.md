@@ -1,29 +1,49 @@
 # Simulation assets
 
-## 1. Install the world into PX4
+## 1. Install the world
 
-PX4 only looks for worlds inside its own tree, so copy (do not symlink, PX4's
-build copies the folder) the world file:
+`Tools/simulation/gz` inside PX4 is a **git submodule** (it points at
+`PX4/PX4-gazebo-models`). A non-recursive clone leaves it empty, which is why
+`doctor.py` checks it explicitly.
 
 ```bash
+# if $PX4_DIR/Tools/simulation/gz/worlds is empty:
+git -C "$PX4_DIR" submodule update --init --recursive
+
 cp sim/worlds/target_tracking.sdf "$PX4_DIR/Tools/simulation/gz/worlds/"
 ```
 
-Then any of these starts the simulation:
+## 2. Start it
 
 ```bash
-make sim                                        # from this repo
+make sim                              # target_0, spawn 3.5 m west
+make sim POSE="16.5,0,0.05"           # target_1
+make sim POSE="0,16.5,0.05"           # target_2
+
 # equivalent manual command:
-cd "$PX4_DIR" && PX4_GZ_WORLD=target_tracking make px4_sitl gz_x500_mono_cam
+cd "$PX4_DIR" && PX4_GZ_WORLD=target_tracking \
+  PX4_GZ_MODEL_POSE=-3.5,0,0.05 make px4_sitl gz_x500_mono_cam_down
 ```
 
-If `gz_x500_mono_cam` does not exist in your PX4 version, run
-`make px4_sitl gz_x500` instead and add a camera sensor to the model — the
-camera target name differs between PX4 releases.
+If `make px4_sitl gz_x500_mono_cam_down` does not exist in your PX4 version:
 
-## 2. Find the camera topic
+```bash
+cd "$PX4_DIR" && make px4_sitl list_vmd_make_targets | grep gz_
+```
 
-The Gazebo topic name contains the world, the spawned model and the sensor:
+## 3. Use the downward camera, not the forward one
+
+| Model | Camera | Usable for ground projection? |
+|---|---|---|
+| `x500_mono_cam` | forward, pose `.12 .03 .242`, no rotation | ❌ sees the horizon |
+| **`x500_mono_cam_down`** | nadir, +90° pitch, 0.10 m above `base_link` | ✅ |
+
+The intrinsics in `config/camera.yaml` come from `models/mono_cam/model.sdf`
+(1280×960, HFOV 1.74 rad, fx = 538.4) and are quoted in `docs/scenario.md`.
+
+## 4. Find the camera topic
+
+The Gazebo topic name contains world, spawned model and sensor:
 
 ```bash
 gz topic -l | grep -i image
@@ -34,25 +54,35 @@ Copy the result into `sim/launch/sim.launch.py` (`WORLD`, `MODEL`, `SENSOR`,
 
 ```bash
 ros2 launch sim/launch/sim.launch.py
-ros2 topic hz /camera/image_raw     # expect >= 15 Hz
+ros2 topic hz /camera/image_raw     # expect ~30 Hz, 1280x960
 ```
 
-## 3. Ground truth
+## 5. Ground truth
 
 Target poses live in two places on purpose:
 
 | File | Role |
 |---|---|
-| `sim/worlds/target_tracking.sdf` | what the simulator actually renders |
+| `sim/worlds/target_tracking.sdf` | what the simulator renders |
 | `config/targets.yaml` | what the acceptance test believes |
 
-They must agree. Verify with:
+`scripts/check_world_targets.py` fails CI when they disagree. Verify by hand with:
 
 ```bash
 gz model -m target_0 --pose
 ```
 
-## 4. Why the default world uses coloured cubes
+The three targets are 20 m apart so that exactly one is inside the 11.9 × 8.9 m
+nadir footprint per trial (see `docs/scenario.md`).
+
+## 6. Why there are no `<plugin>` tags
+
+PX4's `server.config` loads Physics, UserCommands, SceneBroadcaster, Sensors,
+Imu, NavSat and Magnetometer into every world. Declaring them again in the world
+file double-loads them. PX4's own worlds contain no plugins; copy that style.
+See `docs/troubleshooting.md` #9.
+
+## 7. Why the default world uses coloured cubes
 
 A COCO pre-trained YOLO does not detect synthetic cubes zero-shot. The default
 `backend: baseline` (HSV threshold) therefore drives the closed-loop demo, while

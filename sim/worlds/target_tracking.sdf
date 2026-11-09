@@ -1,76 +1,99 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Target-tracking world for PX4 SITL (Gazebo Harmonic / gz-sim 8).
 
-  Usage:
-    1. copy this file to  $PX4_DIR/Tools/simulation/gz/worlds/target_tracking.sdf
-    2. cd $PX4_DIR && PX4_GZ_WORLD=target_tracking make px4_sitl gz_x500_mono_cam
-       (or simply `make sim` from this repository)
+  WHY THERE ARE NO <plugin> TAGS HERE
+  PX4 ships a `server.config` that loads Physics, UserCommands,
+  SceneBroadcaster, Sensors (ogre2), Imu, NavSat and Magnetometer into every
+  world. Declaring them again in the world file loads each system twice and the
+  simulation becomes unstable. Worlds in PX4-gazebo-models contain no plugins
+  for exactly this reason.
 
-  The three targets are static 0.5 m cubes at fixed world coordinates. Their
-  poses are duplicated in config/targets.yaml on purpose: the YAML is the ground
-  truth used by the acceptance test, so if you move a cube here you MUST update
-  the YAML too, otherwise every landing-error number becomes meaningless.
+  INSTALL
+    cp sim/worlds/target_tracking.sdf "$PX4_DIR/Tools/simulation/gz/worlds/"
+    # Tools/simulation/gz is a git submodule; if that directory is empty,
+    # initialize the submodules first (see sim/README.md).
+
+  TARGET POSITIONS
+  The three cubes are the ground truth for the landing-error metric. Their
+  coordinates are duplicated in config/targets.yaml and checked by
+  scripts/check_world_targets.py, because a moved cube that is not reflected in
+  the YAML silently invalidates every number in results/.
 -->
-<sdf version="1.10">
+<sdf version="1.9">
   <world name="target_tracking">
 
-    <physics name="1ms" type="ignored">
-      <max_step_size>0.001</max_step_size>
+    <physics type="ode">
+      <max_step_size>0.004</max_step_size>
       <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>250</real_time_update_rate>
     </physics>
 
-    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
-    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
-    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
-    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
-      <render_engine>ogre2</render_engine>
-    </plugin>
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type="adiabatic"/>
 
     <scene>
+      <grid>false</grid>
       <ambient>0.4 0.4 0.4 1</ambient>
       <background>0.7 0.7 0.7 1</background>
       <shadows>true</shadows>
     </scene>
 
-    <light type="directional" name="sun">
-      <cast_shadows>true</cast_shadows>
-      <pose>0 0 10 0 0 0</pose>
-      <diffuse>0.8 0.8 0.8 1</diffuse>
-      <specular>0.2 0.2 0.2 1</specular>
-      <direction>-0.5 0.1 -0.9</direction>
-    </light>
-
     <model name="ground_plane">
       <static>true</static>
       <link name="link">
         <collision name="collision">
+          <pose>0 0 -5 0 0 0</pose>
           <geometry>
-            <plane>
-              <normal>0 0 1</normal>
-              <size>200 200</size>
-            </plane>
+            <box>
+              <size>100000 100000 10</size>
+            </box>
           </geometry>
+          <surface>
+            <friction>
+              <ode/>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface>
         </collision>
         <visual name="visual">
           <geometry>
             <plane>
               <normal>0 0 1</normal>
-              <size>200 200</size>
+              <size>500 500</size>
             </plane>
           </geometry>
           <material>
             <ambient>0.8 0.8 0.8 1</ambient>
             <diffuse>0.8 0.8 0.8 1</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
           </material>
         </visual>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
       </link>
+      <pose>0 0 0 0 -0 0</pose>
+      <self_collide>false</self_collide>
     </model>
 
-    <!-- target_0: red cube, world (8, -3) -->
+    <!-- target_0: red cube at world (0, 0). Spawn 3.5 m west to see it at takeoff. -->
     <model name="target_0">
       <static>true</static>
-      <pose>8 -3 0.25 0 0 0</pose>
+      <pose>0 0 0.25 0 0 0</pose>
       <link name="link">
         <collision name="collision">
           <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
@@ -85,10 +108,10 @@
       </link>
     </model>
 
-    <!-- target_1: green cube, world (6, 4) -->
+    <!-- target_1: green cube at world (20, 0) -->
     <model name="target_1">
       <static>true</static>
-      <pose>6 4 0.25 0 0 0</pose>
+      <pose>20 0 0.25 0 0 0</pose>
       <link name="link">
         <collision name="collision">
           <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
@@ -103,10 +126,10 @@
       </link>
     </model>
 
-    <!-- target_2: blue cube, world (12, 0) -->
+    <!-- target_2: blue cube at world (0, 20) -->
     <model name="target_2">
       <static>true</static>
-      <pose>12 0 0.25 0 0 0</pose>
+      <pose>0 20 0.25 0 0 0</pose>
       <link name="link">
         <collision name="collision">
           <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
@@ -120,6 +143,34 @@
         </visual>
       </link>
     </model>
+
+    <light name="sunUTC" type="directional">
+      <pose>0 0 500 0 -0 0</pose>
+      <cast_shadows>true</cast_shadows>
+      <intensity>1</intensity>
+      <direction>0.001 0.625 -0.78</direction>
+      <diffuse>0.904 0.904 0.904 1</diffuse>
+      <specular>0.271 0.271 0.271 1</specular>
+      <attenuation>
+        <range>2000</range>
+        <linear>0</linear>
+        <constant>1</constant>
+        <quadratic>0</quadratic>
+      </attenuation>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>47.397971057728974</latitude_deg>
+      <longitude_deg>8.546163739800146</longitude_deg>
+      <elevation>488</elevation>
+    </spherical_coordinates>
 
   </world>
 </sdf>

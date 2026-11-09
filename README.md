@@ -35,10 +35,11 @@ Source: [`results/detection_bench.csv`](results/detection_bench.csv) ·
 
 | Layer | Component | Version |
 |---|---|---|
-| Flight stack | PX4 SITL | v1.15.x |
+| Flight stack | PX4 SITL, model `x500_mono_cam_down` | v1.15.x |
 | Simulator | Gazebo Harmonic (`gz sim`) | gz-sim 8 |
 | Middleware | ROS 2 Humble + uXRCE-DDS (`px4_msgs`) | Humble |
-| Perception | YOLO11n → ONNX Runtime (CPU) | ORT ≥ 1.17 |
+| Perception | YOLO11n → ONNX Runtime (CPU), or HSV baseline | ORT ≥ 1.17 |
+| Camera | 1280×960, HFOV 1.74 rad, nadir (fx = 538.4) | from the PX4 model |
 | Language | Python 3.10 / C++17 | — |
 
 ## Architecture

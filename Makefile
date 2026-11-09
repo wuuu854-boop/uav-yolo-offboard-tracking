@@ -5,6 +5,11 @@ SHELL    := /bin/bash
 PY       ?= python3
 PX4_DIR  ?= $(HOME)/PX4-Autopilot
 WORLD    ?= target_tracking
+# Forward-looking `x500_mono_cam` would break the nadir projection: use _down.
+PX4_MODEL ?= gz_x500_mono_cam_down
+# Spawn 3.5 m west of target_0 so it is the only target in view at takeoff.
+# Per-target poses are listed in docs/experiment-protocol.md.
+POSE     ?= -3.5,0,0.05
 
 .PHONY: help setup doctor demo sim detect e2e test lint fmt lock bench clean
 
@@ -24,7 +29,7 @@ demo: ## offline control-loop demo, no ROS or Gazebo needed
 	$(PY) scripts/offline_demo.py
 
 sim: ## launch Gazebo + PX4 SITL with the target world
-	cd $(PX4_DIR) && PX4_GZ_WORLD=$(WORLD) make px4_sitl gz_x500_mono_cam
+	cd $(PX4_DIR) && PX4_GZ_WORLD=$(WORLD) PX4_GZ_MODEL_POSE=$(POSE) make px4_sitl $(PX4_MODEL)
 
 detect: ## run the detection node only
 	$(PY) src/perception/detector_node.py --config config/detector.yaml

@@ -9,7 +9,7 @@ import pytest
 from src.control.offline_sim import IMAGE_HEIGHT, IMAGE_WIDTH, project_target, run_mission
 from src.perception.projection import pixel_to_ground
 
-CAMERA_MATRIX = ((554.26, 0.0, 320.0), (0.0, 554.26, 240.0), (0.0, 0.0, 1.0))
+CAMERA_MATRIX = ((538.4, 0.0, 640.0), (0.0, 538.4, 480.0), (0.0, 0.0, 1.0))
 
 
 def test_project_target_is_the_inverse_of_pixel_to_ground():
@@ -23,13 +23,13 @@ def test_project_target_is_the_inverse_of_pixel_to_ground():
 def test_projection_respects_yaw():
     # Facing north (pi/2), a target to the north is straight ahead: v < cy.
     u, v = project_target((0.0, 0.0), (0.0, 3.0), 5.0, CAMERA_MATRIX, yaw=math.pi / 2)
-    assert u == pytest.approx(320.0, abs=1e-6)
-    assert v < 240.0
+    assert u == pytest.approx(640.0, abs=1e-6)
+    assert v < 480.0
 
 
 def test_centre_pixel_means_target_is_under_the_vehicle():
     u, v = project_target((4.0, 4.0), (4.0, 4.0), 5.0, CAMERA_MATRIX)
-    assert (u, v) == pytest.approx((320.0, 240.0))
+    assert (u, v) == pytest.approx((640.0, 480.0))
 
 
 def test_zero_altitude_is_rejected():
@@ -59,7 +59,7 @@ def test_samples_cover_takeoff_and_landing_states():
 
 
 def test_image_bounds_are_used_by_the_camera_model():
-    # A target far to the side falls outside a 640x480 frame.
+    # A target far to the side falls outside a 1280x960 frame.
     u, _ = project_target((0.0, 0.0), (0.0, 20.0), 5.0, CAMERA_MATRIX)
     assert u > IMAGE_WIDTH or u < 0
-    assert IMAGE_HEIGHT == 480
+    assert IMAGE_HEIGHT == 960

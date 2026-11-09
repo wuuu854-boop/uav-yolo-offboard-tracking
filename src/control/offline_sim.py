@@ -25,13 +25,14 @@ from src.control.state_machine import (
 )
 from src.perception.projection import pixel_to_ground
 
-IMAGE_WIDTH = 640
-IMAGE_HEIGHT = 480
+IMAGE_WIDTH = 1280
+IMAGE_HEIGHT = 960
 
-# Same intrinsics as config/camera.yaml (640x480, 60 deg HFOV).
+# Same intrinsics as config/camera.yaml, derived from PX4's x500_mono_cam_down
+# model (1280x960, horizontal FOV 1.74 rad).
 CAMERA_MATRIX = (
-    (554.26, 0.0, 320.0),
-    (0.0, 554.26, 240.0),
+    (538.4, 0.0, 640.0),
+    (0.0, 538.4, 480.0),
     (0.0, 0.0, 1.0),
 )
 
@@ -75,15 +76,15 @@ def run_mission(
     dt: float = 0.1,
     max_time_s: float = 120.0,
     pixel_noise_px: float = 1.0,
-    takeoff_altitude_m: float = 15.0,
+    takeoff_altitude_m: float = 10.0,
     cfg: MissionConfig | None = None,
 ) -> DemoResult:
     """Fly the simulated vehicle to ``target_enu`` using the production state machine.
 
-    The default 15 m altitude is chosen so the target starts inside the camera
-    frame: at 5 m the footprint is only 5.8 x 4.3 m, and a target a few metres
-    away is already off-screen, which would make the loop look broken for a
-    reason that has nothing to do with the logic under test.
+    The default 10 m altitude is chosen so the target starts inside the camera
+    frame: at 5 m the visible patch is 11.9 x 8.9 m, so a target 5 m ahead is
+    already off the top of the image and the loop would look broken for a reason
+    that has nothing to do with the logic under test.
     """
     mission = cfg or MissionConfig(takeoff_altitude_m=takeoff_altitude_m)
     state_machine = MissionStateMachine(mission)

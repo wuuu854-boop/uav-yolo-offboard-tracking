@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 from src.perception.projection import (
+    camera_offset_enu,
     estimate_target_enu,
     ground_sample_distance,
     pixel_to_ground,
@@ -84,3 +85,35 @@ def test_target_enu_adds_the_vehicle_position():
 def test_ground_sample_distance_matches_the_range_budget():
     # 5 m altitude, fx=600 -> 8.3 mm per pixel
     assert ground_sample_distance(HEIGHT_M, K) == pytest.approx(5.0 / 600.0, rel=1e-12)
+
+
+def test_camera_offset_rotates_with_yaw():
+    # Facing east, "left" is north; facing north, "left" is west.
+    east, north, up = camera_offset_enu((0.5, 1.0, 0.1), yaw=0.0)
+    assert (east, north, up) == pytest.approx((0.5, 1.0, 0.1))
+
+    east, north, _ = camera_offset_enu((0.5, 1.0, 0.0), yaw=math.pi / 2)
+    assert east == pytest.approx(-1.0, abs=1e-9)
+    assert north == pytest.approx(0.5, abs=1e-9)
+
+
+def test_camera_offset_shifts_the_target_estimate():
+    # Camera 0.5 m forward of the vehicle origin, target directly below it.
+    east, north, _ = estimate_target_enu(
+        (10.0, 5.0), 320, 240, HEIGHT_M, K, yaw=0.0, offset_body=(0.5, 0.0, 0.0)
+    )
+    assert east == pytest.approx(10.5, abs=1e-9)
+    assert north == pytest.approx(5.0, abs=1e-9)
+
+
+def test_camera_offset_increases_the_projection_height():
+    # A target 60 px below centre at 5 m is 0.5 m behind; raising the camera by
+    # 1 m makes the same pixel correspond to a slightly larger ground offset.
+    east_low, _, _ = estimate_target_enu((0.0, 0.0), 320, 300, 5.0, K, offset_body=(0.0, 0.0, 0.0))
+    east_high, _, _ = estimate_target_enu((0.0, 0.0), 320, 300, 5.0, K, offset_body=(0.0, 0.0, 1.0))
+    assert abs(east_high) > abs(east_low)
+
+
+def test_camera_below_ground_is_rejected():
+    with pytest.raises(ValueError):
+        estimate_target_enu((0.0, 0.0), 320, 240, 0.05, K, offset_body=(0.0, 0.0, -1.0))

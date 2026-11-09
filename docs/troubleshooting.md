@@ -191,3 +191,45 @@ machine against it. If a check fails, fix the machine — do not edit the code.
 and has tests for each conversion. If you fork it, keep that boundary.
 
 **Source** found during development; see `docs/architecture.md`.
+
+---
+
+## 9. Double physics / everything drifts when you add a custom world
+
+**Symptom** Your own world behaves differently from `default.sdf`: the vehicle
+jitters, contacts are wrong, or Gazebo logs a system being loaded more than once.
+
+**Cause** PX4 ships a `server.config` that loads Physics, UserCommands,
+SceneBroadcaster, Sensors, Imu, NavSat and Magnetometer into **every** world. A
+world file that also declares `<plugin filename="gz-sim-physics-system">`
+loads a second physics engine.
+
+**Fix** Do not put `<plugin>` tags in a PX4 world. PX4's own worlds
+(`PX4-gazebo-models/worlds/*.sdf`) contain none — copy that style.
+`sim/worlds/target_tracking.sdf` in this repository follows it.
+
+**Detected by** reading the file: `grep -c "<plugin" sim/worlds/target_tracking.sdf`
+must print `0`.
+
+---
+
+## 10. The camera shows the horizon, not the ground
+
+**Symptom** Detection works, but the projected target is hundreds of metres away
+and the vehicle flies off.
+
+**Cause** `x500_mono_cam` is a **forward-looking** camera (pose `.12 .03 .242`,
+no rotation). The nadir model is `x500_mono_cam_down`, which mounts the same
+sensor with a +90° pitch and a 0.10 m height offset.
+
+**Fix** Use the `_down` model and the matching intrinsics:
+
+```bash
+make sim PX4_MODEL=gz_x500_mono_cam_down
+```
+
+`config/camera.yaml` already carries the `_down` intrinsics (1280x960, HFOV
+1.74 rad, fx 538.4) and the 0.10 m mount offset.
+
+**Detected by** `doctor.py` → `gz assets` checks that the `_down` model exists.
+

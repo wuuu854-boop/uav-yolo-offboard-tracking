@@ -69,6 +69,7 @@ class OffboardNode(Node):
         self.recorder = recorder
         self._previous_state = State.IDLE
         self.image_up_is_forward = bool(camera_cfg.get("image_up_is_forward", True))
+        self.mount_offset = tuple(camera_cfg.get("mount_offset_xyz", (0.0, 0.0, 0.0)))
         self.K = np.array(
             [
                 [camera_cfg["fx"], 0.0, camera_cfg["cx"]],
@@ -151,6 +152,7 @@ class OffboardNode(Node):
             self.K,
             yaw=self.yaw,
             image_up_is_forward=self.image_up_is_forward,
+            offset_body=self.mount_offset,
         )
         return self.target_filter.update((east, north))
 

@@ -22,8 +22,19 @@ detector can be replayed from a rosbag with no PX4 running.
 |---|---|---|
 | World | ENU: `+x` east, `+y` north, `+z` up | `config/targets.yaml`, `/target_pose` |
 | Body | FRD: `+x` forward, `+y` right, `+z` down | camera mounting, `projection.py` |
+| Gazebo model | FLU: `+x` forward, `+y` left, `+z` up | `mount_offset_xyz` in `config/camera.yaml` |
 | PX4 odometry | NED: `x` north, `y` east, `z` down | `/fmu/out/vehicle_odometry` |
 | Yaw | REP-103: 0 = east, `+pi/2` = north | `projection.py`, odometry |
+
+## Camera mounting
+
+`x500_mono_cam_down` mounts PX4's `mono_cam` sensor with a +90° pitch about y and
+a 0.10 m height offset, giving a strictly nadir view with the image top pointing
+to body +x. `estimate_target_enu()` applies that offset; disabling it introduces
+a 0.10 m vertical error that scales the ground offset by about 2 % at 5 m.
+
+The similarly named `x500_mono_cam` is **forward-looking** and cannot be used
+with this projection — see `docs/troubleshooting.md` #10.
 
 NED is converted to ENU **only at the PX4 boundary** (`src/control/frames.py`):
 

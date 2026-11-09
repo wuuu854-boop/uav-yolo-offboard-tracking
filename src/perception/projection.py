@@ -85,6 +85,22 @@ def pixel_to_ground(
     return float(east), float(north)
 
 
+def camera_offset_enu(offset_body: Sequence[float], yaw: float) -> tuple[float, float, float]:
+    """Body FLU offset -> ENU offset, rotated by yaw.
+
+    Gazebo models use FLU (x forward, y left, z up), while the projection works
+    in ENU. Mixing those two is the third most common frame bug, so the
+    conversion lives in one place and is unit tested.
+    """
+    if len(offset_body) < 3:
+        raise ValueError("offset_body needs three components (forward, left, up)")
+    forward, left, up = (float(value) for value in offset_body[:3])
+    cos_yaw, sin_yaw = math.cos(yaw), math.sin(yaw)
+    east = forward * cos_yaw - left * sin_yaw
+    north = forward * sin_yaw + left * cos_yaw
+    return east, north, up
+
+
 def estimate_target_enu(
     drone_enu: Sequence[float],
     u: float,
@@ -93,12 +109,25 @@ def estimate_target_enu(
     K: Sequence[Sequence[float]],
     yaw: float = 0.0,
     image_up_is_forward: bool = True,
+    offset_body: Sequence[float] = (0.0, 0.0, 0.0),
 ) -> tuple[float, float, float]:
-    """Absolute target position in the world ENU frame (z = 0, flat ground)."""
+    """Absolute target position in the world ENU frame (z = 0, flat ground).
+
+    ``offset_body`` is the camera position relative to the vehicle origin in
+    body FLU metres; ``h`` is the vehicle altitude, not the camera altitude.
+    """
     if len(drone_enu) < 2:
         raise ValueError("drone_enu needs at least (east, north)")
-    east, north = pixel_to_ground(u, v, h, K, yaw=yaw, image_up_is_forward=image_up_is_forward)
-    return float(drone_enu[0]) + east, float(drone_enu[1]) + north, 0.0
+
+    offset_east, offset_north, offset_up = camera_offset_enu(offset_body, yaw)
+    camera_height = h + offset_up
+    if camera_height <= 0.0:
+        raise ValueError(f"camera height must be positive, got {camera_height!r}")
+
+    east, north = pixel_to_ground(
+        u, v, camera_height, K, yaw=yaw, image_up_is_forward=image_up_is_forward
+    )
+    return float(drone_enu[0]) + offset_east + east, float(drone_enu[1]) + offset_north + north, 0.0
 
 
 def ground_sample_distance(h: float, K: Sequence[Sequence[float]]) -> float:
