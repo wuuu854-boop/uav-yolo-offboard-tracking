@@ -195,10 +195,10 @@ have() { command -v "$1" >/dev/null 2>&1; }
 # ROS setup files reference unset variables, which `set -u` turns into a crash.
 source_ros() {
   set +u
-  # shellcheck disable=SC1091
+  # shellcheck disable=SC1090,SC1091
   source "/opt/ros/${ROS_DISTRO_NAME}/setup.bash"
   if [[ -f "$REPO_DIR/ros_ws/install/setup.bash" ]]; then
-    # shellcheck disable=SC1091
+    # shellcheck disable=SC1090,SC1091
     source "$REPO_DIR/ros_ws/install/setup.bash"
   fi
   set -u
