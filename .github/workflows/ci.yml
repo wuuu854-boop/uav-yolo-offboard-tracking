@@ -34,5 +34,11 @@ jobs:
       - name: World and ground truth agree
         run: python scripts/check_world_targets.py
 
+      - name: Documentation links
+        run: python scripts/check_links.py
+
+      - name: README claims match reality
+        run: python scripts/check_doc_claims.py
+
       - name: Unit tests
         run: pytest -q

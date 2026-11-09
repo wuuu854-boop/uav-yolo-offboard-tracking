@@ -14,6 +14,7 @@ from scripts.doctor import (
     collect,
     format_report,
     load_versions,
+    numpy_abi_problem,
     parse_version,
     same_minor,
 )
@@ -65,3 +66,20 @@ def test_versions_file_is_parseable_and_complete():
     versions = load_versions(Path("versions.yaml"))
     for key in ("ubuntu", "ros_distro", "python", "px4", "px4_msgs"):
         assert key in versions, f"versions.yaml lost the {key!r} key"
+
+
+def test_numpy_2_next_to_cv_bridge_is_a_problem():
+    assert numpy_abi_problem("2.3.5", has_cv_bridge=True) is not None
+
+
+def test_numpy_1_is_fine():
+    assert numpy_abi_problem("1.26.4", has_cv_bridge=True) is None
+
+
+def test_without_cv_bridge_numpy_2_is_fine():
+    # A plain Python environment has no ABI to collide with.
+    assert numpy_abi_problem("2.3.5", has_cv_bridge=False) is None
+
+
+def test_unparseable_version_is_not_a_failure():
+    assert numpy_abi_problem("unknown", has_cv_bridge=True) is None

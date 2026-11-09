@@ -277,6 +277,46 @@ def check_gz_assets(px4_dir: Path, world: str = "target_tracking") -> Check:
     return Check("gz assets", PASS, f"{world}.sdf + x500_mono_cam_down")
 
 
+def numpy_abi_problem(numpy_version: str, has_cv_bridge: bool) -> str | None:
+    """A numpy 2.x next to a ROS-built cv_bridge segfaults (skills/06)."""
+    if not has_cv_bridge:
+        return None
+    try:
+        major = int(str(numpy_version).split(".", 1)[0])
+    except ValueError:
+        return None
+    if major >= 2:
+        return f"numpy {numpy_version} with cv_bridge"
+    return None
+
+
+def check_numpy_abi() -> Check:
+    try:
+        import numpy  # noqa: PLC0415 - the check is the import
+    except ImportError:
+        return Check("numpy abi", SKIP, "numpy not installed")
+
+    try:
+        import cv_bridge  # noqa: F401, PLC0415
+
+        has_cv_bridge = True
+    except ImportError:
+        has_cv_bridge = False
+
+    if not has_cv_bridge:
+        return Check("numpy abi", SKIP, f"numpy {numpy.__version__}, no cv_bridge here")
+
+    problem = numpy_abi_problem(numpy.__version__, True)
+    if problem:
+        return Check(
+            "numpy abi",
+            FAIL,
+            problem,
+            "pin numpy<2: the ROS cv_bridge is built against the 1.x ABI (skills/06)",
+        )
+    return Check("numpy abi", PASS, f"numpy {numpy.__version__} with cv_bridge")
+
+
 def check_camera_topic(topic: str = "/camera/image_raw") -> Check:
     code, output = run_command(["ros2", "topic", "list"])
     if code != 0:
@@ -321,6 +361,7 @@ def collect(versions: dict, static: bool = False) -> list[Check]:
             check_gazebo(str(versions.get("gz_sim", "8"))),
             px4_check,
             check_px4_msgs(str(versions.get("px4", "")), str(versions.get("px4_msgs", ""))),
+            check_numpy_abi(),
             check_gz_assets(px4_dir),
             check_camera_topic(),
         ]

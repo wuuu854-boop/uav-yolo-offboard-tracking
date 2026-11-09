@@ -11,7 +11,7 @@ PX4_MODEL ?= gz_x500_mono_cam_down
 # Per-target poses are listed in docs/experiment-protocol.md.
 POSE     ?= -3.5,0,0.05
 
-.PHONY: help setup doctor demo sim detect e2e test lint fmt lock bench clean
+.PHONY: help setup doctor demo sim detect e2e test lint fmt lock bench check clean
 
 help: ## show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-8s\033[0m %s\n", $$1, $$2}'
@@ -27,6 +27,15 @@ bench: ## summarise results/landing_error.csv for the README
 
 demo: ## offline control-loop demo, no ROS or Gazebo needed
 	$(PY) scripts/offline_demo.py
+
+check: ## everything CI runs, locally
+	$(PY) -m ruff check .
+	$(PY) -m ruff format --check .
+	$(PY) scripts/doctor.py --static
+	$(PY) scripts/check_world_targets.py
+	$(PY) scripts/check_links.py
+	$(PY) scripts/check_doc_claims.py
+	$(PY) -m pytest -q
 
 sim: ## launch Gazebo + PX4 SITL with the target world
 	cd $(PX4_DIR) && PX4_GZ_WORLD=$(WORLD) PX4_GZ_MODEL_POSE=$(POSE) make px4_sitl $(PX4_MODEL)
