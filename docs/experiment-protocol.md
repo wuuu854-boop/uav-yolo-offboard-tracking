@@ -34,6 +34,9 @@ Restart the simulation between targets; do not teleport a running vehicle.
 
 ## Trial procedure
 
+0. `make preflight` — checks configs, imports and writable directories without a
+   simulator. It is the cheapest way to avoid discovering a typo after the
+   vehicle has taken off.
 1. Restart the simulation (a fresh Gazebo instance, not a reused one).
 2. `make e2e` — this starts the nodes and waits for one landing row.
 3. Record the row that appears in `results/landing_error.csv`.

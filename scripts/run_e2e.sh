@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Run one closed-loop trial against an already running simulation.
+# Run one closed-loop trial against an already running simulation, or check the
+# environment without one.
 #
 # Prerequisites (terminal A):  make sim
 # This script only starts the ROS 2 nodes and waits for one landing row to be
@@ -14,24 +15,104 @@ if [[ -f .env ]]; then source .env; fi
 # shellcheck disable=SC1091
 if [[ -f .venv/bin/activate ]]; then source .venv/bin/activate; fi
 
+MODE="run"
 DURATION_S=180
+RESULTS="results/landing_error.csv"
+
+usage() {
+  cat <<'EOF'
+Usage: run_e2e.sh [--dry-run] [--duration SECONDS]
+
+  --dry-run    check configuration, imports and writable directories, print the
+               commands that would run, then exit. Needs no simulator, so run it
+               before make sim.
+  --duration   seconds to wait for one landing row (default 180)
+EOF
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --duration) DURATION_S="$2"; shift 2 ;;
-    -h|--help) sed -n '2,8p' "$0"; exit 0 ;;
-    *) echo "unknown argument: $1"; exit 2 ;;
+    --dry-run|--preflight) MODE="dry"; shift ;;
+    --duration)
+      if [[ $# -lt 2 ]]; then echo "--duration needs a value" >&2; exit 2; fi
+      DURATION_S="$2"
+      shift 2
+      ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "unknown argument: $1" >&2; usage; exit 2 ;;
   esac
 done
 
-RESULTS="results/landing_error.csv"
-mkdir -p log results
+# Everything that can be wrong before a simulation is running. Each failure is
+# printed with the command that fixes it, because the alternative is debugging
+# it mid-flight.
+preflight() {
+  local failed=0
+  local file
+
+  echo "== configuration =="
+  for file in config/detector.yaml config/camera.yaml config/mission.yaml config/targets.yaml; do
+    if [[ -f "$file" ]]; then
+      echo "  ok   $file"
+    else
+      echo "  MISS $file"
+      failed=1
+    fi
+  done
+
+  echo "== python =="
+  if python3 -c "import rclpy" >/dev/null 2>&1; then
+    echo "  ok   rclpy (a ROS environment is sourced)"
+  else
+    echo "  MISS rclpy: source /opt/ros/humble/setup.bash"
+    failed=1
+  fi
+  if PYTHONPATH="$REPO_ROOT/src${PYTHONPATH:+:$PYTHONPATH}" \
+      python3 -c "import uav_tracking.control.offboard_node" >/dev/null 2>&1; then
+    echo "  ok   uav_tracking imports"
+  else
+    echo "  MISS uav_tracking: pip install -e . (or add src/ to PYTHONPATH)"
+    failed=1
+  fi
+
+  echo "== directories =="
+  if mkdir -p results log && touch results/.write_test 2>/dev/null; then
+    rm -f results/.write_test
+    echo "  ok   results/ and log/ are writable"
+  else
+    echo "  MISS results/ or log/ is not writable"
+    failed=1
+  fi
+
+  return "$failed"
+}
+
+if ! preflight; then
+  echo "preflight failed: fix the MISS lines above before flying" >&2
+  exit 1
+fi
+
+if [[ "$MODE" == "dry" ]]; then
+  cat <<EOF
+== dry run: nothing was started ==
+
+would run:
+  python3 src/uav_tracking/perception/detector_node.py --config config/detector.yaml
+  python3 src/uav_tracking/control/offboard_node.py
+and wait up to ${DURATION_S}s for a new row in ${RESULTS}.
+EOF
+  exit 0
+fi
+
+mkdir -p log
 touch "$RESULTS"
 
 require_topic() {
   if ! ros2 topic list 2>/dev/null | grep -qx "$1"; then
-    echo "ERROR: topic $1 not found."
-    echo "  Is the simulation running?  make sim"
-    echo "  Visible topics:"; ros2 topic list 2>/dev/null | sed 's/^/    /' | head -20
+    echo "ERROR: topic $1 not found." >&2
+    echo "  Is the simulation running?  make sim" >&2
+    echo "  Visible topics:" >&2
+    ros2 topic list 2>/dev/null | sed 's/^/    /' | head -20 >&2
     exit 1
   fi
 }
@@ -44,7 +125,8 @@ ROWS_BEFORE=$(($(wc -l < "$RESULTS") - 1))
 if ((ROWS_BEFORE < 0)); then ROWS_BEFORE=0; fi
 
 echo "== starting nodes (logs in log/) =="
-python3 src/uav_tracking/perception/detector_node.py --config config/detector.yaml > log/detector.log 2>&1 &
+python3 src/uav_tracking/perception/detector_node.py --config config/detector.yaml \
+  > log/detector.log 2>&1 &
 DETECTOR_PID=$!
 python3 src/uav_tracking/control/offboard_node.py > log/offboard.log 2>&1 &
 OFFBOARD_PID=$!
@@ -65,13 +147,13 @@ while ((SECONDS < DEADLINE)); do
     exit 0
   fi
   if ! kill -0 "$OFFBOARD_PID" 2>/dev/null; then
-    echo "ERROR: offboard node exited. Last lines:"
-    tail -n 20 log/offboard.log
+    echo "ERROR: offboard node exited. Last lines:" >&2
+    tail -n 20 log/offboard.log >&2
     exit 1
   fi
   sleep 2
 done
 
-echo "ERROR: no landing row after ${DURATION_S}s. Last lines of log/offboard.log:"
-tail -n 20 log/offboard.log
+echo "ERROR: no landing row after ${DURATION_S}s. Last lines of log/offboard.log:" >&2
+tail -n 20 log/offboard.log >&2
 exit 1
