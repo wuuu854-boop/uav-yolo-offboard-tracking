@@ -1,7 +1,11 @@
 # Runtime dependencies (top-level, deliberately loose).
 # For an exact, reproducible environment run `make lock` on the target machine
 # and commit the generated requirements.lock.txt (CI installs the lock file).
-numpy>=1.26,<3.0
+#
+# numpy is pinned below 2.0 on purpose: ROS 2 Humble's cv_bridge and the system
+# OpenCV are built against the numpy 1.x ABI. With numpy 2 the import fails with
+# "_ARRAY_API not found" and then segfaults inside cv_bridge.
+numpy>=1.26,<2.0
 opencv-python>=4.9,<5.0
 onnxruntime>=1.17,<2.0
 PyYAML>=6.0,<7.0
