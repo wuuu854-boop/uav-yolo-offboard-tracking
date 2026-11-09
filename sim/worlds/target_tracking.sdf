@@ -2,17 +2,19 @@
 <!--
   Target-tracking world for PX4 SITL (Gazebo Harmonic / gz-sim 8).
 
-  WHY THERE ARE NO <plugin> TAGS HERE
-  PX4 ships a `server.config` that loads Physics, UserCommands,
-  SceneBroadcaster, Sensors (ogre2), Imu, NavSat and Magnetometer into every
-  world. Declaring them again in the world file loads each system twice and the
-  simulation becomes unstable. Worlds in PX4-gazebo-models contain no plugins
-  for exactly this reason.
+  WHY THE PLUGINS BELOW ARE REQUIRED
+  PX4 v1.15 launches Gazebo through Tools/simulation/gz/simulation-gazebo, which
+  runs `gz sim -r <world>.sdf` and passes no config file. Nothing loads the
+  system plugins for it, so the world has to declare them. Without the Sensors
+  system the camera sensor is never instantiated and /camera/image_raw stays
+  empty (verified by adding the block: the image topic appeared immediately, and
+  without it the IMU published but no camera did).
+
+  If you launch through something that DOES pass PX4's server.config, remove this
+  block: declaring the same system twice double-loads it.
 
   INSTALL
-    cp sim/worlds/target_tracking.sdf "$PX4_DIR/Tools/simulation/gz/worlds/"
-    # Tools/simulation/gz is a git submodule; if that directory is empty,
-    # initialize the submodules first (see sim/README.md).
+    make install-world   # copies this file and the nadir camera model into place
 
   TARGET POSITIONS
   The three cubes are the ground truth for the landing-error metric. Their
@@ -22,6 +24,14 @@
 -->
 <sdf version="1.9">
   <world name="target_tracking">
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
 
     <physics type="ode">
       <max_step_size>0.004</max_step_size>

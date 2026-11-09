@@ -75,12 +75,19 @@ gz model -m target_0 --pose
 The three targets are 20 m apart so that exactly one is inside the 11.9 × 8.9 m
 nadir footprint per trial (see `docs/scenario.md`).
 
-## 6. Why there are no `<plugin>` tags
+## 6. Why the world declares system plugins
 
-PX4's `server.config` loads Physics, UserCommands, SceneBroadcaster, Sensors,
-Imu, NavSat and Magnetometer into every world. Declaring them again in the world
-file double-loads them. PX4's own worlds contain no plugins; copy that style.
-See `docs/troubleshooting.md` #9.
+PX4 v1.15's launcher (`Tools/simulation/gz/simulation-gazebo`) runs
+`gz sim -r <world>.sdf` and passes no config, so nothing loads the systems on the
+world's behalf. Without `gz-sim-sensors-system` the camera sensor is never
+instantiated: the vehicle flies, the IMU publishes, and `/camera/image_raw` stays
+empty. The world therefore declares Physics, UserCommands, SceneBroadcaster,
+Sensors and Imu itself, and `scripts/check_world_targets.py` fails if any of the
+first four go missing.
+
+If you launch Gazebo with a config that already loads them
+(`gz sim --config ...`), remove the block — one loader, not two. See
+`docs/troubleshooting.md` #9.
 
 ## 7. Why the default world uses coloured cubes
 

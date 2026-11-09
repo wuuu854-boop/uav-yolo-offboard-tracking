@@ -50,13 +50,22 @@ def structure_problems(path: Path) -> list[str]:
 
     problems: list[str] = []
 
-    plugins = list(world.iter("plugin"))
-    if plugins:
-        names = ", ".join(plugin.get("filename", "?") for plugin in plugins)
-        problems.append(
-            f"{len(plugins)} <plugin> element(s) ({names}); "
-            "PX4 loads systems from server.config, declaring them again double-loads them"
-        )
+    # PX4 v1.15's launcher runs `gz sim -r world.sdf` with no --config, so the
+    # world itself has to load the systems. Without Sensors the camera sensor is
+    # never instantiated and /camera/image_raw stays empty.
+    required = {
+        "gz-sim-physics-system": "physics (nothing moves)",
+        "gz-sim-sensors-system": "rendering sensors (no camera images)",
+        "gz-sim-scene-broadcaster-system": "state publishing (no /world/.../pose)",
+    }
+    declared = [plugin.get("filename", "") for plugin in world.iter("plugin")]
+    for filename, consequence in required.items():
+        if not any(filename in name for name in declared):
+            problems.append(f"missing <plugin ... {filename}>: without it there is no {consequence}")
+
+    duplicates = {name for name in declared if declared.count(name) > 1}
+    if duplicates:
+        problems.append(f"duplicate system plugin(s): {', '.join(sorted(duplicates))}")
 
     physics = world.find("physics")
     if physics is None:

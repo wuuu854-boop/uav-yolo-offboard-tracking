@@ -203,17 +203,18 @@ and has tests for each conversion. If you fork it, keep that boundary.
 **Symptom** Your own world behaves differently from `default.sdf`: the vehicle
 jitters, contacts are wrong, or Gazebo logs a system being loaded more than once.
 
-**Cause** PX4 ships a `server.config` that loads Physics, UserCommands,
-SceneBroadcaster, Sensors, Imu, NavSat and Magnetometer into **every** world. A
-world file that also declares `<plugin filename="gz-sim-physics-system">`
-loads a second physics engine.
+**Cause** Two loaders for the same system. Either the world declares the system
+plugins *and* Gazebo is started with a config that loads them, or the same
+`<plugin>` line appears twice.
 
-**Fix** Do not put `<plugin>` tags in a PX4 world. PX4's own worlds
-(`PX4-gazebo-models/worlds/*.sdf`) contain none — copy that style.
-`sim/worlds/target_tracking.sdf` in this repository follows it.
+**Fix** This repository's `sim/worlds/target_tracking.sdf` declares Physics,
+UserCommands, SceneBroadcaster, Sensors and Imu, because PX4 v1.15's launcher
+passes no config. If your launcher *does* pass one (`gz sim --config ...`),
+delete the block instead of adding to it — one loader, not two.
 
-**Detected by** reading the file: `grep -c "<plugin" sim/worlds/target_tracking.sdf`
-must print `0`.
+**Detected by** `scripts/check_world_targets.py`: it fails on a missing Sensors
+system (no camera images) and on duplicate plugin filenames. The topic is the
+real check: `gz topic -l | grep sensor/camera`.
 
 ---
 
