@@ -79,7 +79,14 @@ stateDiagram-v2
   HOVER --> GOTO: target reacquired
   HOVER --> LAND: hover 10 s
   LAND --> IDLE: altitude <= 0.2 m
+  TAKEOFF --> IDLE: disarmed
+  GOTO --> IDLE: disarmed
+  HOVER --> IDLE: disarmed
 ```
+
+The three `disarmed` edges exist because PX4 can disarm in flight (failsafe,
+battery, a manual kill). Without them the node would keep commanding a climb or
+an approach to a vehicle that is no longer flying.
 
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a

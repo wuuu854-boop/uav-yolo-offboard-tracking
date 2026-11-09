@@ -17,12 +17,12 @@ is enforced in `make check`; nothing is aspirational.
 
 | Module | Guarantee | Proof |
 |---|---|---|
-| `perception/projection.py` | pixel → ground ENU under a nadir, level camera; the mount offset is applied | `tests/test_projection.py` (15) |
+| `perception/projection.py` | pixel → ground ENU under a nadir, level camera; the mount offset is applied | `tests/test_projection.py` (18) |
 | `perception/yolo.py` | letterbox → blob → decode round-trips; class filter precedes NMS | `tests/test_yolo.py`, `tests/test_detector.py` (19) |
 | `control/frames.py` | NED → ENU including the 90° heading convention | `tests/test_frames.py` (9) |
-| `control/state_machine.py` | a lost target hovers, never lands; reacquisition resumes | `tests/test_state_machine.py` (8) |
+| `control/state_machine.py` | a lost target hovers, never lands; an in-flight disarm stops the mission | `tests/test_state_machine.py` (10) |
 | `control/limiter.py` | the speed bound holds in every direction, including diagonal | `tests/test_limiter.py` (7) |
-| `control/selection.py` | the default ignores a more confident edge detection | `tests/test_selection.py` (9) |
+| `control/selection.py` | the default ignores a more confident edge detection | `tests/test_selection.py` (8) |
 | `control/arming.py` | bounded retries, then one actionable warning | `tests/test_arming.py` (6) |
 | `control/recorder.py` | append-only; raw latency samples are kept for pooling | `tests/test_recorder.py` (6) |
 | `control/offline_sim.py` | the whole loop terminates and converges with a fixed seed | `tests/test_offline_sim.py` (8) |
