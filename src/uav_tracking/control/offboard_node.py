@@ -111,6 +111,7 @@ class OffboardNode(Node):
         self.latest_detections: TargetArray | None = None
         self.latest_detection_s: float | None = None
         self.last_pixel: tuple[float, float] | None = None
+        self.locked_track_id: int | None = None
         self.search: SearchPattern | None = None
         self.update_count = 0
 
@@ -171,16 +172,23 @@ class OffboardNode(Node):
                     "confidence": target.confidence,
                     "bbox_cx": target.bbox_cx,
                     "bbox_cy": target.bbox_cy,
+                    "track_id": target.track_id,
                 }
                 for target in message.targets
             ],
             strategy=self.cfg.target_selection,
             image_size=(int(first.image_width), int(first.image_height)),
             previous=self.last_pixel,
+            locked_id=self.locked_track_id,
         )
         if chosen is None:
             self.target_filter.update(None)
             return None
+
+        # Commit to the chosen identity so the next frame follows the same object
+        # instead of re-deciding between two plausible ones.
+        if int(chosen.get("track_id", 0)) > 0:
+            self.locked_track_id = int(chosen["track_id"])
 
         self.last_pixel = (chosen["bbox_cx"], chosen["bbox_cy"])
         height = max(self.altitude, 0.3)  # guard against a zero/negative altitude sample
@@ -230,6 +238,11 @@ class OffboardNode(Node):
         """
         now_s = self.get_clock().now().nanoseconds / 1e9
         target = None if self._target_is_stale() else self._project_best_detection()
+        if target is None:
+            # A lost target releases the identity lock: the next sighting may be
+            # a different object, and holding the id would make the mission
+            # refuse to follow anything.
+            self.locked_track_id = None
         distance = None
         if target is not None:
             distance = math.hypot(target[0] - self.east, target[1] - self.north)

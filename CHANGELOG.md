@@ -8,6 +8,9 @@ Notable changes to this project. The format follows
 
 ### Added
 
+- `control/selection.py`: a `tracked` strategy that follows the `track_id` the
+  mission locked onto, falling back to `nearest_centre` when that object is gone.
+  The lock is released when the target is lost, so a new sighting can be picked.
 - `perception/tracking.py`: greedy IoU tracker with a stable `track_id` on every
   detection, so a momentary miss does not look like a new target and distinct
   objects can be counted.

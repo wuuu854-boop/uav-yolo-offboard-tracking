@@ -12,7 +12,7 @@ from __future__ import annotations
 import math
 from collections.abc import Sequence
 
-STRATEGIES = ("nearest_centre", "nearest_previous", "highest_confidence")
+STRATEGIES = ("nearest_centre", "nearest_previous", "highest_confidence", "tracked")
 
 
 def select_target(
@@ -20,15 +20,20 @@ def select_target(
     strategy: str = "nearest_centre",
     image_size: tuple[int, int] | None = None,
     previous: tuple[float, float] | None = None,
+    locked_id: int | None = None,
 ) -> dict | None:
     """Return the detection to follow, or ``None`` when there is nothing to follow.
 
     Args:
-        detections: dicts with ``confidence``, ``bbox_cx`` and ``bbox_cy``.
+        detections: dicts with ``confidence``, ``bbox_cx`` and ``bbox_cy``; the
+            ``tracked`` strategy also needs ``track_id``.
         strategy: one of :data:`STRATEGIES`.
-        image_size: ``(width, height)``; required by ``nearest_centre``.
+        image_size: ``(width, height)``; required by ``nearest_centre`` and used
+            by ``tracked`` as its fallback.
         previous: last selected pixel; required by ``nearest_previous``, which
             falls back to confidence until one exists.
+        locked_id: the ``track_id`` the mission committed to; only used by
+            ``tracked``. ``None`` means "nothing locked yet".
 
     Raises:
         ValueError: on an unknown strategy or missing arguments.
@@ -37,6 +42,20 @@ def select_target(
         raise ValueError(f"unknown strategy {strategy!r}: expected one of {STRATEGIES}")
     if not detections:
         return None
+
+    if strategy == "tracked":
+        # Follow one object until it is gone. Without the lock the selector would
+        # re-decide every frame, which is exactly how a mission ends up
+        # oscillating between two targets that are both in view.
+        if locked_id is not None:
+            for detection in detections:
+                if detection.get("track_id") == locked_id:
+                    return detection
+        # Nothing locked, or the locked object was lost: fall back so the mission
+        # still makes progress instead of freezing.
+        if image_size is not None:
+            return select_target(detections, "nearest_centre", image_size)
+        return max(detections, key=lambda detection: detection["confidence"])
 
     if strategy == "highest_confidence":
         return max(detections, key=lambda detection: detection["confidence"])

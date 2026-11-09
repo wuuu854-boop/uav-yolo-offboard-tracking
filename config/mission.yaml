@@ -17,6 +17,8 @@ control_rate_hz: 50
 #                       usually already pointed at what it should approach)
 #   nearest_previous  - closest to the last selected box (tracks one object)
 #   highest_confidence - the obvious choice, and often a distant edge object
+#   tracked           - follow the track_id the mission locked onto, falling
+#                       back to nearest_centre if it disappears
 target_selection: nearest_centre
 
 # When the target has been lost for this long after hovering, sweep the area
