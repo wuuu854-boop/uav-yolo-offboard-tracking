@@ -108,6 +108,7 @@ source .venv/bin/activate
 colcon build --packages-select uav_interfaces && source install/setup.bash
 make doctor                    # 六项环境检查，失败时直接给修复命令
 make sim                       # 起 Gazebo + PX4 SITL（终端 A）
+make preflight                 # 不开仿真，先查配置/依赖/目录是否齐备
 make detect                    # 只跑检测节点，验证 /detections 有输出（终端 B）
 make e2e                       # 闭环：起飞 → 检测 → 抵近 → 悬停 → 降落
 ```

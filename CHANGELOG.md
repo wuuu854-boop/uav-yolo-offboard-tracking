@@ -8,6 +8,9 @@ Notable changes to this project. The format follows
 
 ### Added
 
+- `run_e2e.sh --dry-run` (also `make preflight`): checks configuration files,
+  `rclpy`, the package import and writable directories without a simulator, and
+  the ROS workflow runs it, so the trial script itself is exercised in CI.
 - `control/trace.py`: one row per mission state change in
   `results/state_trace.csv`, so a failed trial can be explained rather than
   guessed at (state, reason, position, altitude).

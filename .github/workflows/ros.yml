@@ -72,6 +72,14 @@ jobs:
           print('imports ok')
           "
 
+      - name: Trial script preflight (no simulator)
+        shell: bash
+        run: |
+          source /opt/ros/humble/setup.bash
+          source ros_ws/install/setup.bash
+          export PYTHONPATH="$PWD/src:$PYTHONPATH"
+          bash scripts/run_e2e.sh --dry-run
+
       - name: Node-level integration test (rclpy, real messages)
         shell: bash
         run: |
