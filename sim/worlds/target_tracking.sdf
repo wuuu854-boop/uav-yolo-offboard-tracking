@@ -164,6 +164,9 @@
       </spot>
     </light>
 
+    <!-- Origin copied from PX4's default world. It only matters for NavSat and
+         the magnetometer; local flight is unaffected, but the element has to be
+         present or those sensors have no reference. -->
     <spherical_coordinates>
       <surface_model>EARTH_WGS84</surface_model>
       <world_frame_orientation>ENU</world_frame_orientation>

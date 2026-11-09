@@ -78,6 +78,16 @@ class MissionStateMachine:
             self.state = State.TAKEOFF
             return Decision(self.state, "takeoff", f"climb to {self.cfg.takeoff_altitude_m:.1f} m")
 
+        if not obs.armed:
+            # PX4 can disarm in flight (failsafe, battery, a manual kill). Without
+            # this, the node would keep commanding a takeoff or a goto to a
+            # vehicle that is falling, which is worse than doing nothing. LAND
+            # handles its own disarm below.
+            self.state = State.IDLE
+            self._hover_reason = ""
+            self._lost_since_s = None
+            return Decision(self.state, "disarm", "vehicle disarmed in flight")
+
         if self.state is State.TAKEOFF:
             if obs.altitude_m >= self.cfg.takeoff_altitude_m - 0.3:
                 self.state = State.GOTO

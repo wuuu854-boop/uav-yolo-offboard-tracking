@@ -101,3 +101,24 @@ def test_hover_does_not_land_when_landing_is_disabled():
     assert (
         sm.step(Observation(30.0, 5.0, armed=True, distance_to_target_m=0.2)).state is State.HOVER
     )
+
+
+def test_an_in_flight_disarm_stops_the_mission():
+    sm = MissionStateMachine()
+    _arm_and_take_off(sm)
+    sm.step(Observation(3.0, 5.0, armed=True))
+
+    decision = sm.step(Observation(4.0, 5.0, armed=False))
+
+    assert decision.state is State.IDLE
+    assert decision.command == "disarm"
+    assert decision.note == "vehicle disarmed in flight"
+
+
+def test_an_in_flight_disarm_during_goto_does_not_keep_flying():
+    sm = MissionStateMachine()
+    _arm_and_take_off(sm)
+    sm.step(Observation(3.0, 5.0, armed=True))
+    assert sm.step(Observation(4.0, 5.0, armed=True, distance_to_target_m=4.0)).command == "goto"
+
+    assert sm.step(Observation(5.0, 5.0, armed=False)).state is State.IDLE

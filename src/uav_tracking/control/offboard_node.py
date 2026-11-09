@@ -48,7 +48,7 @@ from uav_tracking.control.frames import (  # noqa: E402
 )
 from uav_tracking.control.limiter import limited_step  # noqa: E402
 from uav_tracking.control.recorder import MissionRecorder  # noqa: E402
-from uav_tracking.control.selection import select_target  # noqa: E402
+from uav_tracking.control.selection import STRATEGIES, select_target  # noqa: E402
 from uav_tracking.control.state_machine import (  # noqa: E402
     MissionConfig,
     MissionStateMachine,
@@ -69,6 +69,14 @@ class OffboardNode(Node):
     def __init__(
         self, mission_cfg: MissionConfig, camera_cfg: dict, recorder: MissionRecorder
     ) -> None:
+        # Fail at startup, before any ROS entity exists: a typo in the config
+        # would otherwise surface as a crash on the first frame with two
+        # detections, which is the worst possible moment.
+        if mission_cfg.target_selection not in STRATEGIES:
+            raise ValueError(
+                f"unknown target_selection {mission_cfg.target_selection!r}; "
+                f"expected one of {STRATEGIES}"
+            )
         super().__init__("uav_offboard")
         self.cfg = mission_cfg
         self.recorder = recorder

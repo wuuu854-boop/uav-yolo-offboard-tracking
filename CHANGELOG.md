@@ -46,6 +46,10 @@ Notable changes to this project. The format follows
   matched PX4's best-effort publishers.
 - `limited_step()` enforces a true speed limit; per-axis clipping allowed a
   diagonal setpoint to move at √2 times the configured speed.
+- An in-flight disarm (failsafe, battery, manual kill) now returns the mission to
+  IDLE instead of continuing to command takeoff or goto to a falling vehicle.
+- An unknown `target_selection` is rejected when the node is constructed, not on
+  the first frame with two detections.
 - YOLO output orientation is decided from the class count instead of
   `rows < columns`, which broke single-box exports.
 

@@ -145,6 +145,15 @@ def _pump(rig, until, timeout_s: float = 8.0, detection: tuple[float, float] | N
     return False
 
 
+def test_an_unknown_selection_strategy_is_rejected_at_construction(tmp_path):
+    # Raised before any ROS entity is created, so this needs no rclpy context.
+    recorder = MissionRecorder(tmp_path / "landing_error.csv", {0: (0.0, 0.0)})
+    cfg = MissionConfig(target_selection="biggest")
+
+    with pytest.raises(ValueError, match="target_selection"):
+        OffboardNode(cfg, CAMERA, recorder)
+
+
 def test_a_disarmed_vehicle_is_asked_for_offboard_mode_and_arming(rig):
     # The sequencer sends mode + arm on its first tick and retries the arm
     # every 2 s. It must be visible before anything else happens.
