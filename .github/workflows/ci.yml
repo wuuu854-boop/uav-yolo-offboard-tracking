@@ -31,5 +31,8 @@ jobs:
       - name: Environment doctor (static checks only)
         run: python scripts/doctor.py --static
 
+      - name: World and ground truth agree
+        run: python scripts/check_world_targets.py
+
       - name: Unit tests
         run: pytest -q

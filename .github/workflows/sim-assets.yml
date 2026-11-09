@@ -10,6 +10,12 @@ name: Simulation assets
 #   - every target in the world has a matching ground-truth entry
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "sim/**"
+      - "scripts/**"
+      - "config/targets.yaml"
   pull_request:
     paths:
       - "sim/**"
