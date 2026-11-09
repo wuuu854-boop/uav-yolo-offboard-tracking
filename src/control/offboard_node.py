@@ -38,6 +38,7 @@ from px4_msgs.msg import (  # noqa: E402
 from rclpy.node import Node  # noqa: E402
 from rclpy.qos import qos_profile_sensor_data  # noqa: E402
 
+from src.control.arming import ArmingSequencer  # noqa: E402
 from src.control.frames import (  # noqa: E402
     heading_ned_to_yaw_enu,
     ned_position_to_enu,
@@ -102,8 +103,7 @@ class OffboardNode(Node):
         self.last_pixel: tuple[float, float] | None = None
         self.update_count = 0
 
-        self.offboard_mode_requested = False
-        self.arm_requested = False
+        self.arming = ArmingSequencer()
 
         # PX4 publishes /fmu/out/* as best-effort (SensorDataQoS). A default
         # reliable subscription would never match and the node would sit there
@@ -236,7 +236,7 @@ class OffboardNode(Node):
         self._previous_state = decision.state
 
         if decision.command == "arm":
-            self._request_offboard_and_arm()
+            self._request_offboard_and_arm(now_s)
         elif decision.command == "takeoff":
             self._move_towards(self.east, self.north, self.cfg.takeoff_altitude_m)
         elif decision.command == "goto" and target is not None:
@@ -272,37 +272,35 @@ class OffboardNode(Node):
         setpoint.timestamp = timestamp
         self.setpoint_pub.publish(setpoint)
 
-    def _request_offboard_and_arm(self) -> None:
-        timestamp = int(self.get_clock().now().nanoseconds / 1000)
+    def _send_command(self, command_id: int, param1: float = 0.0, param2: float = 0.0) -> None:
+        command = VehicleCommand()
+        command.command = command_id
+        command.param1 = float(param1)
+        command.param2 = float(param2)
+        command.target_system = 1
+        command.target_component = 1
+        command.source_system = 1
+        command.source_component = 1
+        command.from_external = True
+        command.timestamp = int(self.get_clock().now().nanoseconds / 1000)
+        self.command_pub.publish(command)
 
-        if not self.offboard_mode_requested:
-            command = VehicleCommand()
-            command.command = VEHICLE_CMD_DO_SET_MODE
-            command.param1 = 1.0  # MAV_MODE_FLAG_CUSTOM_MODE_ENABLED
-            command.param2 = float(PX4_CUSTOM_MAIN_MODE_OFFBOARD)
-            command.target_system = 1
-            command.target_component = 1
-            command.source_system = 1
-            command.source_component = 1
-            command.from_external = True
-            command.timestamp = timestamp
-            self.command_pub.publish(command)
-            self.offboard_mode_requested = True
+    def _request_offboard_and_arm(self, now_s: float) -> None:
+        """Retry on a timer instead of firing once and going quiet."""
+        step = self.arming.step(now_s, self.armed)
+        if step.request_mode:
+            self._send_command(
+                VEHICLE_CMD_DO_SET_MODE, param1=1.0, param2=float(PX4_CUSTOM_MAIN_MODE_OFFBOARD)
+            )
             self.get_logger().info("requested OFFBOARD mode")
-
-        if not self.arm_requested:
-            command = VehicleCommand()
-            command.command = VEHICLE_CMD_COMPONENT_ARM_DISARM
-            command.param1 = 1.0
-            command.target_system = 1
-            command.target_component = 1
-            command.source_system = 1
-            command.source_component = 1
-            command.from_external = True
-            command.timestamp = timestamp
-            self.command_pub.publish(command)
-            self.arm_requested = True
-            self.get_logger().info("requested arming")
+        if step.request_arm:
+            self._send_command(VEHICLE_CMD_COMPONENT_ARM_DISARM, param1=1.0)
+            self.get_logger().info(f"requested arming (attempt {step.attempts})")
+        if step.warn:
+            self.get_logger().error(
+                "still not armed after repeated attempts: read the preflight messages in "
+                "`ros2 topic echo /fmu/out/vehicle_status` and see docs/troubleshooting.md #5 and #6"
+            )
 
 
 def main() -> int:

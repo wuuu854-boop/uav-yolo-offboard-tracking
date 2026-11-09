@@ -36,7 +36,7 @@ Source: [`results/detection_bench.csv`](results/detection_bench.csv) ·
 
 | Layer | Status | Evidence |
 |---|---|---|
-| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (110 tests) + `make demo` |
+| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (116 tests) + `make demo` |
 | YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
 | ROS 2 packages build, both nodes import | ✅ verified in CI | `ROS build` workflow on `ros:humble` with `px4_msgs` |
 | Version matrix, world structure, camera intrinsics | ✅ checked | `make doctor`, `check_world_targets.py` in CI |
@@ -149,7 +149,7 @@ sim/              Gazebo world（3 个已知坐标目标）与桥接 launch
 config/           相机内参、检测参数、任务参数、目标真值
 scripts/          doctor.py（环境诊断）、benchmark.py（结果汇总）、setup / e2e / 导出
 results/          实验原始数据（CSV），README 中每个数字的来源
-docs/             坐标约定、实验协议、先例分析、故障排查、场景预算、AI 使用记录
+docs/             坐标约定、实验协议、先例分析、故障排查、场景预算、AI 使用记录（索引：[docs/README.md](docs/README.md)）
 ```
 
 ## Results & failure analysis

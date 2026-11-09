@@ -11,7 +11,7 @@ PX4_MODEL ?= gz_x500_mono_cam_down
 # Per-target poses are listed in docs/experiment-protocol.md.
 POSE     ?= -3.5,0,0.05
 
-.PHONY: help setup doctor demo sim detect e2e test lint fmt lock bench check clean
+.PHONY: help setup doctor demo install-world sim detect e2e test lint fmt lock bench check clean
 
 help: ## show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-8s\033[0m %s\n", $$1, $$2}'
@@ -37,7 +37,12 @@ check: ## everything CI runs, locally
 	$(PY) scripts/check_doc_claims.py
 	$(PY) -m pytest -q
 
-sim: ## launch Gazebo + PX4 SITL with the target world
+install-world: ## copy the target world into PX4's simulation tree
+	@test -d "$(PX4_DIR)/Tools/simulation/gz/worlds" || { echo "PX4 gazebo tree not found at $(PX4_DIR); see sim/README.md"; exit 1; }
+	cp sim/worlds/$(WORLD).sdf "$(PX4_DIR)/Tools/simulation/gz/worlds/$(WORLD).sdf"
+	@echo "installed $(WORLD).sdf"
+
+sim: install-world ## launch Gazebo + PX4 SITL with the target world
 	cd $(PX4_DIR) && PX4_GZ_WORLD=$(WORLD) PX4_GZ_MODEL_POSE=$(POSE) make px4_sitl $(PX4_MODEL)
 
 detect: ## run the detection node only
