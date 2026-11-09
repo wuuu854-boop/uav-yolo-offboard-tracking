@@ -20,7 +20,8 @@ is enforced in `make check`; nothing is aspirational.
 | `perception/projection.py` | pixel → ground ENU under a nadir, level camera; the mount offset is applied | `tests/test_projection.py` (18) |
 | `perception/yolo.py` | letterbox → blob → decode round-trips; class filter precedes NMS | `tests/test_yolo.py`, `tests/test_detector.py` (19) |
 | `control/frames.py` | NED → ENU including the 90° heading convention | `tests/test_frames.py` (9) |
-| `control/state_machine.py` | a lost target hovers, never lands; an in-flight disarm stops the mission | `tests/test_state_machine.py` (10) |
+| `control/state_machine.py` | a lost target hovers then searches, never lands; an in-flight disarm stops the mission | `tests/test_state_machine.py` (12) |
+| `control/search.py` | lanes stay inside the area, never exceed the spacing, and the walker advances only on arrival | `tests/test_search.py` (9) |
 | `control/limiter.py` | the speed bound holds in every direction, including diagonal | `tests/test_limiter.py` (7) |
 | `control/selection.py` | the default ignores a more confident edge detection | `tests/test_selection.py` (8) |
 | `control/arming.py` | bounded retries, then one actionable warning | `tests/test_arming.py` (6) |

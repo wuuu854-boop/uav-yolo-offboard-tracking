@@ -13,6 +13,7 @@ camera, my scene", with the check that tells you each step worked.
 | A different camera | `config/camera.yaml` → intrinsics, `image_up_is_forward`, `mount_offset_xyz` | one known target, see `skills/04` |
 | A different world / target layout | `sim/worlds/*.sdf` **and** `config/targets.yaml` | `python3 scripts/check_world_targets.py` |
 | A different flight profile | `config/mission.yaml` | `make demo`, then one SITL trial |
+| Search behaviour after a loss | `config/mission.yaml` → `search_after_s`, `search_area_m`, `search_spacing_m` | `python3 -c` on `lawnmower(...)`, then one SITL trial |
 | Your own recorded frames | `scripts/detect_images.py --images <dir>` | the CSV it writes |
 
 Everything under `src/uav_tracking/perception/projection.py`, `src/uav_tracking/control/state_machine.py`
