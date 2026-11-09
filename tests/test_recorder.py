@@ -68,3 +68,26 @@ def test_missing_latency_is_written_as_empty_not_nan(tmp_path):
 def test_recorder_requires_ground_truth(tmp_path):
     with pytest.raises(ValueError):
         MissionRecorder(tmp_path / "x.csv", {})
+
+
+def test_latency_samples_are_kept_next_to_the_summary(tmp_path):
+    path = tmp_path / "landing_error.csv"
+    recorder = MissionRecorder(path, GROUND_TRUTH)
+    recorder.start_trial()
+    for latency in (100.0, 120.0, 140.0):
+        recorder.add_latency(latency)
+    recorder.finish_trial((0.1, 0.0))
+
+    raw = tmp_path / "latency_raw.csv"
+    lines = raw.read_text(encoding="utf-8").strip().splitlines()
+    assert lines[0] == "trial,latency_ms"
+    assert len(lines) == 4
+    assert lines[1].startswith("1,100")
+
+
+def test_without_latency_samples_no_raw_file_is_created(tmp_path):
+    path = tmp_path / "landing_error.csv"
+    recorder = MissionRecorder(path, GROUND_TRUTH)
+    recorder.start_trial()
+    recorder.finish_trial((0.1, 0.0))
+    assert not (tmp_path / "latency_raw.csv").exists()

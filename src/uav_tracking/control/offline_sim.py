@@ -23,7 +23,7 @@ from uav_tracking.control.state_machine import (
     State,
     TargetJumpFilter,
 )
-from uav_tracking.perception.projection import pixel_to_ground
+from uav_tracking.perception.projection import estimate_target_enu
 
 IMAGE_WIDTH = 1280
 IMAGE_HEIGHT = 960
@@ -35,6 +35,10 @@ CAMERA_MATRIX = (
     (0.0, 538.4, 480.0),
     (0.0, 0.0, 1.0),
 )
+
+# The camera sits 10 cm above base_link in that model; using the same call as
+# the flight node keeps the demo honest about the geometry it exercises.
+CAMERA_OFFSET_BODY = (0.0, 0.0, 0.10)
 
 
 def project_target(
@@ -109,8 +113,16 @@ def run_mission(
             if 0 <= u < IMAGE_WIDTH and 0 <= v < IMAGE_HEIGHT:
                 u += rng.gauss(0.0, pixel_noise_px)
                 v += rng.gauss(0.0, pixel_noise_px)
-                offset_east, offset_north = pixel_to_ground(u, v, altitude, CAMERA_MATRIX, yaw=yaw)
-                estimate = jump_filter.update((east + offset_east, north + offset_north))
+                target_east, target_north, _ = estimate_target_enu(
+                    (east, north),
+                    u,
+                    v,
+                    altitude,
+                    CAMERA_MATRIX,
+                    yaw=yaw,
+                    offset_body=CAMERA_OFFSET_BODY,
+                )
+                estimate = jump_filter.update((target_east, target_north))
 
         distance = None
         if estimate is not None:

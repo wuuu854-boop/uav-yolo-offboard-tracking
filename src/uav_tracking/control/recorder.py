@@ -21,6 +21,8 @@ HEADER = [
     "notes",
 ]
 
+RAW_NAME = "latency_raw.csv"
+
 
 class MissionRecorder:
     """Collects latencies during a trial and writes one summary row on landing."""
@@ -88,9 +90,28 @@ class MissionRecorder:
             "notes": notes,
         }
         self._append(row)
+        self._append_raw(self._trial)
         self._trial += 1
         self._active = False
         return row
+
+    def _append_raw(self, trial: int) -> None:
+        """Keep the individual samples.
+
+        The summary row stores per-trial percentiles, and the percentile of
+        percentiles is not the pooled percentile. Pooling the raw samples is the
+        only way to quote a p95 for the whole run honestly.
+        """
+        if not self._latencies_ms:
+            return
+        path = self.path.with_name(RAW_NAME)
+        write_header = not path.exists() or path.stat().st_size == 0
+        with path.open("a", newline="", encoding="utf-8") as handle:
+            writer = csv.writer(handle)
+            if write_header:
+                writer.writerow(["trial", "latency_ms"])
+            for latency in self._latencies_ms:
+                writer.writerow([trial, round(latency, 3)])
 
     def _append(self, row: dict) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)

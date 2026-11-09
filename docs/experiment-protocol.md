@@ -55,6 +55,12 @@ Restart the simulation between targets; do not teleport a running vehicle.
 Latency is reported as p50 **and** p95. A mean alone hides the jitter that makes
 a controller unstable, and that jitter is the interesting part.
 
+The p95 for a series is computed by **pooling the raw samples** from
+`results/latency_raw.csv`, not by taking the median of per-trial medians: a
+percentile of percentiles is not a percentile. When the raw file is missing,
+`make bench` prints `per-trial medians (no raw file)` next to the table instead
+of a p95 it cannot justify.
+
 ## Reporting rules
 
 - Report the median and the count of successes (`7/9`), not a percentage alone.
