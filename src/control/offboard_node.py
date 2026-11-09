@@ -36,6 +36,7 @@ from px4_msgs.msg import (  # noqa: E402
     VehicleStatus,
 )
 from rclpy.node import Node  # noqa: E402
+from rclpy.qos import qos_profile_sensor_data  # noqa: E402
 
 from src.control.frames import (  # noqa: E402
     heading_ned_to_yaw_enu,
@@ -101,8 +102,15 @@ class OffboardNode(Node):
         self.offboard_mode_requested = False
         self.arm_requested = False
 
-        self.create_subscription(VehicleOdometry, "/fmu/out/vehicle_odometry", self.on_odometry, 10)
-        self.create_subscription(VehicleStatus, "/fmu/out/vehicle_status", self.on_status, 10)
+        # PX4 publishes /fmu/out/* as best-effort (SensorDataQoS). A default
+        # reliable subscription would never match and the node would sit there
+        # with no odometry, no arming and no error message - the worst kind of
+        # silent failure.
+        px4_qos = qos_profile_sensor_data
+        self.create_subscription(
+            VehicleOdometry, "/fmu/out/vehicle_odometry", self.on_odometry, px4_qos
+        )
+        self.create_subscription(VehicleStatus, "/fmu/out/vehicle_status", self.on_status, px4_qos)
         self.create_subscription(TargetArray, "/detections", self.on_detections, 10)
 
         self.offboard_pub = self.create_publisher(
