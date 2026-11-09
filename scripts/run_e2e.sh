@@ -10,8 +10,9 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
 # shellcheck disable=SC1091
-[[ -f .env ]] && source .env
-[[ -f .venv/bin/activate ]] && source .venv/bin/activate
+if [[ -f .env ]]; then source .env; fi
+# shellcheck disable=SC1091
+if [[ -f .venv/bin/activate ]]; then source .venv/bin/activate; fi
 
 DURATION_S=180
 while [[ $# -gt 0 ]]; do
@@ -40,7 +41,7 @@ require_topic "/camera/image_raw"
 require_topic "/fmu/out/vehicle_odometry"
 
 ROWS_BEFORE=$(($(wc -l < "$RESULTS") - 1))
-[[ "$ROWS_BEFORE" -lt 0 ]] && ROWS_BEFORE=0
+if ((ROWS_BEFORE < 0)); then ROWS_BEFORE=0; fi
 
 echo "== starting nodes (logs in log/) =="
 python3 src/perception/detector_node.py --config config/detector.yaml > log/detector.log 2>&1 &

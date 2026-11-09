@@ -8,7 +8,7 @@ cd "$REPO_ROOT"
 mkdir -p bags
 
 DURATION=30
-[[ $# -gt 0 ]] && DURATION="$1"
+if [[ $# -gt 0 ]]; then DURATION="$1"; fi
 STAMP="$(date +%Y%m%d-%H%M%S)"
 OUT="bags/demo-${STAMP}"
 
