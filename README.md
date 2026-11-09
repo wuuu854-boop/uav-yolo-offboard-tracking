@@ -38,7 +38,7 @@ Source: [`results/detection_bench.csv`](results/detection_bench.csv) ·
 |---|---|---|
 | Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (134 tests) + `make demo` |
 | YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
-| ROS 2 packages build, both nodes import | ✅ verified in CI | `ROS build` workflow on `ros:humble` with `px4_msgs` |
+| ROS 2 packages build, both nodes run | ✅ verified in CI | `ROS build` workflow on `ros:humble`: detector against synthetic images, controller against fake PX4 traffic |
 | Version matrix, world structure, camera intrinsics | ✅ checked | `make doctor`, `check_world_targets.py` in CI |
 | Closed loop in Gazebo SITL | ⬜ **not run yet** | `results/landing_error.csv` is empty |
 

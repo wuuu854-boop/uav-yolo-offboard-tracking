@@ -22,7 +22,8 @@ Notable changes to this project. The format follows
   `highest_confidence` target selection, configurable per mission.
 - `scripts/publish.ps1`: creates the repository and pushes in one command.
 - `ROS build` workflow: builds `px4_msgs` + `uav_interfaces` in `ros:humble`,
-  imports both nodes and runs a node-level integration test.
+  drives the detector with synthetic images and the controller with fake PX4
+  traffic, and installs the package with `pip -e` to check the metadata.
 - `skills/`: seven debugging procedures distilled from this build.
 
 ### Changed

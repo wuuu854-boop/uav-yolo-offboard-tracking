@@ -31,7 +31,8 @@ is enforced in `make check`; nothing is aspirational.
 
 | Item | Why | Covered by |
 |---|---|---|
-| `perception/detector_node.py`, `control/offboard_node.py` | need `rclpy` and a middleware to import | the `ROS build` workflow: builds `px4_msgs`, imports both, runs the detector against real messages |
+| `perception/detector_node.py` | needs `rclpy` and a middleware to import | the `ROS build` workflow: publishes a synthetic `Image`, asserts the `TargetArray` a normal subscriber receives |
+| `control/offboard_node.py` | needs `rclpy` and PX4 message types | the `ROS build` workflow: feeds `VehicleOdometry`/`VehicleStatus` at 50 Hz and asserts the mode request, the arming request, the setpoint stream, the NED sign, and the projected target for two known pixels |
 | `scripts/run_e2e.sh` | needs a running simulator | manual, documented in `docs/experiment-protocol.md` |
 | Gazebo world | needs Gazebo to load it | `scripts/check_world_targets.py` (structure, physics, lights, ground truth) |
 
