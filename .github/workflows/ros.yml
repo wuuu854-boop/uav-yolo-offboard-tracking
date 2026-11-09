@@ -73,5 +73,11 @@ jobs:
           export PYTHONPATH="$PWD/src:$PYTHONPATH"
           python3 -m pytest tests/ros -q
 
-      - name: Import the offline path without ROS on the path
-        run: python3 -c "import uav_tracking.control.offline_sim, uav_tracking.perception.projection; print('offline imports ok')"
+      - name: Install the package and import it from outside the repository
+        run: |
+          python3 -m pip install -e . --no-deps
+          cd /tmp && python3 -c "
+          import uav_tracking.control.offline_sim as sim
+          import uav_tracking.perception.projection as projection
+          print('installed package imports ok:', sim.__name__, projection.__name__)
+          "
