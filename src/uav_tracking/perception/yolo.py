@@ -79,6 +79,9 @@ def decode(
         )
 
     boxes = prediction[:, :4]
+    # Filter by class and confidence *before* NMS: it is cheaper, and it stops a
+    # high-scoring box in an unwanted class from suppressing a wanted one during
+    # non-maximum suppression.
     scores = prediction[:, 4:][:, class_indices].max(axis=1)
     keep = scores >= conf_threshold
     if not np.any(keep):
@@ -98,7 +101,9 @@ def decode(
         axis=1,
     ).tolist()
 
-    # cv2.dnn.NMSBoxes expects [x, y, w, h] in the original image scale.
+    # cv2.dnn.NMSBoxes expects [x, y, w, h] in the original image scale, and it
+    # is the only OpenCV call in this module - everything else is numpy, so the
+    # geometry can be reasoned about without an image.
     indices = np.array(cv2.dnn.NMSBoxes(nms_input, scores.tolist(), conf_threshold, iou_threshold))
     detections: list[dict] = []
     for index in indices.flatten()[:max_detections]:

@@ -85,6 +85,11 @@ def run_mission(
 ) -> DemoResult:
     """Fly the simulated vehicle to ``target_enu`` using the production state machine.
 
+    The vehicle is a point mass: position integrates at up to ``max_speed_mps``
+    with no attitude lag, wind or controller dynamics. That is enough to exercise
+    the geometry and the mission logic, and deliberately not enough to say
+    anything about control performance. The SITL trials are what measure that.
+
     The default 10 m altitude is chosen so the target starts inside the camera
     frame: at 5 m the visible patch is 11.9 x 8.9 m, so a target 5 m ahead is
     already off the top of the image and the loop would look broken for a reason

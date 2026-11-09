@@ -42,7 +42,12 @@ def load_raw_latencies(path: Path) -> list[float]:
 
 
 def percentile(values: list[float], q: float) -> float:
-    """Linear-interpolated percentile; ``nan`` for an empty list."""
+    """Linear-interpolated percentile; ``nan`` for an empty list.
+
+    Interpolation rather than nearest-rank, to match what numpy and most
+    dashboards report. Quoting a different definition than the tool a reviewer
+    would check against is a good way to look wrong while being right.
+    """
     if not values:
         return float("nan")
     ordered = sorted(values)

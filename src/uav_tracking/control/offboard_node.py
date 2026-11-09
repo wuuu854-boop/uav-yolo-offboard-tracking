@@ -188,6 +188,12 @@ class OffboardNode(Node):
         return self.target_filter.update((east, north))
 
     def _target_is_stale(self) -> bool:
+        """True when no detection arrived recently enough to act on.
+
+        Uses the receipt time, not the image stamp: a frozen publisher keeps
+        re-sending the same stamp, and the vehicle should hover rather than
+        chase a frame that is no longer being produced.
+        """
         if self.latest_detection_s is None:
             return True
         now = self.get_clock().now().nanoseconds / 1e9
@@ -200,6 +206,18 @@ class OffboardNode(Node):
 
     # ---------------------------------------------------------------- control
     def on_timer(self) -> None:
+        """One control tick.
+
+        Order matters: read the freshest estimate, ask the state machine what it
+        wants, record any transition, then emit exactly one command. Doing the
+        bookkeeping before the command keeps the CSV row attributable to the
+        state that produced it.
+
+        This runs at ``control_rate_hz`` (50 Hz) while detection runs at 5 Hz on
+        purpose. Inference jitter must not reach the setpoint stream; the
+        setpoint is integrated from the last known target instead of being
+        rewritten by every frame.
+        """
         now_s = self.get_clock().now().nanoseconds / 1e9
         target = None if self._target_is_stale() else self._project_best_detection()
         distance = None
@@ -213,6 +231,10 @@ class OffboardNode(Node):
             pose.pose.position.z = 0.0
             self.target_pub.publish(pose)
 
+            # Latency is measured against the image stamp, not the receipt time,
+            # because the transport delay is exactly what is being measured. The
+            # bounds reject the first frames after a clock jump or a bag replay
+            # start, where the difference is meaningless.
             latency_ms = (now_s - self._detection_stamp_s()) * 1000.0
             if 0.0 <= latency_ms < 5000.0:
                 self.recorder.add_latency(latency_ms)
@@ -248,7 +270,12 @@ class OffboardNode(Node):
         self._publish_setpoint()
 
     def _move_towards(self, east: float, north: float, altitude: float) -> None:
-        """Rate-limited setpoint move, honouring ``max_speed_mps`` in any direction."""
+        """Rate-limited setpoint move, honouring ``max_speed_mps`` in any direction.
+
+        Landing passes ``altitude - 0.3`` each tick; the rate limiter turns that
+        into a constant descent instead of a step, so the vehicle does not chase
+        a target that is always 0.3 m below it.
+        """
         step = self.cfg.max_speed_mps * self.dt
         self.setpoint_east, self.setpoint_north = limited_step(
             (self.setpoint_east, self.setpoint_north), (east, north), step
@@ -256,6 +283,14 @@ class OffboardNode(Node):
         (self.setpoint_alt,) = limited_step((self.setpoint_alt,), (altitude,), step)
 
     def _publish_setpoint(self) -> None:
+        # PX4 drops out of OFFBOARD if the setpoint stream stops, and it refuses
+        # to enter the mode until the stream has been running. So this is sent on
+        # every tick from startup: before arming, during the mission, after
+        # landing. Do not gate it behind the state machine.
+        #
+        # Timestamps are microseconds since boot (px4_msgs convention), not the
+        # ROS clock in nanoseconds, even though the values come from the same
+        # clock here.
         timestamp = int(self.get_clock().now().nanoseconds / 1000)
 
         mode = OffboardControlMode()
@@ -269,6 +304,10 @@ class OffboardNode(Node):
             float(self.setpoint_east),  # NED y
             float(-self.setpoint_alt),  # NED z (down positive)
         ]
+        # Heading is commanded to north (0) rather than left as NaN on purpose:
+        # a fixed heading keeps the camera's image-up direction constant between
+        # trials, which is what makes image_up_is_forward comparable. Send NaN
+        # instead if the vehicle should keep whatever heading it already has.
         setpoint.yaw = 0.0
         setpoint.timestamp = timestamp
         self.setpoint_pub.publish(setpoint)

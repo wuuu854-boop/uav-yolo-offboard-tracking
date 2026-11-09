@@ -71,6 +71,11 @@ def pixel_to_ground(
     fx, fy = matrix[0, 0], matrix[1, 1]
     cx, cy = matrix[0, 2], matrix[1, 2]
 
+    # Derivation: the ray through pixel u leaves the camera at an angle whose
+    # tangent is (u - cx) / fx. It hits the ground at distance h, so the ground
+    # offset is the tangent times the depth: (u - cx) * h / fx metres. Same for v
+    # with fy. No rotation matrix is needed while the vehicle is level, which is
+    # exactly the assumption this MVP makes.
     right = (float(u) - cx) * h / fx
     down = (float(v) - cy) * h / fy
 

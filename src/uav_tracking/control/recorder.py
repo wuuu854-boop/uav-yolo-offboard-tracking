@@ -63,6 +63,13 @@ class MissionRecorder:
             self._latencies_ms.append(float(latency_ms))
 
     def _nearest_target(self, position_enu: tuple[float, float]) -> tuple[int, float]:
+        """Which target did the vehicle actually end up over?
+
+        The world places targets 20 m apart, so the nearest one is unambiguous:
+        the nadir camera at 5 m sees a 11.9 x 8.9 m patch and cannot mistake a
+        neighbouring target for the one it was chasing. If that spacing changes,
+        this association has to change with it.
+        """
         best_id, best_distance = -1, float("inf")
         for target_id, (east, north) in self.ground_truth.items():
             distance = float(np.hypot(position_enu[0] - east, position_enu[1] - north))
@@ -114,6 +121,13 @@ class MissionRecorder:
                 writer.writerow([trial, round(latency, 3)])
 
     def _append(self, row: dict) -> None:
+        """Append, never rewrite.
+
+        The file is evidence: a crash mid-run must not lose the trials that
+        already happened, and a re-run of the same experiment should add a row
+        rather than overwrite one. The trial index is recovered from the existing
+        rows on construction, so restarting the node continues the numbering.
+        """
         self.path.parent.mkdir(parents=True, exist_ok=True)
         write_header = not self.path.exists() or self.path.stat().st_size == 0
         with self.path.open("a", newline="", encoding="utf-8") as handle:

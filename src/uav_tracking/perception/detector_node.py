@@ -86,6 +86,14 @@ class DetectorNode(Node):
         )
 
     def on_image(self, msg: Image) -> None:
+        """Throttle, convert, infer, publish.
+
+        The throttle is applied *before* the conversion: dropping a frame after
+        decoding it would waste most of the CPU this is meant to save. Returning
+        early is deliberate — the control side uses "no message for 2 s" as its
+        definition of a lost target, so silence while throttled is harmless
+        because the throttle period is far below that timeout.
+        """
         now = time.monotonic()
         if now - self._last_publish_s < self.min_period_s:
             return
@@ -105,6 +113,9 @@ class DetectorNode(Node):
         elapsed_ms = (time.perf_counter() - started) * 1000.0
 
         message = TargetArray()
+        # The image header (stamp and frame_id) is passed through unchanged. The
+        # consumer measures latency against this stamp, so re-stamping here would
+        # silently report the processing time as zero.
         message.header = msg.header
         for detection in detections:
             target = Target()
@@ -119,6 +130,9 @@ class DetectorNode(Node):
             target.image_height = frame.shape[0]
             message.targets.append(target)
 
+        # Published even when empty, on purpose: an empty array says "I am
+        # alive and see nothing", which the consumer can distinguish from a dead
+        # node. Staying silent would make both look identical.
         self.publisher.publish(message)
 
         self._frames += 1

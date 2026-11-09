@@ -42,7 +42,12 @@ class Check:
 
 
 def run_command(command: list[str], timeout: float = 10.0) -> tuple[int, str]:
-    """Run a command and return ``(returncode, combined output)``. Never raises."""
+    """Run a command and return ``(returncode, combined output)``. Never raises.
+
+    A missing binary is a diagnosis, not a crash: ``gz`` not being installed is
+    exactly the kind of thing this tool exists to report. Returning 127 for
+    "could not even start" mirrors the shell convention.
+    """
     try:
         completed = subprocess.run(
             command, capture_output=True, text=True, timeout=timeout, check=False

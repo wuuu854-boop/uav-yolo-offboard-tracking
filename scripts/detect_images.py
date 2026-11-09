@@ -40,7 +40,12 @@ def evaluate(
     images: Sequence[Path],
     detect: Callable[[np.ndarray], list[dict]],
 ) -> list[dict]:
-    """Run ``detect`` over each image, returning one row per image."""
+    """Run ``detect`` over each image, returning one row per image.
+
+    An unreadable file is recorded as ``detections = -1`` rather than skipped:
+    "the image would not open" and "the image contained nothing" are different
+    findings, and silently dropping the first makes a broken dataset look clean.
+    """
     rows: list[dict] = []
     for path in images:
         frame = cv2.imread(str(path))

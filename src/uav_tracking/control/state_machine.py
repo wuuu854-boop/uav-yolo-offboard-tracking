@@ -98,6 +98,10 @@ class MissionStateMachine:
             return Decision(self.state, "goto", "")
 
         if self.state is State.HOVER:
+            # Two ways into HOVER with two different exits on purpose: after a
+            # target-loss hover the mission resumes when the target reappears,
+            # whereas after arriving it lands on a timer. Collapsing them into
+            # one state would make a single missed frame end the mission.
             if self._hover_reason == "target_lost" and obs.distance_to_target_m is not None:
                 self.state = State.GOTO
                 self._lost_since_s = None

@@ -66,7 +66,9 @@ Index and rationale: [`skills/README.md`](skills/README.md).
 
 To point all of this at your own target, camera or scene, follow
 [`docs/adoption.md`](docs/adoption.md) — it lists what to change and the check
-that proves each change worked.
+that proves each change worked. To read the code instead, start with
+[`docs/review-guide.md`](docs/review-guide.md): one guarantee per module, with the
+test that would fail if it broke.
 
 ## Stack
 
