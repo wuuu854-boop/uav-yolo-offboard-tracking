@@ -28,5 +28,8 @@ jobs:
       - name: Format check
         run: ruff format --check .
 
+      - name: Environment doctor (static checks only)
+        run: python scripts/doctor.py --static
+
       - name: Unit tests
         run: pytest -q

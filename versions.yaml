@@ -1,0 +1,25 @@
+# Single source of truth for the versions this project is tested against.
+#
+# scripts/doctor.py compares the machine against this file and docs quote it.
+# If you upgrade one component, upgrade the row below in the same commit.
+
+ubuntu: "22.04"
+ros_distro: humble
+python: "3.10"
+gazebo: harmonic
+gz_sim: "8"
+
+# PX4 and px4_msgs must share a minor version: mismatched pairs are the single
+# most common build failure in this stack (see docs/troubleshooting.md #1).
+px4: "v1.15.0"
+px4_msgs: "release/1.15"
+
+python_packages:
+  onnxruntime: ">=1.17,<2.0"
+  opencv-python: ">=4.9,<5.0"
+  ultralytics: ">=8.3,<9.0"
+
+notes:
+  - "PX4 v1.15 targets Gazebo Harmonic (gz-sim 8). Do not mix with Gazebo Classic 11."
+  - "ROS 2 Humble requires Python 3.10; a 3.11 interpreter breaks rclpy (troubleshooting #3)."
+  - "Use ros-humble-ros-gz, not ros-humble-ros-gzgarden (troubleshooting #2)."
