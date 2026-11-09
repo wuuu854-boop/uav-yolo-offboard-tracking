@@ -34,7 +34,6 @@ def generate_launch_description() -> LaunchDescription:
             f"{INFO_TOPIC}@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo",
         ],
         remappings=[
-            ("/clock", "/clock"),
             (IMAGE_TOPIC, "/camera/image_raw"),
             (INFO_TOPIC, "/camera/camera_info"),
         ],

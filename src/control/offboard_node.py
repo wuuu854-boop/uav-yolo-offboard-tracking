@@ -37,6 +37,11 @@ from px4_msgs.msg import (  # noqa: E402
 )
 from rclpy.node import Node  # noqa: E402
 
+from src.control.frames import (  # noqa: E402
+    heading_ned_to_yaw_enu,
+    ned_position_to_enu,
+    quaternion_to_heading_ned,
+)
 from src.control.recorder import MissionRecorder  # noqa: E402
 from src.control.state_machine import (  # noqa: E402
     MissionConfig,
@@ -53,12 +58,6 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 VEHICLE_CMD_DO_SET_MODE = 176
 VEHICLE_CMD_COMPONENT_ARM_DISARM = 400
 PX4_CUSTOM_MAIN_MODE_OFFBOARD = 6
-
-
-def quaternion_to_yaw(q: np.ndarray) -> float:
-    """Yaw (rad, NED, 0 = north) from a Hamilton quaternion (w, x, y, z)."""
-    w, x, y, z = q
-    return math.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z))
 
 
 class OffboardNode(Node):
@@ -114,18 +113,16 @@ class OffboardNode(Node):
         self.command_pub = self.create_publisher(VehicleCommand, "/fmu/in/vehicle_command", 10)
         self.target_pub = self.create_publisher(PoseStamped, "/target_pose", 10)
 
-        self.control_rate_hz = 50.0
+        self.control_rate_hz = float(mission_cfg.control_rate_hz)
         self.dt = 1.0 / self.control_rate_hz
         self.timer = self.create_timer(self.dt, self.on_timer)
         self.get_logger().info("offboard node ready, waiting for odometry")
 
     # ------------------------------------------------------------------ inputs
     def on_odometry(self, msg: VehicleOdometry) -> None:
-        # PX4 odometry is NED: x north, y east, z down.
-        self.north = float(msg.position[0])
-        self.east = float(msg.position[1])
-        self.altitude = -float(msg.position[2])
-        self.yaw = quaternion_to_yaw(np.asarray(msg.q, dtype=float))
+        # PX4 odometry is NED: convert once, here, and stay in ENU everywhere else.
+        self.east, self.north, self.altitude = ned_position_to_enu(msg.position)
+        self.yaw = heading_ned_to_yaw_enu(quaternion_to_heading_ned(msg.q))
         self.update_count += 1
 
     def on_status(self, msg: VehicleStatus) -> None:
@@ -303,6 +300,7 @@ def main() -> int:
         setpoint_jump_limit_m=mission_raw.get("setpoint_jump_limit_m", 3.0),
         max_speed_mps=mission_raw.get("max_speed_mps", 1.0),
         land_after_hover=mission_raw.get("land_after_hover", True),
+        control_rate_hz=mission_raw.get("control_rate_hz", 50.0),
     )
 
     rclpy.init()

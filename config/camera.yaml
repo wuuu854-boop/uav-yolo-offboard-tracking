@@ -19,6 +19,7 @@ cy: 240.0
 image_up_is_forward: true
 
 # Camera optical centre relative to body origin, metres, body FRD (x fwd, y right, z down).
+# Recorded here for completeness; v0.1.0 does NOT apply this offset yet.
 mount_offset_xyz: [0.0, 0.0, 0.0]
 
 # Optical-axis tilt from body -z. The MVP only supports 0.0 (strict nadir).

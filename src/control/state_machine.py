@@ -32,6 +32,7 @@ class MissionConfig:
     setpoint_jump_limit_m: float = 3.0
     max_speed_mps: float = 1.0
     land_after_hover: bool = True
+    control_rate_hz: float = 50.0
 
 
 @dataclass(frozen=True)

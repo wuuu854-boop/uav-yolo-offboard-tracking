@@ -25,11 +25,16 @@ detector can be replayed from a rosbag with no PX4 running.
 | PX4 odometry | NED: `x` north, `y` east, `z` down | `/fmu/out/vehicle_odometry` |
 | Yaw | REP-103: 0 = east, `+pi/2` = north | `projection.py`, odometry |
 
-NED is converted to ENU **only at the PX4 boundary**:
+NED is converted to ENU **only at the PX4 boundary** (`src/control/frames.py`):
 
 ```
 east  =  position[1]      north =  position[0]      up = -position[2]
+yaw_enu = pi/2 - yaw_ned        # the heading convention differs too
 ```
+
+That second line is the one people forget: PX4 yaw is clockwise from north,
+ROS yaw is counter-clockwise from east. Skipping it produces a constant 90°
+error that looks exactly like a wrongly mounted camera.
 
 If the UAV consistently flies to a mirrored position, one of these is wrong:
 the yaw convention, the camera `image_up_is_forward` flag, or the NED/ENU swap.
