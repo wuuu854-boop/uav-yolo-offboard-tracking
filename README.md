@@ -5,7 +5,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
 
-**UAV target tracking in PX4/Gazebo SITL — YOLO11n detection → pixel-to-ground projection → ROS 2 Offboard control, with reproducible latency and landing-error benchmarks.**
+**UAV vision in the loop, measured.** Detection → pixel-to-ground projection → PX4 Offboard approach in Gazebo SITL, with a trial harness that turns every run into a CSV row and an environment doctor that diagnoses this stack's setup failures.
+
+> **Why this exists.** The most-starred project in this niche ([406★](https://github.com/monemati/PX4-ROS2-Gazebo-YOLOv8)) stops at *detect + fly by keyboard*: no closed loop, no metrics. Searching GitHub for `px4 offboard target tracking` returns **0 repositories**. So this is not a second detection demo — it is the closed loop plus the measurement layer. Star counts, issue links and the comparison: [`docs/prior-art.md`](docs/prior-art.md).
 
 <!-- TODO(v0.1.0): 用 assets/01-demo.gif 替换下面这行，规格见 assets/README.md -->
 > 🎬 Demo GIF 待补（`assets/01-demo.gif`，1280×720，≤20 s，≤8 MB）。
@@ -63,6 +65,7 @@ bash scripts/setup.sh          # 检查环境 + 建 venv + 装依赖（不会自
 cp .env.example .env           # 填 PX4_DIR 等本地路径
 source .venv/bin/activate
 colcon build --packages-select uav_interfaces && source install/setup.bash
+make doctor                    # 六项环境检查，失败时直接给修复命令
 make sim                       # 起 Gazebo + PX4 SITL（终端 A）
 make detect                    # 只跑检测节点，验证 /detections 有输出（终端 B）
 make e2e                       # 闭环：起飞 → 检测 → 抵近 → 悬停 → 降落
@@ -77,19 +80,20 @@ make e2e                       # 闭环：起飞 → 检测 → 抵近 → 悬�
 ```bash
 bash scripts/download_data.sh  # 校验本地模型权重与样例数据（权重不随仓库分发）
 make e2e
-cat results/landing_error.csv
+make bench                     # results/landing_error.csv -> README 结果表
 ```
 
 ## Repository layout
 
 ```
 src/perception/   YOLO ONNX 检测节点、像素→地面投影（纯函数，有单测）、颜色基线
-src/control/      任务状态机（纯 Python，有单测）、Offboard 节点
+src/control/      NED↔ENU 帧转换、任务状态机（纯 Python，有单测）、Offboard 节点、实验记录器
 src/uav_interfaces/  自定义 Target / TargetArray 消息
 sim/              Gazebo world（3 个已知坐标目标）与桥接 launch
 config/           相机内参、检测参数、任务参数、目标真值
+scripts/          doctor.py（环境诊断）、benchmark.py（结果汇总）、setup / e2e / 导出
 results/          实验原始数据（CSV），README 中每个数字的来源
-docs/             坐标约定、实验协议、PX4 笔记、场景预算、AI 使用记录
+docs/             坐标约定、实验协议、先例分析、故障排查、场景预算、AI 使用记录
 ```
 
 ## Results & failure analysis

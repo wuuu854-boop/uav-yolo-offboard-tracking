@@ -26,6 +26,8 @@ If anything in this table changes, start a new series and say so in the README.
 3. Record the row that appears in `results/landing_error.csv`.
 4. Repeat until you have 9 rows (3 targets × 3 runs).
 5. Do **not** delete failed trials. A failure is a result.
+6. Run `make bench` to turn the rows into the table — never compute the numbers
+   by hand, and never copy a number that the script did not print.
 
 ## Metric definitions
 
