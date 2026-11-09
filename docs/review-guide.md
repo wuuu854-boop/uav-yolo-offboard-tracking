@@ -24,7 +24,7 @@ is enforced in `make check`; nothing is aspirational.
 | `control/state_machine.py` | a lost target hovers then searches, never lands; an in-flight disarm stops the mission | `tests/test_state_machine.py` (12) |
 | `control/search.py` | lanes stay inside the area, never exceed the spacing, and the walker advances only on arrival | `tests/test_search.py` (9) |
 | `control/limiter.py` | the speed bound holds in every direction, including diagonal | `tests/test_limiter.py` (7) |
-| `control/selection.py` | the default ignores a more confident edge detection | `tests/test_selection.py` (8) |
+| `control/selection.py` | the default ignores a more confident edge detection; `tracked` holds one id and falls back when it disappears | `tests/test_selection.py` (12) |
 | `control/arming.py` | bounded retries, then one actionable warning | `tests/test_arming.py` (6) |
 | `control/recorder.py` | append-only; raw latency samples are kept for pooling | `tests/test_recorder.py` (6) |
 | `control/offline_sim.py` | the whole loop terminates and converges with a fixed seed | `tests/test_offline_sim.py` (8) |
