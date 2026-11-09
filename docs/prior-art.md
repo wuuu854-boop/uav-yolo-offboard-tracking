@@ -36,6 +36,11 @@ and CSV logging — i.e. exactly the closed loop plus measurement. **It was clos
 without being merged**, so `main` still has no closed loop. Someone wanted this;
 nobody shipped it there.
 
+One small thing was contributed back: [#43](https://github.com/monemati/PX4-ROS2-Gazebo-YOLOv8/pull/43)
+pins the two PX4 message packages to the same release branch, which is the fix
+asked for in #42. The repository you are reading exists because that class of
+setup failure was worth solving once instead of per user.
+
 Read that table again: **the bottleneck in this stack is not the model, it is
 getting to a state where you can trust a number.**
 

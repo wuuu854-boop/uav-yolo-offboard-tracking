@@ -43,7 +43,9 @@ Source: [`results/detection_bench.csv`](results/detection_bench.csv) ·
 | Closed loop in Gazebo SITL | ⬜ **not run yet** | `results/landing_error.csv` is empty |
 
 The last row is the only claim this repository does not yet support, and it is
-deliberately left empty rather than filled with an estimate.
+deliberately left empty rather than filled with an estimate. What each of the
+other rows was checked against — including the four defects that check found —
+is recorded in [`docs/verification-log.md`](docs/verification-log.md).
 
 ## Stack
 
