@@ -12,7 +12,7 @@ here is folklore.
 |---|---|---|---|
 | [01](01-silent-topic.md) | Find a silent ROS 2 topic | Node runs, receives nothing, logs nothing | 5 min |
 | [02](02-camera-mount.md) | Tell a nadir camera from a forward one | Projected target lands hundreds of metres away | 10 min |
-| [03](03-world-plugins.md) | Keep a PX4 Gazebo world valid | Jitter, double physics, model will not spawn | 10 min |
+| [03](03-world-plugins.md) | Make the world load its systems | Camera publishes nothing, detection sees 0 frames | 5 min |
 | [04](04-intrinsics-from-sdf.md) | Derive intrinsics from the model | Error grows linearly with altitude | 10 min |
 | [05](05-version-drift.md) | Pin PX4 message packages | `sensor_gps.hpp: No such file or directory` | 10 min |
 | [06](06-numpy-abi.md) | Survive the numpy 2 / cv_bridge clash | `_ARRAY_API not found`, then a segfault | 5 min |

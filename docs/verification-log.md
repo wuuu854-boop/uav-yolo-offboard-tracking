@@ -9,7 +9,7 @@ and because the *corrections* are the useful part of a project like this.
 | 1 | PX4 v1.15 pairs with Gazebo Harmonic | `PX4-Autopilot` v1.15 source, `px4_msgs` `release/1.15` | pinned in `versions.yaml`, checked by `doctor.py` |
 | 2 | The nadir camera is `x500_mono_cam_down` | `PX4-gazebo-models/models/x500_mono_cam_down/model.sdf`: +90° pitch, 0.10 m offset | default model changed; the forward `x500_mono_cam` documented as a trap (#10) |
 | 3 | Camera intrinsics | `models/mono_cam/model.sdf`: HFOV 1.74 rad, 1280×960 | `fx = 538.4`, `cx = 640`, `cy = 480`; all range numbers in `scenario.md` recomputed |
-| 4 | PX4 worlds must not declare systems | `PX4-gazebo-models/server.config` and `worlds/default.sdf` | world rewritten plugin-free; `check_world_targets.py` fails CI on a `<plugin>` tag |
+| 4 | PX4 worlds must not declare systems | `PX4-gazebo-models/server.config` and `worlds/default.sdf` | **claim was wrong** (2026-11-09): v1.15's launcher passes no config, so a plugin-free world publishes no camera. World now declares Physics/Sensors/SceneBroadcaster; see row 12 |
 | 5 | `/fmu/out/*` is best-effort | PX4 ROS 2 examples vs `px4_msgs` | subscriptions moved to `qos_profile_sensor_data`; a reliable subscription silently received nothing |
 | 6 | PX4 heading ≠ ROS yaw | `px4_msgs/VehicleOdometry.msg` ("FRD body frame to reference frame") | `frames.py` conversion plus 8 tests; the missing 90° was a real defect |
 | 7 | Message field names used by the nodes exist | every `.msg` in `px4_msgs` `release/1.15` | confirmed; no change needed |

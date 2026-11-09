@@ -46,8 +46,9 @@ Notable changes to this project. The format follows
 - The Python code moved from a package literally named `src` to `uav_tracking`
   under `src/`, so `pip install -e .` works and imports read like a library
   rather than a folder.
-- The world file follows PX4 conventions: no `<plugin>` elements (PX4 loads the
-  systems from `server.config`), physics at 0.004 s / 250 Hz.
+- The world declares Physics, UserCommands, SceneBroadcaster, Sensors and Imu
+  itself: PX4 v1.15's launcher passes no config, and without the Sensors system
+  the camera never publishes. Physics stays at 0.004 s / 250 Hz.
 - Targets are 20 m apart with a documented spawn pose per trial, because the
   real camera footprint would otherwise show all three at once.
 

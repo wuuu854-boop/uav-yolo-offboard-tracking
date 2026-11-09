@@ -41,8 +41,8 @@ detection should land at the image centre, not at an edge.
 
 Keep the two-place rule: the SDF is what the simulator renders, the YAML is what
 the test believes, and they must agree. `scripts/check_world_targets.py` fails if
-they do not, and also if the world declares `<plugin>` tags (PX4 loads those from
-`server.config`).
+they do not, and also if the world loses a system plugin the launcher does not
+provide — a world without Sensors renders no camera images (see `skills/03`).
 
 ## Scenario D — a different mission
 

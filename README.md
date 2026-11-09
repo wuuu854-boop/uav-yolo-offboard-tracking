@@ -57,7 +57,7 @@ verification step — not a blog post, not folklore:
 |---|---|
 | [01](skills/01-silent-topic.md) | A topic that publishes and a node that receives nothing (QoS) |
 | [02](skills/02-camera-mount.md) | Telling a nadir camera from a forward one |
-| [03](skills/03-world-plugins.md) | Keeping a PX4 Gazebo world valid |
+| [03](skills/03-world-plugins.md) | Making a PX4 world load its systems |
 | [04](skills/04-intrinsics-from-sdf.md) | Deriving intrinsics from the model file |
 | [05](skills/05-version-drift.md) | Pinning `px4_msgs` against `px4_ros_com` |
 | [06](skills/06-numpy-abi.md) | The numpy 2 / `cv_bridge` segfault |
