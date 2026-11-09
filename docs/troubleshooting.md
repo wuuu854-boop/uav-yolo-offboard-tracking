@@ -4,6 +4,10 @@ Every entry below is a failure that real users hit in this stack, with the
 upstream issue it was observed in. `scripts/doctor.py` checks for the ones that
 can be detected mechanically.
 
+Each entry has a matching step-by-step procedure, with a verification step, in
+[`skills/`](../skills/README.md) — this file is the "what and why", that folder is
+the "how, and how to know it worked".
+
 Run first:
 
 ```bash
