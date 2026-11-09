@@ -52,6 +52,10 @@ Restart the simulation between targets; do not teleport a running vehicle.
 | Detection rate | frames with a detection whose centre is within the target box, divided by frames with the target in view | 0–1 |
 | Detection latency | `time.perf_counter()` around `session.run` only | ms |
 
+`results/state_trace.csv` records one row per state change (state, note, position,
+altitude). It is not a metric, it is the explanation: when a trial fails, this is
+where you find out whether it hovered, searched or never armed.
+
 Latency is reported as p50 **and** p95. A mean alone hides the jitter that makes
 a controller unstable, and that jitter is the interesting part.
 

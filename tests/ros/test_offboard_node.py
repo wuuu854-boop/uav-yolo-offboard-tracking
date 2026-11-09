@@ -32,6 +32,7 @@ from uav_interfaces.msg import Target, TargetArray  # noqa: E402
 from uav_tracking.control.offboard_node import OffboardNode  # noqa: E402
 from uav_tracking.control.recorder import MissionRecorder  # noqa: E402
 from uav_tracking.control.state_machine import MissionConfig  # noqa: E402
+from uav_tracking.control.trace import StateTrace  # noqa: E402
 
 CAMERA = {
     "fx": 538.4,
@@ -83,10 +84,10 @@ def rig(tmp_path_factory):
     rclpy.init()
 
     cfg = MissionConfig(takeoff_altitude_m=ALTITUDE_M, target_loss_hover_s=2.0)
-    recorder = MissionRecorder(
-        tmp_path_factory.mktemp("offboard") / "landing_error.csv", {0: (0.0, 0.0)}
-    )
-    node = OffboardNode(cfg, CAMERA, recorder)
+    results_dir = tmp_path_factory.mktemp("offboard")
+    recorder = MissionRecorder(results_dir / "landing_error.csv", {0: (0.0, 0.0)})
+    trace_path = results_dir / "state_trace.csv"
+    node = OffboardNode(cfg, CAMERA, recorder, StateTrace(trace_path))
     helper = Node("offboard_test_helper")
 
     poses: list = []
@@ -128,6 +129,7 @@ def rig(tmp_path_factory):
         commands=commands,
         state=state,
         tick=tick,
+        trace_path=trace_path,
     )
 
     executor.shutdown()
@@ -203,6 +205,19 @@ def test_a_pixel_right_of_centre_maps_to_the_right_of_the_heading(rig):
     pose = rig.poses[-1].pose.position
     assert pose.x == pytest.approx(200.0 * (ALTITUDE_M + 0.10) / CAMERA["fx"], abs=0.1)
     assert pose.y == pytest.approx(0.0, abs=0.1)
+
+
+def test_the_state_trace_records_the_transitions(rig):
+    # Arm the vehicle so the machine leaves IDLE, then read the trace back.
+    assert _pump(rig, lambda: True, timeout_s=0.5)
+    rig.state.armed = True
+    assert _pump(rig, lambda: True, timeout_s=0.5)
+
+    lines = rig.trace_path.read_text(encoding="utf-8").strip().splitlines()
+    assert lines[0].startswith("t_s,state,note")
+    states = [line.split(",")[1] for line in lines[1:]]
+    assert "IDLE" in states
+    assert "TAKEOFF" in states
 
 
 def test_no_detection_means_no_target_pose(rig):

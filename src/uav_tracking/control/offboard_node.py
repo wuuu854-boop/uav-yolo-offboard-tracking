@@ -57,6 +57,7 @@ from uav_tracking.control.state_machine import (  # noqa: E402
     State,
     TargetJumpFilter,
 )
+from uav_tracking.control.trace import StateTrace  # noqa: E402
 from uav_tracking.perception.projection import estimate_target_enu  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -68,7 +69,11 @@ PX4_CUSTOM_MAIN_MODE_OFFBOARD = 6
 
 class OffboardNode(Node):
     def __init__(
-        self, mission_cfg: MissionConfig, camera_cfg: dict, recorder: MissionRecorder
+        self,
+        mission_cfg: MissionConfig,
+        camera_cfg: dict,
+        recorder: MissionRecorder,
+        trace: StateTrace | None = None,
     ) -> None:
         # Fail at startup, before any ROS entity exists: a typo in the config
         # would otherwise surface as a crash on the first frame with two
@@ -81,6 +86,7 @@ class OffboardNode(Node):
         super().__init__("uav_offboard")
         self.cfg = mission_cfg
         self.recorder = recorder
+        self.trace = trace
         self._previous_state = State.IDLE
         self.image_up_is_forward = bool(camera_cfg.get("image_up_is_forward", True))
         self.mount_offset = tuple(camera_cfg.get("mount_offset_xyz", (0.0, 0.0, 0.0)))
@@ -279,6 +285,18 @@ class OffboardNode(Node):
             )
         if decision.command == "takeoff" and self._previous_state is not State.TAKEOFF:
             self.recorder.start_trial()
+
+        # One row per state change: when a trial goes wrong this is the only
+        # record of which state it was in and why it moved.
+        if self.trace is not None:
+            self.trace.write(
+                now_s,
+                decision.state.value,
+                decision.note,
+                position=(self.east, self.north),
+                altitude_m=self.altitude,
+            )
+
         self._previous_state = decision.state
 
         if decision.command == "arm":
@@ -402,6 +420,7 @@ def main() -> int:
     parser.add_argument("--camera", default="config/camera.yaml")
     parser.add_argument("--targets", default="config/targets.yaml")
     parser.add_argument("--results", default="results/landing_error.csv")
+    parser.add_argument("--trace", default="results/state_trace.csv")
     args = parser.parse_args()
 
     with open(args.mission, encoding="utf-8") as handle:
@@ -432,7 +451,7 @@ def main() -> int:
     )
 
     rclpy.init()
-    node = OffboardNode(mission_cfg, camera_raw, recorder)
+    node = OffboardNode(mission_cfg, camera_raw, recorder, StateTrace(args.trace))
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
