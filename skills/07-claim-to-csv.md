@@ -5,7 +5,7 @@
 | **When** | A number is about to appear in a README, a report or a résumé |
 | **Time** | 30 minutes the first time, seconds afterwards |
 | **Needs** | The run itself |
-| **From** | `docs/experiment-protocol.md`, `src/control/recorder.py` |
+| **From** | `docs/experiment-protocol.md`, `src/uav_tracking/control/recorder.py` |
 
 ## Symptom
 

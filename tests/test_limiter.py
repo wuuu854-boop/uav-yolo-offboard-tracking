@@ -6,7 +6,7 @@ import math
 
 import pytest
 
-from src.control.limiter import limited_step
+from uav_tracking.control.limiter import limited_step
 
 
 def test_far_target_moves_exactly_one_step():

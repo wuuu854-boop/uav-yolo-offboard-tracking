@@ -142,8 +142,8 @@ make bench                     # results/landing_error.csv -> README 结果表
 ## Repository layout
 
 ```
-src/perception/   YOLO ONNX 检测节点、像素→地面投影（纯函数，有单测）、颜色基线
-src/control/      NED↔ENU 帧转换、任务状态机（纯 Python，有单测）、Offboard 节点、目标选择、实验记录器
+src/uav_tracking/perception/   YOLO ONNX 检测节点、像素→地面投影（纯函数，有单测）、颜色基线
+src/uav_tracking/control/      NED↔ENU 帧转换、任务状态机（纯 Python，有单测）、Offboard 节点、目标选择、实验记录器
 src/uav_interfaces/  自定义 Target / TargetArray 消息
 sim/              Gazebo world（3 个已知坐标目标）与桥接 launch
 config/           相机内参、检测参数、任务参数、目标真值

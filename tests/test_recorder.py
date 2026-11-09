@@ -6,7 +6,7 @@ import csv
 
 import pytest
 
-from src.control.recorder import MissionRecorder
+from uav_tracking.control.recorder import MissionRecorder
 
 GROUND_TRUTH = {0: (10.0, 0.0), 1: (0.0, 0.0)}
 

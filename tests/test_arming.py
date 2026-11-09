@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from src.control.arming import ArmingSequencer
+from uav_tracking.control.arming import ArmingSequencer
 
 
 def test_first_step_requests_mode_and_arming():

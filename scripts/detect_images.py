@@ -25,9 +25,9 @@ import cv2
 import numpy as np
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT))
+sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from src.perception.color_baseline import detect_color_centroid  # noqa: E402
+from uav_tracking.perception.color_baseline import detect_color_centroid  # noqa: E402
 
 IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".bmp"}
 
@@ -137,7 +137,7 @@ def _baseline_detector() -> Callable[[np.ndarray], list[dict]]:
 
 
 def _yolo_detector(model_path: Path) -> Callable[[np.ndarray], list[dict]]:
-    from src.perception.detector_node import YoloOnnxDetector  # noqa: PLC0415 - optional dependency
+    from uav_tracking.perception.detector_node import YoloOnnxDetector  # noqa: PLC0415 - optional dependency
 
     detector = YoloOnnxDetector(model_path if model_path.is_absolute() else REPO_ROOT / model_path)
     return detector.infer

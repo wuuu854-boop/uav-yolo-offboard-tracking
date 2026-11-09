@@ -12,7 +12,7 @@ the split means the detector can be replayed from a rosbag with no PX4 running.
 
 Run from the repository root, after building ``src/uav_interfaces``::
 
-    python3 src/perception/detector_node.py --config config/detector.yaml
+    python3 src/uav_tracking/perception/detector_node.py --config config/detector.yaml
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ from pathlib import Path
 import numpy as np
 import yaml
 
-# Nodes are executed as scripts, so make the repository root importable.
+# Running as a script: put the package root (src/) on the path.
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import rclpy  # noqa: E402
@@ -34,11 +34,11 @@ from rclpy.node import Node  # noqa: E402
 from rclpy.qos import qos_profile_sensor_data  # noqa: E402
 from sensor_msgs.msg import Image  # noqa: E402
 
-from src.perception.color_baseline import detect_color_centroid  # noqa: E402
-from src.perception.yolo import YoloOnnxDetector  # noqa: E402
 from uav_interfaces.msg import Target, TargetArray  # noqa: E402
+from uav_tracking.perception.color_baseline import detect_color_centroid  # noqa: E402
+from uav_tracking.perception.yolo import YoloOnnxDetector  # noqa: E402
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 class DetectorNode(Node):

@@ -7,7 +7,7 @@ import pytest
 
 cv2 = pytest.importorskip("cv2")
 
-from src.perception.color_baseline import detect_color_centroid  # noqa: E402
+from uav_tracking.perception.color_baseline import detect_color_centroid  # noqa: E402
 
 GREEN_LOWER = (50, 100, 100)
 GREEN_UPPER = (70, 255, 255)

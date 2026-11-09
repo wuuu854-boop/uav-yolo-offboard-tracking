@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from src.control.state_machine import (
+from uav_tracking.control.state_machine import (
     MissionConfig,
     MissionStateMachine,
     Observation,

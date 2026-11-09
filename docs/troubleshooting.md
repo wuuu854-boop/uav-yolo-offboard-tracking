@@ -191,7 +191,7 @@ machine against it. If a check fails, fix the machine — do not edit the code.
    clockwise from east) — a constant 90° error;
 3. NED/ENU axis swap.
 
-**Fix** This repository converts at a single boundary (`src/control/frames.py`)
+**Fix** This repository converts at a single boundary (`src/uav_tracking/control/frames.py`)
 and has tests for each conversion. If you fork it, keep that boundary.
 
 **Source** found during development; see `docs/architecture.md`.

@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from src.perception.yolo import decode, letterbox
+from uav_tracking.perception.yolo import decode, letterbox
 
 
 def _output(boxes: list[tuple[float, float, float, float]], class_scores: list[list[float]]):

@@ -56,9 +56,10 @@ jobs:
         run: |
           source /opt/ros/humble/setup.bash
           source ros_ws/install/setup.bash
+          export PYTHONPATH="$PWD/src:$PYTHONPATH"
           python3 -c "
-          import src.perception.detector_node as detector
-          import src.control.offboard_node as offboard
+          import uav_tracking.perception.detector_node as detector
+          import uav_tracking.control.offboard_node as offboard
           print('detector:', detector.DetectorNode.__name__)
           print('offboard:', offboard.OffboardNode.__name__)
           print('imports ok')
@@ -69,7 +70,8 @@ jobs:
         run: |
           source /opt/ros/humble/setup.bash
           source ros_ws/install/setup.bash
+          export PYTHONPATH="$PWD/src:$PYTHONPATH"
           python3 -m pytest tests/ros -q
 
       - name: Import the offline path without ROS on the path
-        run: python3 -c "import src.control.offline_sim, src.perception.projection; print('offline imports ok')"
+        run: python3 -c "import uav_tracking.control.offline_sim, uav_tracking.perception.projection; print('offline imports ok')"

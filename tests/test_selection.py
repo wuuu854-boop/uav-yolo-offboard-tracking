@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from src.control.selection import STRATEGIES, select_target
+from uav_tracking.control.selection import STRATEGIES, select_target
 
 IMAGE = (1280, 960)
 

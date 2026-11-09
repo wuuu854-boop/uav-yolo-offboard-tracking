@@ -24,8 +24,8 @@ from rclpy.executors import SingleThreadedExecutor  # noqa: E402
 from rclpy.node import Node  # noqa: E402
 from sensor_msgs.msg import Image  # noqa: E402
 
-from src.perception.detector_node import DetectorNode  # noqa: E402
 from uav_interfaces.msg import TargetArray  # noqa: E402
+from uav_tracking.perception.detector_node import DetectorNode  # noqa: E402
 
 WIDTH, HEIGHT = 1280, 960
 CONFIG = {

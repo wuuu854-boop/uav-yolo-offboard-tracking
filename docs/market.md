@@ -8,14 +8,14 @@ listed in `docs/prior-art.md`'s companion notes and summarised here.
 
 | What the postings ask for | Where this repository shows it |
 |---|---|
-| PX4 architecture: uORB, modules, control loop, EKF2 | `src/control/offboard_node.py`, `docs/px4-notes.md` |
+| PX4 architecture: uORB, modules, control loop, EKF2 | `src/uav_tracking/control/offboard_node.py`, `docs/px4-notes.md` |
 | ROS 2 nodes, custom messages, launch, QoS | `src/uav_interfaces/`, `launch/`, the `SensorDataQoS` fix in `CHANGELOG.md` |
 | Gazebo / SITL, algorithm-in-the-loop | `sim/`, `scripts/doctor.py`, `check_world_targets.py` |
-| YOLO training/export, ONNX Runtime, CPU inference | `src/perception/yolo.py`, `scripts/export_onnx.py`, `scripts/verify_model.py` |
+| YOLO training/export, ONNX Runtime, CPU inference | `src/uav_tracking/perception/yolo.py`, `scripts/export_onnx.py`, `scripts/verify_model.py` |
 | Small-object / low-light robustness | v0.2.0 scope, stated in the README's limitations — not claimed today |
 | TensorRT / RKNN / INT8 quantization | **not implemented**; `config/detector.yaml` and the roadmap say so |
-| Frame conventions, camera model, calibration | `src/control/frames.py`, `src/perception/projection.py`, `config/camera.yaml` |
-| Experiment method: baselines, repeats, failure analysis | `docs/experiment-protocol.md`, `src/control/recorder.py`, `scripts/benchmark.py` |
+| Frame conventions, camera model, calibration | `src/uav_tracking/control/frames.py`, `src/uav_tracking/perception/projection.py`, `config/camera.yaml` |
+| Experiment method: baselines, repeats, failure analysis | `docs/experiment-protocol.md`, `src/uav_tracking/control/recorder.py`, `scripts/benchmark.py` |
 | Engineering habits: CI, tests, releases, changelog | `.github/workflows/`, `tests/`, `CHANGELOG.md`, the draft `v0.1.0` |
 | AI-assisted development, used honestly | `docs/ai-usage.md` (what was delegated, what was verified, where it failed) |
 | Debugging a real stack from source | `docs/verification-log.md` — ten claims, four of which were defects |

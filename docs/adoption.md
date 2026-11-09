@@ -15,8 +15,8 @@ camera, my scene", with the check that tells you each step worked.
 | A different flight profile | `config/mission.yaml` | `make demo`, then one SITL trial |
 | Your own recorded frames | `scripts/detect_images.py --images <dir>` | the CSV it writes |
 
-Everything under `src/perception/projection.py`, `src/control/state_machine.py`
-and `src/control/frames.py` should stay as it is. Those three files hold the
+Everything under `src/uav_tracking/perception/projection.py`, `src/uav_tracking/control/state_machine.py`
+and `src/uav_tracking/control/frames.py` should stay as it is. Those three files hold the
 frame conventions and the safety logic, and they are the parts with tests.
 
 ## Scenario A — a different target

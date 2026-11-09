@@ -6,8 +6,8 @@ import math
 
 import pytest
 
-from src.control.offline_sim import IMAGE_HEIGHT, IMAGE_WIDTH, project_target, run_mission
-from src.perception.projection import pixel_to_ground
+from uav_tracking.control.offline_sim import IMAGE_HEIGHT, IMAGE_WIDTH, project_target, run_mission
+from uav_tracking.perception.projection import pixel_to_ground
 
 CAMERA_MATRIX = ((538.4, 0.0, 640.0), (0.0, 538.4, 480.0), (0.0, 0.0, 1.0))
 

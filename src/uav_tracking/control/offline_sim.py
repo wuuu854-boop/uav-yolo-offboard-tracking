@@ -16,14 +16,14 @@ import math
 import random
 from dataclasses import dataclass, field
 
-from src.control.state_machine import (
+from uav_tracking.control.state_machine import (
     MissionConfig,
     MissionStateMachine,
     Observation,
     State,
     TargetJumpFilter,
 )
-from src.perception.projection import pixel_to_ground
+from uav_tracking.perception.projection import pixel_to_ground
 
 IMAGE_WIDTH = 1280
 IMAGE_HEIGHT = 960

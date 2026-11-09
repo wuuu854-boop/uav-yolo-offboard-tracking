@@ -24,6 +24,7 @@ from pathlib import Path
 import numpy as np
 import yaml
 
+# Running as a script: put the package root (src/) on the path.
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import rclpy  # noqa: E402
@@ -38,26 +39,26 @@ from px4_msgs.msg import (  # noqa: E402
 from rclpy.node import Node  # noqa: E402
 from rclpy.qos import qos_profile_sensor_data  # noqa: E402
 
-from src.control.arming import ArmingSequencer  # noqa: E402
-from src.control.frames import (  # noqa: E402
+from uav_interfaces.msg import TargetArray  # noqa: E402
+from uav_tracking.control.arming import ArmingSequencer  # noqa: E402
+from uav_tracking.control.frames import (  # noqa: E402
     heading_ned_to_yaw_enu,
     ned_position_to_enu,
     quaternion_to_heading_ned,
 )
-from src.control.limiter import limited_step  # noqa: E402
-from src.control.recorder import MissionRecorder  # noqa: E402
-from src.control.selection import select_target  # noqa: E402
-from src.control.state_machine import (  # noqa: E402
+from uav_tracking.control.limiter import limited_step  # noqa: E402
+from uav_tracking.control.recorder import MissionRecorder  # noqa: E402
+from uav_tracking.control.selection import select_target  # noqa: E402
+from uav_tracking.control.state_machine import (  # noqa: E402
     MissionConfig,
     MissionStateMachine,
     Observation,
     State,
     TargetJumpFilter,
 )
-from src.perception.projection import estimate_target_enu  # noqa: E402
-from uav_interfaces.msg import TargetArray  # noqa: E402
+from uav_tracking.perception.projection import estimate_target_enu  # noqa: E402
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 VEHICLE_CMD_DO_SET_MODE = 176
 VEHICLE_CMD_COMPONENT_ARM_DISARM = 400

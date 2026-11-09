@@ -7,7 +7,7 @@ import math
 import numpy as np
 import pytest
 
-from src.perception.projection import (
+from uav_tracking.perception.projection import (
     camera_offset_enu,
     estimate_target_enu,
     ground_sample_distance,

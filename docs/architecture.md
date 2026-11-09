@@ -36,7 +36,7 @@ a 0.10 m vertical error that scales the ground offset by about 2 % at 5 m.
 The similarly named `x500_mono_cam` is **forward-looking** and cannot be used
 with this projection — see `docs/troubleshooting.md` #10.
 
-NED is converted to ENU **only at the PX4 boundary** (`src/control/frames.py`):
+NED is converted to ENU **only at the PX4 boundary** (`src/uav_tracking/control/frames.py`):
 
 ```
 east  =  position[1]      north =  position[0]      up = -position[2]

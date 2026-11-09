@@ -7,7 +7,7 @@ import math
 import numpy as np
 import pytest
 
-from src.control.frames import (
+from uav_tracking.control.frames import (
     heading_ned_to_yaw_enu,
     ned_position_to_enu,
     quaternion_to_heading_ned,

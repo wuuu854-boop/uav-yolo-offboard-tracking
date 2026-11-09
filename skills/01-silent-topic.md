@@ -35,7 +35,7 @@ raised at either end.
 2. Check what your code actually asked for:
 
    ```bash
-   grep -n "create_subscription" -A2 src/control/offboard_node.py
+   grep -n "create_subscription" -A2 src/uav_tracking/control/offboard_node.py
    ```
 
    A bare `10` is the default *reliable* profile.

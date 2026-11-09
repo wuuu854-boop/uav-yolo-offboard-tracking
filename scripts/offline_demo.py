@@ -17,9 +17,9 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT))
+sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from src.control.offline_sim import run_mission  # noqa: E402
+from uav_tracking.control.offline_sim import run_mission  # noqa: E402
 
 
 def write_csv(path: Path, samples: list[dict]) -> None:

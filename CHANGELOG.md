@@ -12,13 +12,13 @@ Notable changes to this project. The format follows
   `--static` mode that runs in CI without ROS.
 - `scripts/benchmark.py`: the only code allowed to turn
   `results/landing_error.csv` into a claim.
-- `scripts/offline_demo.py` / `src/control/offline_sim.py`: runs the real
+- `scripts/offline_demo.py` / `src/uav_tracking/control/offline_sim.py`: runs the real
   projection and state machine without ROS or Gazebo, on any OS.
 - `scripts/detect_images.py`: batch evaluation of a folder of images with no ROS
   and, for the baseline backend, no model.
 - `scripts/check_links.py`, `scripts/check_doc_claims.py`: fail CI when a
   relative link moves or the test count quoted in the README drifts.
-- `src/control/selection.py`: `nearest_centre` (default), `nearest_previous` and
+- `src/uav_tracking/control/selection.py`: `nearest_centre` (default), `nearest_previous` and
   `highest_confidence` target selection, configurable per mission.
 - `scripts/publish.ps1`: creates the repository and pushes in one command.
 - `ROS build` workflow: builds `px4_msgs` + `uav_interfaces` in `ros:humble`,
@@ -27,6 +27,9 @@ Notable changes to this project. The format follows
 
 ### Changed
 
+- The Python code moved from a package literally named `src` to `uav_tracking`
+  under `src/`, so `pip install -e .` works and imports read like a library
+  rather than a folder.
 - The world file follows PX4 conventions: no `<plugin>` elements (PX4 loads the
   systems from `server.config`), physics at 0.004 s / 250 Hz.
 - Targets are 20 m apart with a documented spawn pose per trial, because the
