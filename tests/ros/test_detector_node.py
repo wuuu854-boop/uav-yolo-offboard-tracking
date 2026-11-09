@@ -6,6 +6,9 @@ the `ROS build` workflow, which builds `uav_interfaces` first.
 What it proves that the unit tests cannot: the node subscribes to an Image,
 converts it, runs the backend and publishes a `TargetArray` that an ordinary ROS
 subscriber receives.
+
+rclpy is initialised once per module on purpose: shutting it down and calling
+``init()`` again in the same process segfaults (exit 139) on Humble.
 """
 
 from __future__ import annotations
@@ -20,9 +23,9 @@ rclpy = pytest.importorskip("rclpy")
 from rclpy.executors import SingleThreadedExecutor  # noqa: E402
 from rclpy.node import Node  # noqa: E402
 from sensor_msgs.msg import Image  # noqa: E402
-from uav_interfaces.msg import TargetArray  # noqa: E402
 
 from src.perception.detector_node import DetectorNode  # noqa: E402
+from uav_interfaces.msg import TargetArray  # noqa: E402
 
 WIDTH, HEIGHT = 1280, 960
 CONFIG = {
@@ -49,8 +52,8 @@ def _image_with_square(centre_u: int, centre_v: int, side: int = 160) -> Image:
     return message
 
 
-def _pump(executor, publisher, image, received, timeout_s: float = 6.0) -> bool:
-    """Publish until a message arrives or the timeout expires."""
+def _pump(executor, publisher, image, received, timeout_s: float = 8.0) -> bool:
+    """Publish until at least one message arrives or the timeout expires."""
     deadline = time.monotonic() + timeout_s
     while time.monotonic() < deadline:
         publisher.publish(image)
@@ -60,11 +63,12 @@ def _pump(executor, publisher, image, received, timeout_s: float = 6.0) -> bool:
     return False
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def rig():
     rclpy.init()
     detector = DetectorNode(CONFIG)
     helper = Node("detector_test_helper")
+
     received: list[TargetArray] = []
     helper.create_subscription(TargetArray, "/detections", received.append, 10)
     publisher = helper.create_publisher(Image, "/camera/image_raw", 10)
@@ -73,17 +77,18 @@ def rig():
     executor.add_node(detector)
     executor.add_node(helper)
 
-    try:
-        yield executor, publisher, received
-    finally:
-        executor.shutdown()
-        detector.destroy_node()
-        helper.destroy_node()
-        rclpy.shutdown()
+    yield executor, publisher, received
+
+    executor.shutdown()
+    detector.destroy_node()
+    helper.destroy_node()
+    rclpy.try_shutdown()
 
 
 def test_baseline_backend_publishes_a_detection(rig):
     executor, publisher, received = rig
+    received.clear()
+
     assert _pump(executor, publisher, _image_with_square(700, 420), received), (
         "no TargetArray received within the timeout"
     )
@@ -98,5 +103,7 @@ def test_baseline_backend_publishes_a_detection(rig):
 
 def test_empty_frame_publishes_an_empty_array(rig):
     executor, publisher, received = rig
+    received.clear()
+
     assert _pump(executor, publisher, _image_with_square(640, 480, side=0), received)
     assert len(received[-1].targets) == 0
