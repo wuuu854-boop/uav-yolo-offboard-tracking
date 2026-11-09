@@ -44,8 +44,10 @@ raised at either end.
 
    ```python
    from rclpy.qos import qos_profile_sensor_data
-   self.create_subscription(VehicleOdometry, "/fmu/out/vehicle_odometry",
-                            self.on_odometry, qos_profile_sensor_data)
+
+   self.create_subscription(
+       VehicleOdometry, "/fmu/out/vehicle_odometry", self.on_odometry, qos_profile_sensor_data
+   )
    ```
 
 4. Rebuild, restart both sides, and confirm the callback fires.

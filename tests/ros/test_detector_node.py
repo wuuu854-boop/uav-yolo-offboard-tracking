@@ -52,13 +52,18 @@ def _image_with_square(centre_u: int, centre_v: int, side: int = 160) -> Image:
     return message
 
 
-def _pump(executor, publisher, image, received, timeout_s: float = 8.0) -> bool:
-    """Publish until at least one message arrives or the timeout expires."""
+def _pump_until(executor, publisher, image, received, predicate, timeout_s: float = 8.0) -> bool:
+    """Publish until a message satisfying ``predicate`` arrives, or time out.
+
+    A predicate rather than "any message" because a late message from the
+    previous test can still be queued; matching the content makes the test
+    independent of that race.
+    """
     deadline = time.monotonic() + timeout_s
     while time.monotonic() < deadline:
         publisher.publish(image)
         executor.spin_once(timeout_sec=0.05)
-        if received:
+        if received and predicate(received[-1]):
             return True
     return False
 
@@ -89,21 +94,31 @@ def test_baseline_backend_publishes_a_detection(rig):
     executor, publisher, received = rig
     received.clear()
 
-    assert _pump(executor, publisher, _image_with_square(700, 420), received), (
-        "no TargetArray received within the timeout"
+    arrived = _pump_until(
+        executor,
+        publisher,
+        _image_with_square(700, 420),
+        received,
+        predicate=lambda message: len(message.targets) == 1,
     )
+    assert arrived, "no TargetArray with a detection within the timeout"
 
-    targets = received[-1].targets
-    assert len(targets) == 1
-    assert targets[0].bbox_cx == pytest.approx(700, abs=8)
-    assert targets[0].bbox_cy == pytest.approx(420, abs=8)
-    assert targets[0].image_width == WIDTH
-    assert targets[0].image_height == HEIGHT
+    target = received[-1].targets[0]
+    assert target.bbox_cx == pytest.approx(700, abs=8)
+    assert target.bbox_cy == pytest.approx(420, abs=8)
+    assert target.image_width == WIDTH
+    assert target.image_height == HEIGHT
 
 
 def test_empty_frame_publishes_an_empty_array(rig):
     executor, publisher, received = rig
     received.clear()
 
-    assert _pump(executor, publisher, _image_with_square(640, 480, side=0), received)
-    assert len(received[-1].targets) == 0
+    arrived = _pump_until(
+        executor,
+        publisher,
+        _image_with_square(640, 480, side=0),
+        received,
+        predicate=lambda message: len(message.targets) == 0,
+    )
+    assert arrived, "no empty TargetArray within the timeout"
