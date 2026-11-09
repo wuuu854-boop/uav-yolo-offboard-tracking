@@ -1,0 +1,24 @@
+# Detector parameters.
+#
+# backend: "baseline" (HSV threshold) or "yolo" (ONNX model below).
+# The default Gazebo world contains synthetic coloured boxes, which a COCO
+# pre-trained YOLO does not detect zero-shot; the baseline therefore drives the
+# closed-loop demo while YOLO is measured on the same frames for the results
+# table. Swap in a textured/human target model to run YOLO in the loop.
+backend: baseline
+model_path: models/yolo11n.onnx
+input_size: 640
+conf_threshold: 0.35
+iou_threshold: 0.45
+# COCO class ids to keep. 0 = person. Replace with your own class after fine-tuning.
+classes: [0]
+max_detections: 10
+
+# Detection runs at 5 Hz while the controller runs at 50 Hz on purpose:
+# decoupling the two keeps setpoints smooth when inference jitters (see docs/architecture.md).
+publish_rate_hz: 5
+
+# Colour-threshold baseline (used for the comparison table, not for the mission).
+baseline_hsv_lower: [35, 80, 80]
+baseline_hsv_upper: [85, 255, 255]
+baseline_min_area_px: 150

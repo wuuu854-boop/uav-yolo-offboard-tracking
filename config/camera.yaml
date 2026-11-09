@@ -1,0 +1,25 @@
+# Camera intrinsics for the Gazebo camera (640x480, horizontal FOV 60 deg).
+#
+#   fx = (W/2) / tan(HFOV/2) = 320 / tan(30 deg) = 554.26
+#   fy = fx  (square pixels)
+#
+# If you change resolution or FOV you MUST recompute these, otherwise the
+# ground-projection error grows linearly with altitude (see docs/scenario.md).
+image_width: 640
+image_height: 480
+fx: 554.26
+fy: 554.26
+cx: 320.0
+cy: 240.0
+
+# Nadir camera mounting. true  = image "up" points to body forward (common).
+# false = camera rolled 180 deg (image "up" points backwards).
+# Getting this wrong mirrors the target along one axis; verify with one known
+# target before flying the full mission.
+image_up_is_forward: true
+
+# Camera optical centre relative to body origin, metres, body FRD (x fwd, y right, z down).
+mount_offset_xyz: [0.0, 0.0, 0.0]
+
+# Optical-axis tilt from body -z. The MVP only supports 0.0 (strict nadir).
+tilt_deg: 0.0

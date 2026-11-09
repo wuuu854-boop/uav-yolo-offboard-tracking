@@ -1,0 +1,7 @@
+# Runtime dependencies (top-level, deliberately loose).
+# For an exact, reproducible environment run `make lock` on the target machine
+# and commit the generated requirements.lock.txt (CI installs the lock file).
+numpy>=1.26,<3.0
+opencv-python>=4.9,<5.0
+onnxruntime>=1.17,<2.0
+PyYAML>=6.0,<7.0

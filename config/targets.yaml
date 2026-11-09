@@ -1,0 +1,25 @@
+# Ground-truth target positions in the Gazebo world (ENU, metres).
+#
+# IMPORTANT: these values must come from the <pose> tags in
+# sim/worlds/target_tracking.sdf, NOT from the detector output. Using detections
+# as ground truth makes the acceptance test meaningless.
+#
+# Verify with: gz model -m target_0 --pose
+#          or: gz topic -e -t /world/target_tracking/pose/info
+frame_id: map
+targets:
+  - id: 0
+    model: target_0
+    x: 8.0
+    y: -3.0
+    z: 0.0
+  - id: 1
+    model: target_1
+    x: 6.0
+    y: 4.0
+    z: 0.0
+  - id: 2
+    model: target_2
+    x: 12.0
+    y: 0.0
+    z: 0.0

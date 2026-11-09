@@ -1,0 +1,5 @@
+# Training-only dependencies. Kept in a separate file on purpose:
+# ultralytics is AGPL-3.0 and must not leak into the runtime environment
+# that is described by requirements.txt (MIT-licensed project code).
+ultralytics>=8.3,<9.0
+onnx>=1.16,<2.0

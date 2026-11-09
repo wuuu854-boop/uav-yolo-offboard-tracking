@@ -1,0 +1,35 @@
+name: Simulation assets
+
+# Static checks on the simulation assets. A full SITL run needs PX4 + Gazebo
+# (~15 min on a hosted runner) and is deliberately NOT part of the PR gate; it is
+# run manually until v0.2.0, when a pre-built PX4 image makes it affordable.
+#
+# What this workflow does guard:
+#   - the world file stays well-formed XML (a typo here costs an hour of debugging)
+#   - the shell scripts stay shellcheck-clean
+#   - every target in the world has a matching ground-truth entry
+
+on:
+  pull_request:
+    paths:
+      - "sim/**"
+      - "scripts/**"
+      - "config/targets.yaml"
+  workflow_dispatch:
+
+jobs:
+  assets:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: World file is valid XML
+        run: python3 -c "import xml.etree.ElementTree as ET; ET.parse('sim/worlds/target_tracking.sdf')"
+
+      - name: Ground truth matches the world
+        run: python3 scripts/check_world_targets.py
+
+      - name: Shellcheck
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y shellcheck
+          shellcheck scripts/*.sh

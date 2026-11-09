@@ -1,0 +1,57 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.python-version
+
+# ---- tests & caches ----
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# ---- data & weights (never commit) ----
+data/
+datasets/
+models/
+*.pt
+*.pth
+*.onnx
+*.engine
+*.rknn
+*.bag
+*.db3
+*.mcap
+*.ulg
+*.log
+
+# ---- local config & secrets ----
+.env
+.env.*
+!.env.example
+config/*.local.yaml
+*.key
+*.pem
+
+# ---- build artifacts ----
+build/
+install/
+log/
+devel/
+*.o
+*.so
+
+# ---- IDE / OS ----
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ---- archives ----
+*.zip
+*.tar.gz

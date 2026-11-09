@@ -1,0 +1,23 @@
+uav-yolo-offboard-tracking
+Copyright (c) 2026 wuuu854-boop
+
+This project builds on the following open-source projects. Their licenses apply
+to their respective components; nothing here overrides them.
+
+- PX4-Autopilot — BSD-3-Clause — https://github.com/PX4/PX4-Autopilot
+  Used as the flight stack (SITL) and for the `px4_msgs` interface definitions.
+
+- ROS 2 (rclpy, ros_gz, rosidl) — Apache-2.0 — https://github.com/ros2
+  Used as the middleware and message infrastructure.
+
+- Gazebo (gz-sim) — Apache-2.0 — https://github.com/gazebosim/gz-sim
+  Used as the simulator and camera sensor source.
+
+- Ultralytics YOLO — AGPL-3.0 — https://github.com/ultralytics/ultralytics
+  Used for training and ONNX export only. Exported weights are distributed
+  under AGPL-3.0 for research and educational purposes.
+
+- ONNX Runtime — MIT — https://github.com/microsoft/onnxruntime
+  Used for CPU inference of the exported model.
+
+The source code authored in this repository is licensed under MIT (see LICENSE).

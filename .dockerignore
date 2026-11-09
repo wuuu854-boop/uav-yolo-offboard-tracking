@@ -1,0 +1,15 @@
+.git
+.gitignore
+.venv
+**/__pycache__
+.pytest_cache
+.ruff_cache
+data
+models
+results/*.zip
+assets/*.gif
+docs/*.png
+*.onnx
+*.pt
+*.bag
+*.ulg
