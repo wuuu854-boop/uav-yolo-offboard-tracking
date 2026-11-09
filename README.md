@@ -68,6 +68,10 @@ make detect                    # 只跑检测节点，验证 /detections 有输�
 make e2e                       # 闭环：起飞 → 检测 → 抵近 → 悬停 → 降落
 ```
 
+> **Windows 用户**：PX4 SITL 只能跑在 Linux 上。用 WSL2 + Ubuntu 22.04（Windows 11
+> 自带 WSLg，Gazebo 图形界面可用）或双系统。WSL2 下 Gazebo 帧率通常偏低：如果
+> `ros2 topic hz /camera/image_raw` 达不到 15 Hz，先查 WSL 的 GPU 加速，而不是改代码。
+
 ## Reproduce
 
 ```bash
