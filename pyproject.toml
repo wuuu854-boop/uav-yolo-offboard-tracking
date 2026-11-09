@@ -7,6 +7,12 @@ extend-exclude = ["build", "install", "log", ".venv"]
 select = ["E", "F", "I", "UP", "B"]
 ignore = ["E501"]
 
+[tool.ruff.lint.per-file-ignores]
+# Nodes and demo scripts insert the repository root into sys.path before
+# importing the local packages, so their imports are not at the top.
+"src/**/*_node.py" = ["E402"]
+"scripts/offline_demo.py" = ["E402"]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]

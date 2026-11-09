@@ -6,7 +6,7 @@ PY       ?= python3
 PX4_DIR  ?= $(HOME)/PX4-Autopilot
 WORLD    ?= target_tracking
 
-.PHONY: help setup doctor sim detect e2e test lint fmt lock bench clean
+.PHONY: help setup doctor demo sim detect e2e test lint fmt lock bench clean
 
 help: ## show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-8s\033[0m %s\n", $$1, $$2}'
@@ -19,6 +19,9 @@ doctor: ## check this machine against versions.yaml
 
 bench: ## summarise results/landing_error.csv for the README
 	$(PY) scripts/benchmark.py --csv results/landing_error.csv --markdown
+
+demo: ## offline control-loop demo, no ROS or Gazebo needed
+	$(PY) scripts/offline_demo.py
 
 sim: ## launch Gazebo + PX4 SITL with the target world
 	cd $(PX4_DIR) && PX4_GZ_WORLD=$(WORLD) make px4_sitl gz_x500_mono_cam

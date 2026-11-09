@@ -75,6 +75,19 @@ make e2e                       # 闭环：起飞 → 检测 → 抵近 → 悬�
 > 自带 WSLg，Gazebo 图形界面可用）或双系统。WSL2 下 Gazebo 帧率通常偏低：如果
 > `ros2 topic hz /camera/image_raw` 达不到 15 Hz，先查 WSL 的 GPU 加速，而不是改代码。
 
+### No Linux yet? Check the logic in ten seconds
+
+```bash
+python3 scripts/offline_demo.py     # or: make demo
+```
+
+Runs the real `projection.py` and `state_machine.py` against a synthetic camera
+and a point-mass vehicle: takeoff → detect → approach → hover → land. It writes
+`results/offline_demo.csv` and a two-panel plot.
+
+It validates **geometry and mission logic only** — no dynamics, no perception
+failure, not a result. The numbers that belong in the table come from SITL.
+
 ## Reproduce
 
 ```bash

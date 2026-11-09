@@ -55,6 +55,7 @@ So the niche is not "detect objects from a drone" (saturated). It is
 | Control | keyboard / none | autonomous Offboard approach, speed-limited state machine |
 | Evidence | a GIF | `results/*.csv` + a protocol in `docs/experiment-protocol.md` |
 | Setup | README instructions | `make doctor` checks versions, ABI, bridge, world, topics |
+| Time to first verifiable result | a day of installation | `make demo` in ten seconds, `make e2e` for the real thing |
 | Failure modes | undocumented | `docs/troubleshooting.md`, sourced from real issues |
 | Scope | "a platform" | one loop, finished, measured |
 
