@@ -63,5 +63,12 @@ jobs:
           print('imports ok')
           "
 
+      - name: Node-level integration test (rclpy, real messages)
+        shell: bash
+        run: |
+          source /opt/ros/humble/setup.bash
+          source ros_ws/install/setup.bash
+          python3 -m pytest tests/ros -q
+
       - name: Import the offline path without ROS on the path
         run: python3 -c "import src.control.offline_sim, src.perception.projection; print('offline imports ok')"
