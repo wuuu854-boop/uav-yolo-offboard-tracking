@@ -21,3 +21,8 @@ to their respective components; nothing here overrides them.
   Used for CPU inference of the exported model.
 
 The source code authored in this repository is licensed under MIT (see LICENSE).
+
+Model weights: the ONNX weights distributed with the releases of this project
+were produced with Ultralytics YOLO11, which is licensed under AGPL-3.0. Those
+weights are therefore distributed under AGPL-3.0 and are intended for research
+and educational use. The MIT license above covers the source code only.

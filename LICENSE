@@ -19,11 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Note on model weights: the ONNX weights distributed with the releases of this
-project were produced with Ultralytics YOLO11, which is licensed under
-AGPL-3.0. Those weights are therefore distributed under AGPL-3.0 and are
-intended for research and educational use. This MIT license covers the source
-code in this repository only.
