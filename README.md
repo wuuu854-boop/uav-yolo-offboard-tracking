@@ -89,6 +89,11 @@ and a point-mass vehicle: takeoff → detect → approach → hover → land. It
 It validates **geometry and mission logic only** — no dynamics, no perception
 failure, not a result. The numbers that belong in the table come from SITL.
 
+![offline control-loop demo](assets/offline-demo.png)
+
+*Produced by `make demo`: takeoff to 10 m, approach, hover, land. The title
+reports the final error of that run.*
+
 ## Reproduce
 
 ```bash
