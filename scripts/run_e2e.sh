@@ -44,9 +44,9 @@ ROWS_BEFORE=$(($(wc -l < "$RESULTS") - 1))
 if ((ROWS_BEFORE < 0)); then ROWS_BEFORE=0; fi
 
 echo "== starting nodes (logs in log/) =="
-python3 src/perception/detector_node.py --config config/detector.yaml > log/detector.log 2>&1 &
+python3 src/uav_tracking/perception/detector_node.py --config config/detector.yaml > log/detector.log 2>&1 &
 DETECTOR_PID=$!
-python3 src/control/offboard_node.py > log/offboard.log 2>&1 &
+python3 src/uav_tracking/control/offboard_node.py > log/offboard.log 2>&1 &
 OFFBOARD_PID=$!
 
 cleanup() {

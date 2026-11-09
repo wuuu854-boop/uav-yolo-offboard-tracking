@@ -46,7 +46,7 @@ sim: install-world ## launch Gazebo + PX4 SITL with the target world
 	cd $(PX4_DIR) && PX4_GZ_WORLD=$(WORLD) PX4_GZ_MODEL_POSE=$(POSE) make px4_sitl $(PX4_MODEL)
 
 detect: ## run the detection node only
-	$(PY) src/perception/detector_node.py --config config/detector.yaml
+	$(PY) src/uav_tracking/perception/detector_node.py --config config/detector.yaml
 
 e2e: ## closed loop: takeoff -> detect -> approach -> hover -> land
 	bash scripts/run_e2e.sh
