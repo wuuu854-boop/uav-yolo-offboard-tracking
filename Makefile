@@ -37,9 +37,18 @@ check: ## everything CI runs, locally
 	$(PY) scripts/check_doc_claims.py
 	$(PY) -m pytest -q --cov=uav_tracking --cov-report=term-missing
 
-install-world: ## copy the target world into PX4's simulation tree
+install-world: ## copy the world and the nadir camera model where PX4 looks
 	@test -d "$(PX4_DIR)/Tools/simulation/gz/worlds" || { echo "PX4 gazebo tree not found at $(PX4_DIR); see sim/README.md"; exit 1; }
 	cp sim/worlds/$(WORLD).sdf "$(PX4_DIR)/Tools/simulation/gz/worlds/$(WORLD).sdf"
+	# PX4 v1.15's launcher runs `gz sim -r $(HOME)/.simulation-gazebo/worlds/$(WORLD).sdf`,
+	# so a world copied only into the source tree is never opened.
+	@mkdir -p "$(HOME)/.simulation-gazebo/worlds"
+	cp sim/worlds/$(WORLD).sdf "$(HOME)/.simulation-gazebo/worlds/$(WORLD).sdf"
+	@if [ ! -d "$(HOME)/.simulation-gazebo/models/x500_mono_cam_down" ]; then \
+	  mkdir -p "$(HOME)/.simulation-gazebo/models"; \
+	  cp -r sim/models/x500_mono_cam_down "$(HOME)/.simulation-gazebo/models/"; \
+	  echo "installed the fallback nadir camera model"; \
+	fi
 	@echo "installed $(WORLD).sdf"
 
 sim: install-world ## launch Gazebo + PX4 SITL with the target world

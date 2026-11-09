@@ -118,6 +118,10 @@ require_topic() {
 }
 
 echo "== checking topics =="
+# A stale ROS daemon makes `ros2 topic list` print nothing even though the
+# topics exist, which reads as "the simulation is not running". Restart it.
+ros2 daemon stop >/dev/null 2>&1 || true
+sleep 1
 require_topic "/camera/image_raw"
 require_topic "/fmu/out/vehicle_odometry"
 
