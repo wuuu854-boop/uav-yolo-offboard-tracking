@@ -48,6 +48,7 @@ from uav_tracking.control.frames import (  # noqa: E402
 )
 from uav_tracking.control.limiter import limited_step  # noqa: E402
 from uav_tracking.control.recorder import MissionRecorder  # noqa: E402
+from uav_tracking.control.search import SearchPattern, lawnmower  # noqa: E402
 from uav_tracking.control.selection import STRATEGIES, select_target  # noqa: E402
 from uav_tracking.control.state_machine import (  # noqa: E402
     MissionConfig,
@@ -110,6 +111,7 @@ class OffboardNode(Node):
         self.latest_detections: TargetArray | None = None
         self.latest_detection_s: float | None = None
         self.last_pixel: tuple[float, float] | None = None
+        self.search: SearchPattern | None = None
         self.update_count = 0
 
         self.arming = ArmingSequencer()
@@ -272,10 +274,40 @@ class OffboardNode(Node):
             self._move_towards(self.east, self.north, self.cfg.takeoff_altitude_m)
         elif decision.command == "goto" and target is not None:
             self._move_towards(target[0], target[1], self.cfg.takeoff_altitude_m)
+        elif decision.command == "search":
+            self._fly_search_pattern()
         elif decision.command == "land":
             self._move_towards(self.east, self.north, max(self.altitude - 0.3, 0.0))
 
+        if decision.command != "search":
+            # Leaving the search drops the pattern, so a later loss starts a new
+            # sweep from wherever the vehicle is then.
+            self.search = None
+
         self._publish_setpoint()
+
+    def _fly_search_pattern(self) -> None:
+        """Cover the area around the point where the target was last seen."""
+        if self.search is None:
+            self.search = SearchPattern(
+                lawnmower(
+                    centre=(self.east, self.north),
+                    width_m=self.cfg.search_area_m,
+                    height_m=self.cfg.search_area_m,
+                    spacing_m=self.cfg.search_spacing_m,
+                ),
+                tolerance_m=self.cfg.reach_tolerance_m,
+            )
+            self.get_logger().info(f"searching: {len(self.search.waypoints)} waypoints")
+
+        waypoint = self.search.update((self.east, self.north))
+        if waypoint is None:
+            # Pattern exhausted without a detection: hold position rather than
+            # wander. Landing here would be a decision the operator did not ask
+            # for; the state machine stays in SEARCH until the target returns.
+            self._move_towards(self.east, self.north, self.cfg.takeoff_altitude_m)
+            return
+        self._move_towards(waypoint[0], waypoint[1], self.cfg.takeoff_altitude_m)
 
     def _move_towards(self, east: float, north: float, altitude: float) -> None:
         """Rate-limited setpoint move, honouring ``max_speed_mps`` in any direction.
@@ -381,6 +413,9 @@ def main() -> int:
         land_after_hover=mission_raw.get("land_after_hover", True),
         control_rate_hz=mission_raw.get("control_rate_hz", 50.0),
         target_selection=mission_raw.get("target_selection", "nearest_centre"),
+        search_after_s=mission_raw.get("search_after_s", 8.0),
+        search_area_m=mission_raw.get("search_area_m", 20.0),
+        search_spacing_m=mission_raw.get("search_spacing_m", 8.9),
     )
 
     rclpy.init()

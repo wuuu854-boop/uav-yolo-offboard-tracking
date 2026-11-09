@@ -122,3 +122,39 @@ def test_an_in_flight_disarm_during_goto_does_not_keep_flying():
     assert sm.step(Observation(4.0, 5.0, armed=True, distance_to_target_m=4.0)).command == "goto"
 
     assert sm.step(Observation(5.0, 5.0, armed=False)).state is State.IDLE
+
+
+def test_a_long_target_loss_starts_a_search():
+    sm = MissionStateMachine(MissionConfig(target_loss_hover_s=1.0, search_after_s=2.0))
+    _arm_and_take_off(sm)
+    sm.step(Observation(3.0, 5.0, armed=True))
+
+    sm.step(Observation(4.0, 5.0, armed=True, distance_to_target_m=4.0))
+    sm.step(Observation(5.1, 5.0, armed=True, distance_to_target_m=None))
+    # lost for 1.1 s -> hover starts here (t=6.2)
+    assert (
+        sm.step(Observation(6.2, 5.0, armed=True, distance_to_target_m=None)).state is State.HOVER
+    )
+    # 1.9 s of hovering is not enough
+    assert (
+        sm.step(Observation(8.1, 5.0, armed=True, distance_to_target_m=None)).state is State.HOVER
+    )
+
+    decision = sm.step(Observation(8.4, 5.0, armed=True, distance_to_target_m=None))
+    assert decision.state is State.SEARCH
+    assert decision.command == "search"
+
+
+def test_finding_the_target_during_the_search_resumes_the_approach():
+    sm = MissionStateMachine(MissionConfig(target_loss_hover_s=1.0, search_after_s=2.0))
+    _arm_and_take_off(sm)
+    sm.step(Observation(3.0, 5.0, armed=True))
+    sm.step(Observation(4.0, 5.0, armed=True, distance_to_target_m=4.0))
+    sm.step(Observation(5.1, 5.0, armed=True, distance_to_target_m=None))
+    sm.step(Observation(6.2, 5.0, armed=True, distance_to_target_m=None))
+    sm.step(Observation(8.4, 5.0, armed=True, distance_to_target_m=None))
+    assert sm.state is State.SEARCH
+
+    decision = sm.step(Observation(9.0, 5.0, armed=True, distance_to_target_m=3.0))
+    assert decision.state is State.GOTO
+    assert decision.note == "target reacquired during search"

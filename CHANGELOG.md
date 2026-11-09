@@ -8,6 +8,9 @@ Notable changes to this project. The format follows
 
 ### Added
 
+- `control/search.py`: a lawnmower pattern and a walker for it. When the target
+  stays lost for `search_after_s` the mission sweeps the area around the last
+  sighting instead of hovering forever, and resumes the approach on reacquisition.
 - `scripts/doctor.py`: six environment checks with a fix hint per failure, and a
   `--static` mode that runs in CI without ROS.
 - `scripts/benchmark.py`: the only code allowed to turn

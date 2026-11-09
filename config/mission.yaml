@@ -18,3 +18,10 @@ control_rate_hz: 50
 #   nearest_previous  - closest to the last selected box (tracks one object)
 #   highest_confidence - the obvious choice, and often a distant edge object
 target_selection: nearest_centre
+
+# When the target has been lost for this long after hovering, sweep the area
+# around the last known position instead of hovering forever. Lane spacing below
+# is coverage_spacing(11.9 m footprint, 0.25 overlap) from docs/scenario.md.
+search_after_s: 8.0
+search_area_m: 20.0
+search_spacing_m: 8.9

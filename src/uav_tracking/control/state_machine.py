@@ -18,6 +18,7 @@ class State(str, Enum):
     TAKEOFF = "TAKEOFF"
     GOTO = "GOTO"
     HOVER = "HOVER"
+    SEARCH = "SEARCH"
     LAND = "LAND"
 
 
@@ -34,6 +35,13 @@ class MissionConfig:
     land_after_hover: bool = True
     control_rate_hz: float = 50.0
     target_selection: str = "nearest_centre"
+
+    # A lost target hovers first, then searches. Searching immediately would
+    # abandon the mission on a single missed frame; hovering forever gives up on
+    # finding it at all.
+    search_after_s: float = 8.0
+    search_area_m: float = 20.0
+    search_spacing_m: float = 8.9
 
 
 @dataclass(frozen=True)
@@ -116,11 +124,23 @@ class MissionStateMachine:
                 self.state = State.GOTO
                 self._lost_since_s = None
                 return Decision(self.state, "goto", "target reacquired")
+            if self._hover_reason == "target_lost":
+                waited = obs.now_s - self._hover_started_s
+                if waited >= self.cfg.search_after_s:
+                    self.state = State.SEARCH
+                    return Decision(self.state, "search", "target lost, searching")
             if self._hover_reason == "arrived" and self.cfg.land_after_hover:
                 if obs.now_s - self._hover_started_s >= self.cfg.hover_duration_s:
                     self.state = State.LAND
                     return Decision(self.state, "land", "hover complete")
             return Decision(self.state, "hover", self._hover_reason)
+
+        if self.state is State.SEARCH:
+            if obs.distance_to_target_m is not None:
+                self.state = State.GOTO
+                self._lost_since_s = None
+                return Decision(self.state, "goto", "target reacquired during search")
+            return Decision(self.state, "search", "")
 
         # State.LAND
         if obs.altitude_m <= 0.2 or not obs.armed:
