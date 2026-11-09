@@ -206,7 +206,7 @@ source_ros() {
 
 require_ok() {
   if ! confirm "$1"; then
-    warn "stopped. Fix it and re-run; completed stages are skipped automatically."
+    printf '  %s✗ stopped.%s Fix it and re-run; completed stages are skipped automatically.\n' "$RED" "$RESET"
     exit 1
   fi
 }
@@ -273,8 +273,7 @@ else
     sudo add-apt-repository -y universe
     sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
       -o /usr/share/keyrings/ros-archive-keyring.gpg
-    # shellcheck disable=SC1091
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo "${UBUNTU_CODENAME:-jammy}") main" \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" \
       | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
     sudo apt-get update
     sudo apt-get install -y \
@@ -444,7 +443,9 @@ stage "Install the world and check everything"
 if [[ -d "$PX4_DIR/.git" && -d "$REPO_DIR/.git" ]]; then
   if confirm "Copy the target world into PX4 and run the environment checks?"; then
     ( cd "$REPO_DIR" && PX4_DIR="$PX4_DIR" make install-world )
-    ( cd "$REPO_DIR" && PX4_DIR="$PX4_DIR" make doctor || true )
+    # doctor reports problems and exits non-zero; that is information, not a
+    # reason to abort the wizard.
+    ( cd "$REPO_DIR" && PX4_DIR="$PX4_DIR" make doctor ) || true
   fi
 fi
 
