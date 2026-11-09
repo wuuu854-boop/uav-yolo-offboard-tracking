@@ -22,7 +22,6 @@ import sys
 import time
 from pathlib import Path
 
-import cv2
 import numpy as np
 import onnxruntime as ort
 import yaml
@@ -37,27 +36,18 @@ from rclpy.qos import qos_profile_sensor_data  # noqa: E402
 from sensor_msgs.msg import Image  # noqa: E402
 
 from src.perception.color_baseline import detect_color_centroid  # noqa: E402
+from src.perception.yolo import decode, letterbox  # noqa: E402
 from uav_interfaces.msg import Target, TargetArray  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def letterbox(
-    image: np.ndarray, size: int, colour: int = 114
-) -> tuple[np.ndarray, float, int, int]:
-    """Resize keeping aspect ratio and pad to a square. Returns (canvas, scale, left, top)."""
-    height, width = image.shape[:2]
-    scale = min(size / height, size / width)
-    new_w, new_h = int(round(width * scale)), int(round(height * scale))
-    resized = cv2.resize(image, (new_w, new_h), interpolation=cv2.INTER_LINEAR)
-    canvas = np.full((size, size, 3), colour, dtype=np.uint8)
-    top, left = (size - new_h) // 2, (size - new_w) // 2
-    canvas[top : top + new_h, left : left + new_w] = resized
-    return canvas, scale, left, top
-
-
 class YoloOnnxDetector:
-    """Minimal ONNX Runtime wrapper for a YOLO11 detection export (no NMS in the graph)."""
+    """Minimal ONNX Runtime wrapper for a YOLO11 detection export (no NMS in the graph).
+
+    Decoding lives in ``src/perception/yolo.py`` so the geometry can be tested
+    without a model file.
+    """
 
     def __init__(
         self,
@@ -79,57 +69,23 @@ class YoloOnnxDetector:
         self.input_size = int(input_size)
         self.conf_threshold = float(conf_threshold)
         self.iou_threshold = float(iou_threshold)
-        self.classes = np.asarray(classes, dtype=int)
+        self.classes = tuple(int(value) for value in classes)
         self.max_detections = int(max_detections)
 
     def infer(self, frame_bgr: np.ndarray) -> list[dict]:
         canvas, scale, left, top = letterbox(frame_bgr, self.input_size)
         blob = canvas[:, :, ::-1].transpose(2, 0, 1)[None].astype(np.float32) / 255.0
         outputs = self.session.run(None, {self.input_name: np.ascontiguousarray(blob)})[0]
-        return self._postprocess(outputs, scale, left, top)
-
-    def _postprocess(self, output: np.ndarray, scale: float, left: int, top: int) -> list[dict]:
-        prediction = np.squeeze(output, axis=0)
-        if prediction.shape[0] < prediction.shape[1]:  # (84, 8400) -> (8400, 84)
-            prediction = prediction.T
-
-        boxes_xywh = prediction[:, :4]
-        scores_per_class = prediction[:, 4:]
-        scores = scores_per_class[:, self.classes].max(axis=1)
-        keep = scores >= self.conf_threshold
-        if not np.any(keep):
-            return []
-
-        boxes_xywh = boxes_xywh[keep]
-        scores = scores[keep]
-
-        cx, cy, w, h = boxes_xywh.T
-        x1 = (cx - w / 2.0 - left) / scale
-        y1 = (cy - h / 2.0 - top) / scale
-        width = w / scale
-        height = h / scale
-
-        # cv2.dnn.NMSBoxes expects [x, y, w, h] in the original image scale.
-        nms_input = np.stack([x1, y1, width, height], axis=1).tolist()
-        indices = cv2.dnn.NMSBoxes(
-            nms_input, scores.tolist(), self.conf_threshold, self.iou_threshold
+        return decode(
+            outputs,
+            scale=scale,
+            left=left,
+            top=top,
+            conf_threshold=self.conf_threshold,
+            iou_threshold=self.iou_threshold,
+            classes=self.classes,
+            max_detections=self.max_detections,
         )
-
-        detections: list[dict] = []
-        for index in np.array(indices).flatten()[: self.max_detections]:
-            bx, by, bw, bh = nms_input[int(index)]
-            detections.append(
-                {
-                    "label": "target",
-                    "confidence": float(scores[int(index)]),
-                    "bbox_cx": float(bx + bw / 2.0),
-                    "bbox_cy": float(by + bh / 2.0),
-                    "bbox_w": float(bw),
-                    "bbox_h": float(bh),
-                }
-            )
-        detections.sort(key=lambda d: d["confidence"], reverse=True)
-        return detections
 
 
 class DetectorNode(Node):

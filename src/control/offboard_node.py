@@ -43,6 +43,7 @@ from src.control.frames import (  # noqa: E402
     ned_position_to_enu,
     quaternion_to_heading_ned,
 )
+from src.control.limiter import limited_step  # noqa: E402
 from src.control.recorder import MissionRecorder  # noqa: E402
 from src.control.state_machine import (  # noqa: E402
     MissionConfig,
@@ -225,11 +226,12 @@ class OffboardNode(Node):
         self._publish_setpoint()
 
     def _move_towards(self, east: float, north: float, altitude: float) -> None:
-        """Rate-limited setpoint move, honouring ``max_speed_mps``."""
+        """Rate-limited setpoint move, honouring ``max_speed_mps`` in any direction."""
         step = self.cfg.max_speed_mps * self.dt
-        self.setpoint_east += float(np.clip(east - self.setpoint_east, -step, step))
-        self.setpoint_north += float(np.clip(north - self.setpoint_north, -step, step))
-        self.setpoint_alt += float(np.clip(altitude - self.setpoint_alt, -step, step))
+        self.setpoint_east, self.setpoint_north = limited_step(
+            (self.setpoint_east, self.setpoint_north), (east, north), step
+        )
+        (self.setpoint_alt,) = limited_step((self.setpoint_alt,), (altitude,), step)
 
     def _publish_setpoint(self) -> None:
         timestamp = int(self.get_clock().now().nanoseconds / 1000)
