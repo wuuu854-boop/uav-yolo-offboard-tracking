@@ -8,6 +8,9 @@ Notable changes to this project. The format follows
 
 ### Added
 
+- `control/trace.py`: one row per mission state change in
+  `results/state_trace.csv`, so a failed trial can be explained rather than
+  guessed at (state, reason, position, altitude).
 - `control/selection.py`: a `tracked` strategy that follows the `track_id` the
   mission locked onto, falling back to `nearest_centre` when that object is gone.
   The lock is released when the target is lost, so a new sighting can be picked.
