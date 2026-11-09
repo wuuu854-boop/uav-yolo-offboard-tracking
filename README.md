@@ -1,6 +1,7 @@
 # uav-yolo-offboard-tracking
 
 [![CI](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ci.yml/badge.svg)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ci.yml)
+[![ROS build](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ros.yml/badge.svg)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ros.yml)
 [![Release](https://img.shields.io/github/v/release/wuuu854-boop/uav-yolo-offboard-tracking?include_prereleases&sort=semver)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
@@ -30,6 +31,19 @@ Hardware: <!-- TODO: CPU 型号 / 内存 / 有无 GPU，例如 Intel i5-1240P, 1
 Source: [`results/detection_bench.csv`](results/detection_bench.csv) ·
 [`results/latency.csv`](results/latency.csv) ·
 [`results/landing_error.csv`](results/landing_error.csv)
+
+## What is verified, and what is not
+
+| Layer | Status | Evidence |
+|---|---|---|
+| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (85 tests) + `make demo` |
+| YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
+| ROS 2 packages build, both nodes import | ✅ verified in CI | `ROS build` workflow on `ros:humble` with `px4_msgs` |
+| Version matrix, world structure, camera intrinsics | ✅ checked | `make doctor`, `check_world_targets.py` in CI |
+| Closed loop in Gazebo SITL | ⬜ **not run yet** | `results/landing_error.csv` is empty |
+
+The last row is the only claim this repository does not yet support, and it is
+deliberately left empty rather than filled with an estimate.
 
 ## Stack
 

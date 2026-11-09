@@ -10,6 +10,13 @@ name: ROS build
 # up, so a red run never lands on main.
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - ".github/workflows/ros.yml"
   workflow_dispatch:
 
 jobs:
