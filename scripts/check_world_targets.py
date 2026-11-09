@@ -121,7 +121,7 @@ def main() -> int:
         print(f"\n{failures} problem(s). Fix the world or the YAML before running trials.")
         return 1
 
-    print(f"OK: {len(world)} targets agree, world structure matches PX4 conventions")
+    print(f"OK: {len(world)} targets agree, world structure is valid")
     return 0
 
 
