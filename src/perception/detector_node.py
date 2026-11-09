@@ -23,7 +23,6 @@ import time
 from pathlib import Path
 
 import numpy as np
-import onnxruntime as ort
 import yaml
 
 # Nodes are executed as scripts, so make the repository root importable.
@@ -36,56 +35,10 @@ from rclpy.qos import qos_profile_sensor_data  # noqa: E402
 from sensor_msgs.msg import Image  # noqa: E402
 
 from src.perception.color_baseline import detect_color_centroid  # noqa: E402
-from src.perception.yolo import decode, letterbox  # noqa: E402
+from src.perception.yolo import YoloOnnxDetector  # noqa: E402
 from uav_interfaces.msg import Target, TargetArray  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-
-
-class YoloOnnxDetector:
-    """Minimal ONNX Runtime wrapper for a YOLO11 detection export (no NMS in the graph).
-
-    Decoding lives in ``src/perception/yolo.py`` so the geometry can be tested
-    without a model file.
-    """
-
-    def __init__(
-        self,
-        model_path: Path,
-        input_size: int = 640,
-        conf_threshold: float = 0.35,
-        iou_threshold: float = 0.45,
-        classes: tuple[int, ...] = (0,),
-        max_detections: int = 10,
-    ) -> None:
-        if not model_path.exists():
-            raise FileNotFoundError(
-                f"model not found: {model_path}\n"
-                "Export it first with `python3 scripts/export_onnx.py` "
-                "and put the .onnx file under models/."
-            )
-        self.session = ort.InferenceSession(str(model_path), providers=["CPUExecutionProvider"])
-        self.input_name = self.session.get_inputs()[0].name
-        self.input_size = int(input_size)
-        self.conf_threshold = float(conf_threshold)
-        self.iou_threshold = float(iou_threshold)
-        self.classes = tuple(int(value) for value in classes)
-        self.max_detections = int(max_detections)
-
-    def infer(self, frame_bgr: np.ndarray) -> list[dict]:
-        canvas, scale, left, top = letterbox(frame_bgr, self.input_size)
-        blob = canvas[:, :, ::-1].transpose(2, 0, 1)[None].astype(np.float32) / 255.0
-        outputs = self.session.run(None, {self.input_name: np.ascontiguousarray(blob)})[0]
-        return decode(
-            outputs,
-            scale=scale,
-            left=left,
-            top=top,
-            conf_threshold=self.conf_threshold,
-            iou_threshold=self.iou_threshold,
-            classes=self.classes,
-            max_detections=self.max_detections,
-        )
 
 
 class DetectorNode(Node):

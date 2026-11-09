@@ -33,6 +33,7 @@ class MissionConfig:
     max_speed_mps: float = 1.0
     land_after_hover: bool = True
     control_rate_hz: float = 50.0
+    target_selection: str = "nearest_centre"
 
 
 @dataclass(frozen=True)

@@ -9,6 +9,7 @@ makes them testable at all.
 from __future__ import annotations
 
 from collections.abc import Sequence
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -115,3 +116,56 @@ def decode(
 
     detections.sort(key=lambda detection: detection["confidence"], reverse=True)
     return detections
+
+
+class YoloOnnxDetector:
+    """ONNX Runtime wrapper for a YOLO11 export (no NMS in the graph).
+
+    Lives here rather than in the node so the batch tooling
+    (``scripts/detect_images.py``) can use it without importing rclpy.
+    """
+
+    def __init__(
+        self,
+        model_path: Path,
+        input_size: int = 640,
+        conf_threshold: float = 0.35,
+        iou_threshold: float = 0.45,
+        classes: tuple[int, ...] = (0,),
+        max_detections: int = 10,
+    ) -> None:
+        model_path = Path(model_path)
+        if not model_path.exists():
+            raise FileNotFoundError(
+                f"model not found: {model_path}\n"
+                "Export it first with `python3 scripts/export_onnx.py` "
+                "and put the .onnx file under models/."
+            )
+        try:
+            import onnxruntime as ort  # noqa: PLC0415 - optional, keeps the module importable
+        except ImportError as exc:  # pragma: no cover - depends on the environment
+            raise ImportError(
+                "the yolo backend needs ONNX Runtime: pip install onnxruntime"
+            ) from exc
+        self.session = ort.InferenceSession(str(model_path), providers=["CPUExecutionProvider"])
+        self.input_name = self.session.get_inputs()[0].name
+        self.input_size = int(input_size)
+        self.conf_threshold = float(conf_threshold)
+        self.iou_threshold = float(iou_threshold)
+        self.classes = tuple(int(value) for value in classes)
+        self.max_detections = int(max_detections)
+
+    def infer(self, frame_bgr: np.ndarray) -> list[dict]:
+        canvas, scale, left, top = letterbox(frame_bgr, self.input_size)
+        blob = canvas[:, :, ::-1].transpose(2, 0, 1)[None].astype(np.float32) / 255.0
+        outputs = self.session.run(None, {self.input_name: np.ascontiguousarray(blob)})[0]
+        return decode(
+            outputs,
+            scale=scale,
+            left=left,
+            top=top,
+            conf_threshold=self.conf_threshold,
+            iou_threshold=self.iou_threshold,
+            classes=self.classes,
+            max_detections=self.max_detections,
+        )

@@ -36,7 +36,7 @@ Source: [`results/detection_bench.csv`](results/detection_bench.csv) ·
 
 | Layer | Status | Evidence |
 |---|---|---|
-| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (96 tests) + `make demo` |
+| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (110 tests) + `make demo` |
 | YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
 | ROS 2 packages build, both nodes import | ✅ verified in CI | `ROS build` workflow on `ros:humble` with `px4_msgs` |
 | Version matrix, world structure, camera intrinsics | ✅ checked | `make doctor`, `check_world_targets.py` in CI |
@@ -63,6 +63,10 @@ verification step — not a blog post, not folklore:
 | [07](skills/07-claim-to-csv.md) | Turning a run into a number you can defend |
 
 Index and rationale: [`skills/README.md`](skills/README.md).
+
+To point all of this at your own target, camera or scene, follow
+[`docs/adoption.md`](docs/adoption.md) — it lists what to change and the check
+that proves each change worked.
 
 ## Stack
 
@@ -139,7 +143,7 @@ make bench                     # results/landing_error.csv -> README 结果表
 
 ```
 src/perception/   YOLO ONNX 检测节点、像素→地面投影（纯函数，有单测）、颜色基线
-src/control/      NED↔ENU 帧转换、任务状态机（纯 Python，有单测）、Offboard 节点、实验记录器
+src/control/      NED↔ENU 帧转换、任务状态机（纯 Python，有单测）、Offboard 节点、目标选择、实验记录器
 src/uav_interfaces/  自定义 Target / TargetArray 消息
 sim/              Gazebo world（3 个已知坐标目标）与桥接 launch
 config/           相机内参、检测参数、任务参数、目标真值

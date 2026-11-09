@@ -14,9 +14,16 @@ Notable changes to this project. The format follows
   `results/landing_error.csv` into a claim.
 - `scripts/offline_demo.py` / `src/control/offline_sim.py`: runs the real
   projection and state machine without ROS or Gazebo, on any OS.
+- `scripts/detect_images.py`: batch evaluation of a folder of images with no ROS
+  and, for the baseline backend, no model.
+- `scripts/check_links.py`, `scripts/check_doc_claims.py`: fail CI when a
+  relative link moves or the test count quoted in the README drifts.
+- `src/control/selection.py`: `nearest_centre` (default), `nearest_previous` and
+  `highest_confidence` target selection, configurable per mission.
 - `scripts/publish.ps1`: creates the repository and pushes in one command.
-- `ROS build` workflow: builds `px4_msgs` + `uav_interfaces` in `ros:humble` and
-  imports both nodes.
+- `ROS build` workflow: builds `px4_msgs` + `uav_interfaces` in `ros:humble`,
+  imports both nodes and runs a node-level integration test.
+- `skills/`: seven debugging procedures distilled from this build.
 
 ### Changed
 

@@ -11,3 +11,10 @@ setpoint_jump_limit_m: 3.0    # reject targets that jump more than this between 
 land_after_hover: true
 
 control_rate_hz: 50
+
+# Which detection to follow when more than one is in the frame:
+#   nearest_centre    - closest to the image centre (default; the vehicle is
+#                       usually already pointed at what it should approach)
+#   nearest_previous  - closest to the last selected box (tracks one object)
+#   highest_confidence - the obvious choice, and often a distant edge object
+target_selection: nearest_centre

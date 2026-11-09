@@ -45,6 +45,7 @@ from src.control.frames import (  # noqa: E402
 )
 from src.control.limiter import limited_step  # noqa: E402
 from src.control.recorder import MissionRecorder  # noqa: E402
+from src.control.selection import select_target  # noqa: E402
 from src.control.state_machine import (  # noqa: E402
     MissionConfig,
     MissionStateMachine,
@@ -98,6 +99,7 @@ class OffboardNode(Node):
 
         self.latest_detections: TargetArray | None = None
         self.latest_detection_s: float | None = None
+        self.last_pixel: tuple[float, float] | None = None
         self.update_count = 0
 
         self.offboard_mode_requested = False
@@ -145,18 +147,37 @@ class OffboardNode(Node):
 
     # ------------------------------------------------------------- perception
     def _project_best_detection(self) -> tuple[float, float] | None:
-        """Best detection -> filtered world ENU position, or None."""
+        """Selected detection -> filtered world ENU position, or None."""
         if not self.latest_detections or not self.latest_detections.targets:
             self.target_filter.update(None)
             return None
 
-        newest = max(self.latest_detections.targets, key=lambda t: t.confidence)
+        message = self.latest_detections
+        first = message.targets[0]
+        chosen = select_target(
+            [
+                {
+                    "confidence": target.confidence,
+                    "bbox_cx": target.bbox_cx,
+                    "bbox_cy": target.bbox_cy,
+                }
+                for target in message.targets
+            ],
+            strategy=self.cfg.target_selection,
+            image_size=(int(first.image_width), int(first.image_height)),
+            previous=self.last_pixel,
+        )
+        if chosen is None:
+            self.target_filter.update(None)
+            return None
+
+        self.last_pixel = (chosen["bbox_cx"], chosen["bbox_cy"])
         height = max(self.altitude, 0.3)  # guard against a zero/negative altitude sample
 
         east, north, _ = estimate_target_enu(
             (self.east, self.north),
-            newest.bbox_cx,
-            newest.bbox_cy,
+            chosen["bbox_cx"],
+            chosen["bbox_cy"],
             height,
             self.K,
             yaw=self.yaw,
@@ -313,6 +334,7 @@ def main() -> int:
         max_speed_mps=mission_raw.get("max_speed_mps", 1.0),
         land_after_hover=mission_raw.get("land_after_hover", True),
         control_rate_hz=mission_raw.get("control_rate_hz", 50.0),
+        target_selection=mission_raw.get("target_selection", "nearest_centre"),
     )
 
     rclpy.init()
