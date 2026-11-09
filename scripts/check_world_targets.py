@@ -61,7 +61,9 @@ def structure_problems(path: Path) -> list[str]:
     declared = [plugin.get("filename", "") for plugin in world.iter("plugin")]
     for filename, consequence in required.items():
         if not any(filename in name for name in declared):
-            problems.append(f"missing <plugin ... {filename}>: without it there is no {consequence}")
+            problems.append(
+                f"missing <plugin ... {filename}>: without it there is no {consequence}"
+            )
 
     duplicates = {name for name in declared if declared.count(name) > 1}
     if duplicates:
