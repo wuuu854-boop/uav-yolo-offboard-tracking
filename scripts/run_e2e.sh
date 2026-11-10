@@ -108,13 +108,22 @@ mkdir -p log
 touch "$RESULTS"
 
 require_topic() {
-  if ! ros2 topic list 2>/dev/null | grep -qx "$1"; then
-    echo "ERROR: topic $1 not found." >&2
-    echo "  Is the simulation running?  make sim" >&2
-    echo "  Visible topics:" >&2
-    ros2 topic list 2>/dev/null | sed 's/^/    /' | head -20 >&2
-    exit 1
-  fi
+  # Discovery right after a daemon restart is not instant: retry for ~10 s
+  # before declaring the simulation missing.
+  local topic="$1" tries=0
+  while (( tries < 5 )); do
+    if ros2 topic list 2>/dev/null | grep -qx "$topic"; then
+      return 0
+    fi
+    sleep 2
+    tries=$((tries + 1))
+  done
+
+  echo "ERROR: topic $topic not found after 10 s." >&2
+  echo "  Is the simulation running?  make sim" >&2
+  echo "  Visible topics:" >&2
+  ros2 topic list 2>/dev/null | sed 's/^/    /' | head -20 >&2
+  exit 1
 }
 
 echo "== checking topics =="
