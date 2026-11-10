@@ -125,11 +125,17 @@ def main() -> int:
         detect = _yolo_detector(Path(args.model), args.imgsz)
 
     rows = evaluate(images, detect)
-    out = REPO_ROOT / args.out
+    out = Path(args.out)
+    if not out.is_absolute():
+        out = REPO_ROOT / out
     write_csv(out, rows)
 
     print(summarise(rows))
-    print(f"written: {out.relative_to(REPO_ROOT)}")
+    try:
+        shown = out.relative_to(REPO_ROOT)
+    except ValueError:
+        shown = out  # --out may point outside the repository on purpose
+    print(f"written: {shown}")
     return 0
 
 
@@ -162,7 +168,9 @@ def _baseline_detector() -> Callable[[np.ndarray], list[dict]]:
 
 
 def _yolo_detector(model_path: Path, imgsz: int = 640) -> Callable[[np.ndarray], list[dict]]:
-    from uav_tracking.perception.detector_node import YoloOnnxDetector  # noqa: PLC0415 - optional dependency
+    # From yolo.py, not detector_node.py: the node module imports rclpy, and this
+    # tool is meant to run without ROS.
+    from uav_tracking.perception.yolo import YoloOnnxDetector  # noqa: PLC0415 - optional dependency
 
     detector = YoloOnnxDetector(
         model_path if model_path.is_absolute() else REPO_ROOT / model_path,
