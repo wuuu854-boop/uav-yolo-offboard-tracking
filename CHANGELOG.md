@@ -7,6 +7,15 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `scripts/qa_report.py` takes the asset position as an input (`--asset`) and
+  reports detection coverage per flight phase; a moved target no longer reads as
+  a broken projection, and takeoff frames no longer drag the average down. The
+  metrics run end to end on a generated capture in `tests/test_qa_capture.py`,
+  so a change in the detector or the projection fails a test.
+- `make qa CAPTURE=<dir>` wraps the report.
+
 ## [0.6.0] - 2026-11-10
 
 ### Added
