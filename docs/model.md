@@ -122,11 +122,34 @@ wandering (`results/v03_yolo_trials.csv`).
 | 3 | 2.278 m | 160 ms |
 
 All three miss the 1.5 m tolerance in the same direction by about the same
-amount, which is the signature of a systematic offset rather than noise: the
-YOLO estimate is consistently ~2.2 m from where the baseline's estimate puts the
-same cube. That is a solvable bug, not a modelling gap — the next step is to
-record one hover at a known pose, run both backends on the same frames, and
-compare their projected ground points.
+amount, which is the signature of a systematic offset rather than noise.
+
+## The controlled comparison
+
+Separate flights cannot say where the offset comes from: the two backends saw
+different frames. `scripts/capture_pose_frames.py` records the camera frame and
+the odometry together during one trial (`CAPTURE_DIR=... bash
+scripts/run_trials.sh`), and `scripts/compare_backends.py` runs both backends on
+each recorded frame and projects their boxes with the recorded pose.
+
+30 frames had a detection from both (`results/backend_comparison.txt`):
+
+| Quantity | Value |
+|---|---|
+| Mean delta, YOLO − baseline | **(+0.49, +0.35) m** |
+| Std of that delta | (0.11, 0.20) m |
+| Per-frame baseline error | 0.3–4.8 m, tracking the approach |
+
+So the per-frame projection differs by about 0.6 m, consistently, in one
+direction — the YOLO box centre sits slightly off the cube's centre, which is
+what a box that also covers part of the shadow looks like.
+
+That is **not** the 2.2 m the trials land with. The per-frame bias is real but too
+small: the trial error must come from the closed loop, most likely the last
+metres of the approach, where the cube is large or partly out of frame and the
+only box left is not the cube. The next experiment is therefore narrow: record
+the final ten frames of a YOLO trial and look at what is detected in them, rather
+than retraining again.
 
 **The measured closed loop therefore remains the colour baseline.** The YOLO row
 stays out of the results table until it can match it, and `results/v03_yolo_trials.csv`
