@@ -56,19 +56,17 @@ makes the table trustworthy:
 - What is left (0.50–1.28 m) is detection latency and the 1.0 m reach tolerance,
   not a systematic offset — the p95 is 1.14 m.
 
-The YOLO row is deliberately absent: no ONNX model has matched the baseline
-**yet**. A model was trained for this scene ([`docs/model.md`](docs/model.md):
-0.98 mAP@50 on held-out synthetic data, 100/100 detections in the batch tool),
-and a channel-order decoding bug that made it unusable was found and fixed. The
-first three trials with it wandered off; after hard negatives harvested from real
-Gazebo frames seven further trials landed, two within tolerance. A controlled
-comparison — both backends on the same recorded frames and poses — showed the
-per-frame projection difference is a stable 0.6 m, and the remaining swing was a
-level-camera assumption: 10° of pitch at 5 m is 0.88 m of ground error. The
-projection now compensates roll and pitch, and three trials per backend followed
-(`results/v04_attitude.csv`): baseline 0.86/1.00/0.66 m, YOLO 0.64/1.57/1.49 m.
-The 2.2 m failure mode is gone, but YOLO's 0.6 m head start keeps it at the edge
-of tolerance, so the measured loop stays on the colour baseline.
+The YOLO row is deliberately absent. A model was trained for this scene
+([`docs/model.md`](docs/model.md): 0.98 mAP@50 held out, tight boxes on the
+synthetic set and on the demo GIF), a channel-order decoding bug that made it
+unusable was found and fixed, and hard negatives harvested from real Gazebo
+frames fixed the wandering. The projection now compensates roll and pitch, which
+removed a metre-scale error both backends shared. But printing the raw boxes on
+live frames settled the question: the model predicts boxes **half the frame wide**
+for a 54 px cube — it detects the region, not the object. The centre is close
+enough that the loop still lands (0.64/1.57/1.49 m in three trials), and that is
+exactly why the row stays out: the loop works for a reason the detector does not
+deserve. The measured loop is the colour baseline.
 
 **Version provenance.** The table is the nine-trial set measured with **v0.1.0**.
 v0.2.0 changes safety behaviour only — a geofence, a mission timeout and a

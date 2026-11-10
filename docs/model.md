@@ -217,6 +217,39 @@ measured, fixed, and re-measured.**
 stays out of the results table until it can match it, and `results/v03_yolo_trials.csv`
 is committed so the claim can be checked rather than trusted.
 
+## The boxes are the problem
+
+The 0.6 m difference was measured through `bbox_cx`/`bbox_cy`, which hides what
+the boxes actually look like. Printing the raw pixels tells a blunter story
+(`results/yolo_pixel_boxes.txt`, 1280×960 frames, cube ≈ 54 px):
+
+| Frame | Baseline (u, v) | YOLO (u, v) | YOLO w × h |
+|---|---|---|---|
+| 0048 | 661, 51 | 704, 17 | **436 × 115** |
+| 0057 | 638, 169 | 690, 130 | **450 × 207** |
+| 0063 | 732, 189 | 803, 139 | **464 × 236** |
+| 0066 | 741, 467 | 805, 405 | **463 × 493** |
+| 0069 | 490, 585 | 523, 512 | **490 × 535** |
+
+The model predicts boxes half the frame wide for a 54 px cube. The centre lands
+near the cube, which is why the closed loop still flew — the projection only uses
+the centre — but the box is worthless for anything else, and the centre wanders
+with the box.
+
+Both models do this (round one and round two, at 320 and at 640), so it is not
+the hard negatives and not the export size. It is domain shift: the same model
+returns tight, confident boxes on the synthetic validation set (mAP@50 0.98) and
+on the 640×480 demo GIF, and inflated boxes on the live 1280×960 stream.
+
+## What this does not change
+
+The attitude fix above is real and measured independently: the baseline's three
+trials are unchanged and the YOLO tail improved. What it does change is the
+interpretation — the YOLO backend is not "0.6 m biased", it is "detecting the
+region rather than the object". The honest summary is that the YOLO row stays out
+of the table, and the next step is real-domain supervision: labelled frames from
+the simulator, not another synthetic retrain.
+
 ## Reproduce
 
 ```bash
