@@ -27,7 +27,7 @@ jobs:
   assets:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: World file is valid XML
         run: python3 -c "import xml.etree.ElementTree as ET; ET.parse('sim/worlds/target_tracking.sdf')"
