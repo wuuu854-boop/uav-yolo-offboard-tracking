@@ -19,9 +19,13 @@ max_detections: 10
 publish_rate_hz: 5
 
 # Colour-threshold baseline (drives the mission when backend: baseline).
-# Range 1 covers hue 0..10, range 2 covers 170..180: red wraps around the end of
-# the OpenCV hue scale, so one range would only see half the cube's pixels.
+# The world has one red, one green and one blue target, and the mission is told
+# which one to approach by spawning next to it, so the detector accepts any of
+# the three. Red needs two ranges because hue wraps at 180; one range would see
+# only half the cube's pixels.
 baseline_hsv_ranges:
-  - [[0, 120, 70], [10, 255, 255]]
-  - [[170, 120, 70], [180, 255, 255]]
+  - [[0, 120, 70], [10, 255, 255]]      # red, lower half of the wrap
+  - [[170, 120, 70], [180, 255, 255]]   # red, upper half
+  - [[40, 120, 60], [85, 255, 255]]     # green target
+  - [[100, 120, 60], [140, 255, 255]]   # blue target
 baseline_min_area_px: 150
