@@ -28,6 +28,9 @@ Notable changes to this project. The format follows
 
 ### Changed
 
+- `main` is protected: `test` and `docker` must pass, the branch must be up to
+  date, history is linear (squash merges), and force pushes and deletions are
+  disabled. See `CONTRIBUTING.md` for how Dependabot PRs are triaged.
 - Runtime dependency is `opencv-python-headless`: the GUI wheel links `libGL`,
   which CI containers and headless SITL machines do not ship.
 - The Docker image installs only `python3-pip` (it had been pulling git, cmake

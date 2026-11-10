@@ -5,12 +5,29 @@ This is a small project, so the process is short.
 ## Before you open a PR
 
 ```bash
-make check      # lint, format, links, doc claims, unit tests
+make check      # lint, format, links, doc claims, dependencies, unit tests
 ```
 
 CI runs the same commands plus a ROS 2 build. A PR that changes `src/` also runs
 `ROS build`, which builds `px4_msgs` and `uav_interfaces` and executes the node
 against real messages.
+
+## How main is protected
+
+`main` requires the `test` and `docker` checks to pass and the branch to be up to
+date before merging, so the image is rebuilt for every change. History is linear:
+PRs are squashed, not merge-committed. Force pushes and branch deletion are
+disabled, which means a mistake stays visible in the history instead of
+disappearing from it.
+
+Dependabot PRs are triaged rather than merged blindly:
+
+- **Merged** when they bump an action or a range inside our pins.
+- **Closed** when they touch `requirements.lock.txt` line by line. The lock is
+  regenerated deliberately on the machine that runs the trials
+  (`docs/setup-log.md`); a bot edit to one line conflicts with that process. The
+  ranges it derives from live in `requirements.txt` and are kept equal to
+  `pyproject.toml` by `scripts/check_dependencies.py`.
 
 ## What is welcome
 
