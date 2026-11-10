@@ -9,6 +9,12 @@ Notable changes to this project. The format follows
 
 ### Added
 
+- **Motion model in the tracker.** `Track` carries a smoothed velocity and a
+  capped constant-velocity prediction; association scores the last box and the
+  predicted one, then falls back to nearest predicted centre within a gate, which
+  is what lets a target bootstrap its velocity. Seven tests cover a fast target
+  keeping its id, a missed frame, two crossing targets and the cap.
+  **Unit-tested only** — no moving target has been flown yet.
 - **Multi-target patrol.** `patrol_waypoints` in `config/mission.yaml` turns the
   mission into an ordered route: fly each local ENU waypoint, hover, land after
   the last. One SITL run with two waypoints 20 m apart visited both and landed
