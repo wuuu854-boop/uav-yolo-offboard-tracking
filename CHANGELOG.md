@@ -70,7 +70,7 @@ Notable changes to this project. The format follows
 
 ### Changed
 
-- Verified with three runs on the same targets: 0.92 m, 1.01 m and 1.49 m, all
+- Verified with three runs on the same targets: 0.94 m, 1.01 m and 1.49 m, all
   inside the 1.5 m tolerance (`results/v02_validation.csv`). The nine-row table
   in the README remains the v0.1.0 measurement; this release changes safety
   behaviour only.
