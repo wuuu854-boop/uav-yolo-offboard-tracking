@@ -301,9 +301,12 @@ class OffboardNode(Node):
 
         if decision.note == "next waypoint":
             self.patrol.advance()
-            self.get_logger().info(
-                f"patrol: waypoint {self.patrol.index} of {len(self.patrol.waypoints)}"
-            )
+            if self.patrol.done():
+                decision = self.state_machine.request_land("patrol complete")
+            else:
+                self.get_logger().info(
+                    f"patrol: waypoint {self.patrol.index} of {len(self.patrol.waypoints)}"
+                )
 
         if decision.state is State.LAND and self._previous_state is not State.LAND:
             row = self.recorder.finish_trial((self.east, self.north), notes=decision.note)

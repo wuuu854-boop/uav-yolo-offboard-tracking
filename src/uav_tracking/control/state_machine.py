@@ -109,6 +109,18 @@ class MissionStateMachine:
         self._confirm_count += 1
         return self._confirm_count >= self.cfg.confirm_frames
 
+    def request_land(self, note: str) -> Decision:
+        """Land now, whatever the current state.
+
+        A patrol that has visited its last waypoint must not go looking for a
+        detection: the first version did, and flew back to the target it started
+        from. Every other landing in this machine is earned by a hover; this one
+        is the caller saying the mission is over.
+        """
+        self.state = State.LAND
+        self._hover_reason = ""
+        return Decision(self.state, "land", note)
+
     def step(self, obs: Observation) -> Decision:
         if self.state is State.IDLE:
             if not obs.armed:

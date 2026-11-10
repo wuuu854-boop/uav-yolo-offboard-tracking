@@ -267,3 +267,26 @@ def test_without_a_pending_goal_the_same_hover_lands():
 
     assert decision.state is State.LAND
     assert decision.note == "hover complete"
+
+
+def test_a_patrol_can_end_the_mission_from_any_state():
+    sm = MissionStateMachine()
+    _arm_and_take_off(sm)
+    sm.step(Observation(3.0, 5.0, armed=True))
+    assert sm.state is State.GOTO
+
+    decision = sm.request_land("patrol complete")
+
+    assert decision.state is State.LAND
+    assert decision.command == "land"
+    assert sm.state is State.LAND
+
+
+def test_after_a_requested_landing_the_machine_keeps_descending():
+    sm = MissionStateMachine()
+    _arm_and_take_off(sm)
+    sm.request_land("patrol complete")
+
+    decision = sm.step(Observation(4.0, 0.1, armed=True))
+
+    assert decision.command == "land"
