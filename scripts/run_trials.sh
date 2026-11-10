@@ -60,6 +60,7 @@ stop_sim() {
   pkill -9 -f 'gz sim' 2>/dev/null || true
   pkill -9 -f 'bin/px4' 2>/dev/null || true
   pkill -9 -f gz_camera_bridge 2>/dev/null || true
+  pkill -9 -f capture_pose_frames 2>/dev/null || true
 }
 
 pkill -9 -f MicroXRCEAgent 2>/dev/null || true
@@ -93,6 +94,15 @@ for i in $(seq 1 "$COUNT"); do
       > "/tmp/bridge_t$i.log" 2>&1 < /dev/null &
   )
   sleep 6
+
+  if [[ -n "${CAPTURE_DIR:-}" ]]; then
+    (
+      cd "$REPO_ROOT" || exit 1
+      setsid nohup python3 scripts/capture_pose_frames.py --out "$CAPTURE_DIR" \
+        > "/tmp/capture_t$i.log" 2>&1 < /dev/null &
+    )
+    sleep 3
+  fi
 
   ( cd "$REPO_ROOT" && UAV_SPAWN_ENU="$SPAWN" timeout $((DURATION + 30)) \
       bash scripts/run_e2e.sh --duration "$DURATION" ) || echo "trial $i: no landing row"
