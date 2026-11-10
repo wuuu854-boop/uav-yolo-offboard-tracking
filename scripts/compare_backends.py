@@ -77,7 +77,9 @@ def main() -> int:
     yolo = YoloOnnxDetector(pathlib.Path(args.model), input_size=args.imgsz, classes=(0,))
     target = tuple(float(value) for value in args.target.split(","))
 
-    print(f"{'frame':>10} {'baseline err':>13} {'yolo err':>9} {'delta e':>8} {'delta n':>8}")
+    print(
+        f"{'frame':>10} {'alt':>6} {'drone e':>8} {'drone n':>8} {'base err':>9} {'yolo err':>9} {'delta e':>8} {'delta n':>8}"
+    )
     deltas = []
     for pose in poses:
         frame = cv2.imread(str(capture / pose["file"]))
@@ -98,7 +100,8 @@ def main() -> int:
         delta_east, delta_north = yolo_east - base_east, yolo_north - base_north
         deltas.append((delta_east, delta_north))
         print(
-            f"{pose['file']:>10} {base_err:13.2f} {yolo_err:9.2f} {delta_east:8.2f} {delta_north:8.2f}"
+            f"{pose['file']:>10} {pose['altitude']:6.2f} {pose['east']:8.2f} {pose['north']:8.2f}"
+            f" {base_err:9.2f} {yolo_err:9.2f} {delta_east:8.2f} {delta_north:8.2f}"
         )
 
     if deltas:
