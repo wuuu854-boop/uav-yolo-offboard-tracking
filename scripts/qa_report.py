@@ -165,7 +165,7 @@ def analyse_capture(
     }
 
 
-def _assets_from_args(assets: list[str], config_dir: pathlib.Path) -> list[tuple[float, float]]:
+def assets_from_args(assets: list[str], config_dir: pathlib.Path) -> list[tuple[float, float]]:
     if assets:
         return [tuple(float(value) for value in asset.split(",")) for asset in assets]
     mission = yaml.safe_load((config_dir / "mission.yaml").read_text(encoding="utf-8"))
@@ -191,7 +191,7 @@ def main() -> int:
     config_dir = pathlib.Path(args.config)
     camera = yaml.safe_load((config_dir / "camera.yaml").read_text(encoding="utf-8"))
     detector = yaml.safe_load((config_dir / "detector.yaml").read_text(encoding="utf-8"))
-    targets = _assets_from_args(args.asset, config_dir)
+    targets = assets_from_args(args.asset, config_dir)
     if any(len(target) != 2 for target in targets):
         print("each --asset needs two values: east,north")
         return 2

@@ -13,6 +13,7 @@ A view passes with enough good frames; an asset passes with all its views.
 from __future__ import annotations
 
 import argparse
+import json
 import pathlib
 import sys
 
@@ -32,50 +33,33 @@ from uav_tracking.perception.color_baseline import detect_color_centroid  # noqa
 from uav_tracking.perception.projection import estimate_target_enu  # noqa: E402
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--capture", required=True)
-    parser.add_argument("--sheet", default="config/shot_sheet.yaml")
-    parser.add_argument("--asset", action="append", default=[], metavar="EAST,NORTH")
-    args = parser.parse_args()
-
-    capture = pathlib.Path(args.capture)
+def analyse_shots(
+    capture: pathlib.Path,
+    sheet: dict,
+    camera: dict,
+    detector: dict,
+    targets: list[tuple[float, float]],
+) -> dict:
+    """Apply the shot sheet to a capture and return counts, rejections, verdict."""
     poses = [
-        yaml.safe_load(line)
+        json.loads(line)
         for line in (capture / "poses.jsonl").read_text(encoding="utf-8").splitlines()
         if line
     ]
     if not poses:
-        print("empty capture")
-        return 2
-
-    sheet = yaml.safe_load(pathlib.Path(args.sheet).read_text(encoding="utf-8"))
+        raise ValueError("empty capture")
     views = sheet.get("views", [])
     if not views:
-        print("shot sheet has no views")
-        return 2
+        raise ValueError("shot sheet has no views")
+    if not targets:
+        raise ValueError("at least one asset position is required")
 
-    camera = yaml.safe_load((REPO_ROOT / "config" / "camera.yaml").read_text(encoding="utf-8"))
-    detector = yaml.safe_load((REPO_ROOT / "config" / "detector.yaml").read_text(encoding="utf-8"))
     ranges = detector.get("baseline_hsv_ranges") or [
         [detector["baseline_hsv_lower"], detector["baseline_hsv_upper"]]
     ]
     lower = [tuple(item[0]) for item in ranges]
     upper = [tuple(item[1]) for item in ranges]
     min_area = int(detector.get("baseline_min_area_px", 150))
-
-    if args.asset:
-        targets = [tuple(float(value) for value in asset.split(",")) for asset in args.asset]
-    else:
-        mission = yaml.safe_load(
-            (REPO_ROOT / "config" / "mission.yaml").read_text(encoding="utf-8")
-        )
-        raw = yaml.safe_load((REPO_ROOT / "config" / "targets.yaml").read_text(encoding="utf-8"))[
-            "targets"
-        ]
-        spawn = mission.get("spawn_offset_enu", (0.0, 0.0))
-        targets = [(float(t["x"]) - float(spawn[0]), float(t["y"]) - float(spawn[1])) for t in raw]
-
     K = ((camera["fx"], 0.0, camera["cx"]), (0.0, camera["fy"], camera["cy"]), (0.0, 0.0, 1.0))
     offset = tuple(camera.get("mount_offset_xyz", (0.0, 0.0, 0.0)))
     up_is_forward = bool(camera.get("image_up_is_forward", True))
@@ -113,22 +97,59 @@ def main() -> int:
             observations.append((asset, view["name"], gsd, reasons))
 
     if not observations:
-        print("no detections in the capture")
-        return 1
+        raise ValueError("no detections in the capture")
 
     result = coverage(observations, views)
+    summary = {}
     for asset, per_view in sorted(result["counts"].items()):
-        status = "PASS" if result["passed"][asset] else "FAIL"
-        summary = ", ".join(
-            f"{view['name']} {per_view.get(view['name'], 0)}/{view['min_frames']}" for view in views
-        )
-        print(f"asset {asset}: {status}  ({summary})")
-        for reason, names in sorted(result["rejected"].get(asset, {}).items()):
-            print(f"  rejected: {reason} ({len(names)} frames)")
+        for view in views:
+            summary[f"asset{asset}.{view['name']}"] = per_view.get(view["name"], 0)
+    return {
+        "counts": {str(asset): per_view for asset, per_view in result["counts"].items()},
+        "rejected": {
+            str(asset): {reason: len(names) for reason, names in reasons.items()}
+            for asset, reasons in result["rejected"].items()
+        },
+        "passed": all(result["passed"].values()) if result["passed"] else False,
+        "summary": summary,
+    }
 
-    passed = result["passed"] and all(result["passed"].values())
-    print(f"verdict           {'PASS' if passed else 'FAIL'}")
-    return 0 if passed else 1
+
+def assets_from_args(assets: list[str], config_dir: pathlib.Path) -> list[tuple[float, float]]:
+    if assets:
+        return [tuple(float(value) for value in asset.split(",")) for asset in assets]
+    mission = yaml.safe_load((config_dir / "mission.yaml").read_text(encoding="utf-8"))
+    raw = yaml.safe_load((config_dir / "targets.yaml").read_text(encoding="utf-8"))["targets"]
+    spawn = mission.get("spawn_offset_enu", (0.0, 0.0))
+    return [(float(t["x"]) - float(spawn[0]), float(t["y"]) - float(spawn[1])) for t in raw]
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--capture", required=True)
+    parser.add_argument("--sheet", default="config/shot_sheet.yaml")
+    parser.add_argument("--asset", action="append", default=[], metavar="EAST,NORTH")
+    args = parser.parse_args()
+
+    config_dir = pathlib.Path("config")
+    camera = yaml.safe_load((config_dir / "camera.yaml").read_text(encoding="utf-8"))
+    detector = yaml.safe_load((config_dir / "detector.yaml").read_text(encoding="utf-8"))
+    sheet = yaml.safe_load(pathlib.Path(args.sheet).read_text(encoding="utf-8"))
+    targets = assets_from_args(args.asset, config_dir)
+
+    try:
+        result = analyse_shots(pathlib.Path(args.capture), sheet, camera, detector, targets)
+    except ValueError as error:
+        print(error)
+        return 2
+
+    for key, count in sorted(result["summary"].items()):
+        print(f"{key}: {count} frames")
+    for asset, reasons in sorted(result["rejected"].items()):
+        for reason, count in sorted(reasons.items()):
+            print(f"  asset {asset} rejected: {reason} ({count} frames)")
+    print(f"verdict           {'PASS' if result['passed'] else 'FAIL'}")
+    return 0 if result["passed"] else 1
 
 
 if __name__ == "__main__":
