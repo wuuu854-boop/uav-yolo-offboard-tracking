@@ -1,6 +1,12 @@
-﻿# Mission parameters. Every value here ends up in the report, so change them
+# Mission parameters. Every value here ends up in the report, so change them
 # consciously and record the change in docs/experiment-protocol.md.
 takeoff_altitude_m: 5.0
+
+# Where the vehicle spawns, in world ENU. PX4's local position starts at zero
+# there, so this is what turns the world-frame ground truth into the frame the
+# landing error is measured in. Keep it in sync with `make sim POSE=...`, or set
+# UAV_SPAWN_ENU="east,north" for the run.
+spawn_offset_enu: [-3.5, 0.0]
 reach_tolerance_m: 1.0
 max_speed_mps: 1.0
 hover_duration_s: 3.0

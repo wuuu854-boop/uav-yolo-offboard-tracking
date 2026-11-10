@@ -24,6 +24,24 @@ HEADER = [
 RAW_NAME = "latency_raw.csv"
 
 
+def localise_targets(
+    targets: dict[int, tuple[float, float]],
+    spawn_enu: tuple[float, float],
+) -> dict[int, tuple[float, float]]:
+    """Convert world-frame ground truth into PX4's local frame.
+
+    PX4's local position starts at zero where the vehicle spawned, not at the
+    world origin, so a target at world (0, 0) with a spawn at (-3.5, 0) is at
+    local (3.5, 0). Comparing a local position with world coordinates adds the
+    whole spawn offset to every error - which is exactly what the first four
+    trials measured.
+    """
+    return {
+        target_id: (east - spawn_enu[0], north - spawn_enu[1])
+        for target_id, (east, north) in targets.items()
+    }
+
+
 class MissionRecorder:
     """Collects latencies during a trial and writes one summary row on landing."""
 

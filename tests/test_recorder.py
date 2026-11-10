@@ -1,4 +1,4 @@
-"""Mission recorder: the CSV that the README numbers are quoted from."""
+﻿"""Mission recorder: the CSV that the README numbers are quoted from."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import csv
 
 import pytest
 
-from uav_tracking.control.recorder import MissionRecorder
+from uav_tracking.control.recorder import MissionRecorder, localise_targets
 
 GROUND_TRUTH = {0: (10.0, 0.0), 1: (0.0, 0.0)}
 
@@ -68,6 +68,20 @@ def test_missing_latency_is_written_as_empty_not_nan(tmp_path):
 def test_recorder_requires_ground_truth(tmp_path):
     with pytest.raises(ValueError):
         MissionRecorder(tmp_path / "x.csv", {})
+
+
+def test_ground_truth_is_shifted_into_the_local_frame():
+    world = {0: (0.0, 0.0), 1: (20.0, 0.0)}
+    local = localise_targets(world, (-3.5, 0.0))
+
+    # the vehicle spawned 3.5 m west of target 0, so target 0 is 3.5 m east of it
+    assert local[0] == pytest.approx((3.5, 0.0))
+    assert local[1] == pytest.approx((23.5, 0.0))
+
+
+def test_localising_with_no_spawn_offset_changes_nothing():
+    world = {0: (1.0, 2.0)}
+    assert localise_targets(world, (0.0, 0.0)) == world
 
 
 def test_latency_samples_are_kept_next_to_the_summary(tmp_path):

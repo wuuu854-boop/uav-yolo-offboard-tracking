@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import math
+import os
 import sys
 from pathlib import Path
 
@@ -47,7 +48,7 @@ from uav_tracking.control.frames import (  # noqa: E402
     quaternion_to_heading_ned,
 )
 from uav_tracking.control.limiter import limited_step  # noqa: E402
-from uav_tracking.control.recorder import MissionRecorder  # noqa: E402
+from uav_tracking.control.recorder import MissionRecorder, localise_targets  # noqa: E402
 from uav_tracking.control.search import SearchPattern, lawnmower  # noqa: E402
 from uav_tracking.control.selection import STRATEGIES, select_target  # noqa: E402
 from uav_tracking.control.state_machine import (  # noqa: E402
@@ -433,6 +434,15 @@ def main() -> int:
     ground_truth = {
         int(item["id"]): (float(item["x"]), float(item["y"])) for item in targets_raw["targets"]
     }
+
+    # PX4's local frame starts where the vehicle spawned; the targets are in world
+    # coordinates. The spawn offset comes from the mission config and can be
+    # overridden per run, because each trial spawns somewhere else.
+    spawn_east, spawn_north = mission_raw.get("spawn_offset_enu", [0.0, 0.0])
+    override = os.environ.get("UAV_SPAWN_ENU")
+    if override:
+        spawn_east, spawn_north = (float(value) for value in override.split(","))
+    ground_truth = localise_targets(ground_truth, (spawn_east, spawn_north))
     recorder = MissionRecorder(args.results, ground_truth)
 
     mission_cfg = MissionConfig(
