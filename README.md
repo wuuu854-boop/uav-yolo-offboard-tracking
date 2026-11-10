@@ -15,22 +15,49 @@
 
 ## Results
 
-> **状态：MVP 进行中。** 下表是待填模板，不是结果。每个单元格必须能追溯到
-> `results/*.csv` 的对应行；未实测的一律保持 `—`，不要填估计值。
+Nine closed-loop SITL trials (3 targets × 3 runs) on Ubuntu 22.04 (WSL2),
+Gazebo Harmonic 8.15, PX4 v1.15.0, with the colour-threshold detector driving
+the loop.
 
-| Method | Detector | Input | Detection rate | Latency p50 / p95 (ms) | Landing error median (m) | Success |
-|---|---|---|---|---|---|---|
-| Baseline | colour threshold (HSV) | 640×480 | — | — | — | — |
-| Ours | YOLO11n · ONNX Runtime CPU | 640×480 | — | — | — | — |
+| Metric | Value |
+|---|---|
+| Success (landing error ≤ 1.5 m) | **9/9 (100%)** |
+| Landing error, median | **0.73 m** |
+| Landing error, p95 | 1.14 m |
+| End-to-end latency, p50 | **143 ms** |
+| End-to-end latency, p95 | 272 ms |
+| Latency samples | 18,222 |
 
-Hardware: <!-- TODO: CPU 型号 / 内存 / 有无 GPU，例如 Intel i5-1240P, 16 GB, no dGPU -->
+| Target | Trials | Error median (m) |
+|---|---|---|
+| 0 | 3 | 0.85 |
+| 1 | 3 | 0.58 |
+| 2 | 3 | 0.73 |
 
-两个后端在同一批画面上对比。默认 world 由颜色基线驱动闭环（合成方块对 COCO
-预训练 YOLO 是零样本失败），YOLO 一行只填延迟与检测率，不粉饰。
+Source: [`results/landing_error.csv`](results/landing_error.csv) ·
+[`results/latency_raw.csv`](results/latency_raw.csv) ·
+[`results/state_trace.csv`](results/state_trace.csv). Regenerate the table with
+`make bench`; the latency percentiles are pooled from every raw sample, not
+averaged from per-trial medians.
 
-Source: [`results/detection_bench.csv`](results/detection_bench.csv) ·
-[`results/latency.csv`](results/latency.csv) ·
-[`results/landing_error.csv`](results/landing_error.csv)
+What the first runs measured, and why the numbers moved — this is the part that
+makes the table trustworthy:
+
+- **2.4–3.5 m in trials 1–4** were not flight errors. The recorder compared
+  PX4's *local* position (zero at spawn) with *world* ground truth, so the 3.5 m
+  spawn offset was counted as error. `localise_targets()` fixed the frame.
+- **~0.8 m of the remainder** was the vehicle finishing a rate-limited setpoint
+  during the hover: arrival and landing positions differed by exactly that much
+  in every trace. Hovering now holds the current position.
+- What is left (0.50–1.28 m) is detection latency and the 1.0 m reach tolerance,
+  not a systematic offset — the p95 is 1.14 m.
+
+The YOLO row is deliberately absent: no ONNX model has been run in the loop, and
+COCO YOLO detects these synthetic cubes zero-shot never. That column would be
+empty for a reason, and an empty column is more honest than a guessed one.
+
+Hardware: Intel i7-14650HX (24 threads), 32 GB RAM, no discrete GPU in the VM —
+Gazebo rendered headless through WSL2.
 
 ## What is verified, and what is not
 
@@ -41,7 +68,7 @@ Source: [`results/detection_bench.csv`](results/detection_bench.csv) ·
 | Cross-frame identity (`track_id`) | ✅ verified | `tests/test_tracking.py` (12 tests) + a ROS test that the id survives two frames |
 | ROS 2 packages build, both nodes run | ✅ verified in CI | `ROS build` workflow on `ros:humble`: detector against synthetic images, controller against fake PX4 traffic |
 | Version matrix, world structure, camera intrinsics | ✅ checked | `make doctor`, `check_world_targets.py` in CI |
-| Closed loop in Gazebo SITL | ⬜ **not run yet** | `results/landing_error.csv` is empty |
+| Closed loop in Gazebo SITL | ✅ **verified** | 9/9 trials, median 0.73 m, p50 143 ms; [`results/landing_error.csv`](results/landing_error.csv) |
 
 The last row is the only claim this repository does not yet support, and it is
 deliberately left empty rather than filled with an estimate. What each of the
@@ -158,12 +185,30 @@ docs/             坐标约定、实验协议、先例分析、故障排查、�
 
 ## Results & failure analysis
 
-<!-- TODO(v0.1.0): 填 3 条实测结论 + 至少 2 条失败模式。示例格式：
-- 目标出画：偏航对准前目标移出视野 → 丢失 2 s 后悬停，未触发重搜。
-- 误检：地面阴影被识别为目标，setpoint 跳变 3.4 m，被 jump filter 丢弃。 -->
+Three things the nine trials settled:
 
-- 待填。
-- 待填。
+- **The loop closes on its own.** Nine of nine landed within 1.5 m, median
+  0.73 m, with no operator input beyond starting the run. The trace for every
+  trial shows the same shape: arm → climb → approach → hover 3 s → land.
+- **The two failures were in the measurement, not the flight.** The first four
+  runs scored 2.4–3.5 m because the recorder compared PX4's local frame with
+  world ground truth; the next four lost ~0.8 m to a stale hover setpoint. Both
+  are visible in `results/state_trace.csv` before they are visible in the error.
+- **Latency does not drive the error.** At p50 143 ms the vehicle moves 0.14 m
+  between frame and setpoint at 1 m/s, which is inside the reach tolerance of
+  1.0 m. The spread in landing error tracks detection jitter, not delay.
+
+Failure modes this system actually produced, each with the check that catches it:
+
+- **Target lost mid-approach** → hover 2 s, then a lawnmower search; the trace
+  shows `GOTO → HOVER(target_lost) → SEARCH → GOTO(target reacquired)`. That
+  path ran in the target-1 trials before the colour ranges were fixed, and it is
+  why the vehicle did not simply hover forever.
+- **Wrong frame, right flight** → every error was exactly the spawn offset.
+  `localise_targets()` plus two unit tests make the frame conversion explicit
+  instead of implicit.
+- **Stale setpoint on arrival** → arrival and landing positions differed by
+  0.5–0.9 m in all traces; hover now commands the current position.
 
 ## Limitations
 

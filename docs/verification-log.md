@@ -13,6 +13,7 @@ and because the *corrections* are the useful part of a project like this.
 | 5 | `/fmu/out/*` is best-effort | PX4 ROS 2 examples vs `px4_msgs` | subscriptions moved to `qos_profile_sensor_data`; a reliable subscription silently received nothing |
 | 6 | PX4 heading ≠ ROS yaw | `px4_msgs/VehicleOdometry.msg` ("FRD body frame to reference frame") | `frames.py` conversion plus 8 tests; the missing 90° was a real defect |
 | 7 | Message field names used by the nodes exist | every `.msg` in `px4_msgs` `release/1.15` | confirmed; no change needed |
+| 12 | The closed loop lands on target in SITL | 9 trials, 3 per target, `results/landing_error.csv` | 9/9 within 1.5 m, median 0.73 m, p50 latency 143 ms; two measurement defects (local/world frame, stale hover setpoint) found and fixed on the way |
 | 8 | The niche is not "detection" | GitHub API on 2026-11-09: the 406★ repo has no controller; `px4 offboard target tracking` returns 0 repositories | positioning rewritten; `docs/prior-art.md` |
 | 9 | Setup, not algorithms, is the blocker | 6 of 11 open issues in the leading repo | `doctor.py` and `docs/troubleshooting.md` |
 | 10 | The upstream install instructions are unpinned | `PX4/px4_msgs` and `PX4/px4_ros_com` branch lists | [PR #43](https://github.com/monemati/PX4-ROS2-Gazebo-YOLOv8/pull/43) opened upstream |

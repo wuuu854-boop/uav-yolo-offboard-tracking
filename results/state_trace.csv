@@ -1,0 +1,509 @@
+t_s,state,note,east_m,north_m,altitude_m
+1794274533.71,IDLE,waiting for arming,0.0,0.0,0.0
+1794274535.83,TAKEOFF,climb to 5.0 m,-0.04,-0.18,-0.33
+1794274535.85,TAKEOFF,,-0.04,-0.18,-0.33
+1794274588.45,GOTO,takeoff altitude reached,-0.06,-0.21,4.7
+1794274588.47,GOTO,,-0.06,-0.21,4.7
+1794274591.15,GOTO,target missing 0.0s,-0.05,-0.22,4.76
+1794274591.21,GOTO,target missing 0.1s,-0.05,-0.22,4.77
+1794274591.31,GOTO,target missing 0.2s,-0.05,-0.22,4.77
+1794274591.41,GOTO,target missing 0.3s,-0.05,-0.21,4.77
+1794274591.51,GOTO,target missing 0.4s,-0.05,-0.21,4.77
+1794274591.61,GOTO,target missing 0.5s,-0.05,-0.21,4.77
+1794274591.71,GOTO,target missing 0.6s,-0.05,-0.19,4.78
+1794274591.81,GOTO,target missing 0.7s,-0.05,-0.19,4.78
+1794274591.91,GOTO,target missing 0.8s,-0.05,-0.19,4.78
+1794274592.01,GOTO,target missing 0.9s,-0.05,-0.18,4.79
+1794274592.11,GOTO,target missing 1.0s,-0.05,-0.18,4.79
+1794274592.21,GOTO,target missing 1.1s,-0.05,-0.18,4.79
+1794274592.31,GOTO,target missing 1.2s,-0.05,-0.16,4.8
+1794274592.41,GOTO,target missing 1.3s,-0.05,-0.16,4.8
+1794274592.51,GOTO,target missing 1.4s,-0.05,-0.16,4.8
+1794274592.61,GOTO,target missing 1.5s,-0.05,-0.14,4.81
+1794274592.71,GOTO,target missing 1.6s,-0.05,-0.14,4.81
+1794274592.81,GOTO,target missing 1.7s,-0.05,-0.14,4.81
+1794274592.91,GOTO,target missing 1.8s,-0.04,-0.12,4.82
+1794274593.01,GOTO,target missing 1.9s,-0.04,-0.12,4.82
+1794274593.11,GOTO,target missing 2.0s,-0.04,-0.09,4.83
+1794274593.15,HOVER,target_lost,-0.04,-0.09,4.83
+1794274594.77,GOTO,target reacquired,0.1,0.08,4.86
+1794274594.79,GOTO,,0.1,0.08,4.86
+1794274614.25,HOVER,arrived,3.54,0.01,4.96
+1794274617.25,LAND,hover complete,2.86,-0.55,4.93
+1794274617.27,LAND,,2.86,-0.55,4.93
+1794274670.39,IDLE,waiting for arming,0.0,0.0,0.0
+1794274672.45,TAKEOFF,climb to 5.0 m,0.08,-0.03,-0.19
+1794274672.47,TAKEOFF,,0.08,-0.03,-0.19
+1794274724.97,GOTO,takeoff altitude reached,0.07,0.18,4.7
+1794274724.99,GOTO,,0.07,0.18,4.7
+1794274727.63,GOTO,target missing 0.0s,0.03,0.22,4.75
+1794274727.69,GOTO,target missing 0.1s,0.03,0.22,4.76
+1794274727.79,GOTO,target missing 0.2s,0.03,0.22,4.76
+1794274727.89,GOTO,target missing 0.3s,0.03,0.22,4.76
+1794274727.99,GOTO,target missing 0.4s,0.03,0.23,4.76
+1794274728.09,GOTO,target missing 0.5s,0.03,0.23,4.76
+1794274728.19,GOTO,target missing 0.6s,0.03,0.24,4.77
+1794274728.29,GOTO,target missing 0.7s,0.03,0.24,4.77
+1794274728.39,GOTO,target missing 0.8s,0.03,0.24,4.77
+1794274728.49,GOTO,target missing 0.9s,0.03,0.26,4.78
+1794274728.59,GOTO,target missing 1.0s,0.03,0.26,4.78
+1794274728.69,GOTO,target missing 1.1s,0.03,0.26,4.78
+1794274728.79,GOTO,target missing 1.2s,0.03,0.28,4.79
+1794274728.89,GOTO,target missing 1.3s,0.03,0.28,4.79
+1794274728.99,GOTO,target missing 1.4s,0.03,0.29,4.79
+1794274729.09,GOTO,target missing 1.5s,0.03,0.3,4.79
+1794274729.19,GOTO,target missing 1.6s,0.03,0.3,4.79
+1794274729.29,GOTO,target missing 1.7s,0.03,0.33,4.8
+1794274729.39,GOTO,target missing 1.8s,0.03,0.33,4.8
+1794274729.49,GOTO,target missing 1.9s,0.03,0.33,4.8
+1794274729.59,GOTO,target missing 2.0s,0.04,0.36,4.8
+1794274729.63,HOVER,target_lost,0.04,0.36,4.8
+1794274731.49,GOTO,target reacquired,0.15,0.54,4.82
+1794274731.51,GOTO,,0.16,0.54,4.82
+1794274753.47,HOVER,arrived,3.38,-0.2,5.05
+1794274756.47,LAND,hover complete,2.51,-0.82,5.03
+1794274756.49,LAND,,2.51,-0.82,5.03
+1794274808.86,IDLE,waiting for arming,0.0,0.0,0.0
+1794274810.94,TAKEOFF,climb to 5.0 m,0.01,0.46,0.02
+1794274810.96,TAKEOFF,,0.01,0.46,0.02
+1794274865.88,GOTO,takeoff altitude reached,0.15,0.64,4.7
+1794274865.9,GOTO,,0.15,0.64,4.7
+1794274868.58,GOTO,target missing 0.0s,0.13,0.68,4.77
+1794274868.64,GOTO,target missing 0.1s,0.12,0.68,4.77
+1794274868.74,GOTO,target missing 0.2s,0.12,0.68,4.77
+1794274868.84,GOTO,target missing 0.3s,0.12,0.68,4.78
+1794274868.94,GOTO,target missing 0.4s,0.12,0.69,4.79
+1794274869.04,GOTO,target missing 0.5s,0.12,0.69,4.79
+1794274869.14,GOTO,target missing 0.6s,0.12,0.7,4.79
+1794274869.24,GOTO,target missing 0.7s,0.12,0.7,4.79
+1794274869.34,GOTO,target missing 0.8s,0.12,0.7,4.79
+1794274869.44,GOTO,target missing 0.9s,0.12,0.72,4.8
+1794274869.54,GOTO,target missing 1.0s,0.12,0.72,4.8
+1794274869.64,GOTO,target missing 1.1s,0.12,0.72,4.8
+1794274869.74,GOTO,target missing 1.2s,0.12,0.74,4.82
+1794274869.84,GOTO,target missing 1.3s,0.12,0.74,4.82
+1794274869.94,GOTO,target missing 1.4s,0.12,0.74,4.82
+1794274870.04,GOTO,target missing 1.5s,0.12,0.76,4.83
+1794274870.14,GOTO,target missing 1.6s,0.12,0.76,4.83
+1794274870.24,GOTO,target missing 1.7s,0.13,0.78,4.83
+1794274870.34,GOTO,target missing 1.8s,0.13,0.79,4.84
+1794274870.44,GOTO,target missing 1.9s,0.13,0.79,4.84
+1794274870.54,GOTO,target missing 2.0s,0.14,0.82,4.84
+1794274870.58,HOVER,target_lost,0.14,0.82,4.84
+1794274872.46,GOTO,target reacquired,0.26,1.04,4.86
+1794274872.48,GOTO,,0.27,1.05,4.87
+1794274893.36,HOVER,arrived,3.66,0.4,4.99
+1794274896.36,LAND,hover complete,2.73,-0.2,4.98
+1794274896.38,LAND,,2.73,-0.2,4.98
+1794274951.95,IDLE,waiting for arming,0.0,0.0,0.0
+1794274953.97,TAKEOFF,climb to 5.0 m,-0.05,0.18,-0.45
+1794274953.99,TAKEOFF,,-0.05,0.18,-0.45
+1794275007.09,GOTO,takeoff altitude reached,-0.08,0.21,4.7
+1794275007.11,GOTO,,-0.08,0.21,4.71
+1794275010.03,GOTO,target missing 0.0s,-0.1,0.24,4.77
+1794275010.09,GOTO,target missing 0.1s,-0.1,0.24,4.77
+1794275010.19,GOTO,target missing 0.2s,-0.1,0.24,4.77
+1794275010.29,GOTO,target missing 0.3s,-0.1,0.24,4.77
+1794275010.39,GOTO,target missing 0.4s,-0.1,0.24,4.77
+1794275010.49,GOTO,target missing 0.5s,-0.1,0.24,4.77
+1794275010.59,GOTO,target missing 0.6s,-0.1,0.26,4.78
+1794275010.69,GOTO,target missing 0.7s,-0.1,0.26,4.78
+1794275010.79,GOTO,target missing 0.8s,-0.1,0.26,4.78
+1794275010.89,GOTO,target missing 0.9s,-0.1,0.28,4.78
+1794275010.99,GOTO,target missing 1.0s,-0.1,0.28,4.78
+1794275011.09,GOTO,target missing 1.1s,-0.1,0.28,4.79
+1794275011.19,GOTO,target missing 1.2s,-0.1,0.3,4.79
+1794275011.29,GOTO,target missing 1.3s,-0.1,0.3,4.79
+1794275011.39,GOTO,target missing 1.4s,-0.1,0.32,4.8
+1794275011.49,GOTO,target missing 1.5s,-0.1,0.32,4.8
+1794275011.59,GOTO,target missing 1.6s,-0.1,0.32,4.8
+1794275011.69,GOTO,target missing 1.7s,-0.09,0.35,4.8
+1794275011.79,GOTO,target missing 1.8s,-0.09,0.35,4.8
+1794275011.89,GOTO,target missing 1.9s,-0.09,0.35,4.8
+1794275011.99,GOTO,target missing 2.0s,-0.08,0.38,4.81
+1794275012.03,HOVER,target_lost,-0.08,0.38,4.81
+1794275013.55,GOTO,target reacquired,0.02,0.57,4.83
+1794275013.57,GOTO,,0.03,0.59,4.83
+1794275031.73,HOVER,arrived,3.65,0.44,4.91
+1794275034.75,LAND,hover complete,3.0,-0.02,4.9
+1794275034.77,LAND,,3.0,-0.02,4.9
+1794275086.39,IDLE,waiting for arming,0.0,0.0,0.0
+1794275088.61,TAKEOFF,climb to 5.0 m,0.07,0.05,0.0
+1794275088.63,TAKEOFF,,0.07,0.05,0.0
+1794275142.25,GOTO,takeoff altitude reached,0.07,-0.0,4.7
+1794275142.27,GOTO,,0.07,-0.0,4.71
+1794275144.95,GOTO,target missing 0.0s,0.07,0.03,4.77
+1794275145.01,GOTO,target missing 0.1s,0.07,0.03,4.77
+1794275145.11,GOTO,target missing 0.2s,0.07,0.03,4.77
+1794275145.21,GOTO,target missing 0.3s,0.07,0.04,4.78
+1794275145.31,GOTO,target missing 0.4s,0.07,0.04,4.78
+1794275145.41,GOTO,target missing 0.5s,0.07,0.04,4.78
+1794275145.51,GOTO,target missing 0.6s,0.07,0.06,4.79
+1794275145.61,GOTO,target missing 0.7s,0.07,0.06,4.79
+1794275145.71,GOTO,target missing 0.8s,0.07,0.06,4.79
+1794275145.81,GOTO,target missing 0.9s,0.07,0.07,4.8
+1794275145.91,GOTO,target missing 1.0s,0.07,0.07,4.8
+1794275146.01,GOTO,target missing 1.1s,0.07,0.07,4.8
+1794275146.11,GOTO,target missing 1.2s,0.07,0.08,4.8
+1794275146.21,GOTO,target missing 1.3s,0.07,0.08,4.8
+1794275146.31,GOTO,target missing 1.4s,0.07,0.1,4.81
+1794275146.41,GOTO,target missing 1.5s,0.08,0.11,4.81
+1794275146.51,GOTO,target missing 1.6s,0.08,0.11,4.81
+1794275146.61,GOTO,target missing 1.7s,0.08,0.13,4.82
+1794275146.71,GOTO,target missing 1.8s,0.08,0.13,4.82
+1794275146.81,GOTO,target missing 1.9s,0.08,0.13,4.82
+1794275146.91,GOTO,target missing 2.0s,0.08,0.15,4.83
+1794275146.97,HOVER,target_lost,0.08,0.15,4.83
+1794275148.75,GOTO,target reacquired,0.23,0.36,4.83
+1794275148.77,GOTO,,0.24,0.37,4.83
+1794275169.03,HOVER,arrived,3.75,-0.13,5.03
+1794275172.03,LAND,hover complete,2.83,-0.65,5.01
+1794275172.05,LAND,,2.83,-0.65,5.01
+1794275222.89,IDLE,waiting for arming,0.0,0.0,0.0
+1794275225.07,TAKEOFF,climb to 5.0 m,-0.06,-0.11,0.44
+1794275225.09,TAKEOFF,,-0.06,-0.11,0.44
+1794275279.67,GOTO,takeoff altitude reached,-0.14,-0.12,4.7
+1794275279.69,GOTO,,-0.14,-0.12,4.7
+1794275281.79,GOTO,target missing 0.0s,-0.15,-0.13,4.74
+1794275281.85,GOTO,target missing 0.1s,-0.15,-0.13,4.74
+1794275281.95,GOTO,target missing 0.2s,-0.15,-0.13,4.74
+1794275282.05,GOTO,target missing 0.3s,-0.16,-0.13,4.74
+1794275282.15,GOTO,target missing 0.4s,-0.16,-0.13,4.75
+1794275282.25,GOTO,target missing 0.5s,-0.16,-0.13,4.75
+1794275282.35,GOTO,target missing 0.6s,-0.16,-0.13,4.76
+1794275282.45,GOTO,target missing 0.7s,-0.16,-0.13,4.76
+1794275282.55,GOTO,target missing 0.8s,-0.16,-0.13,4.76
+1794275282.65,GOTO,target missing 0.9s,-0.16,-0.12,4.76
+1794275282.75,GOTO,target missing 1.0s,-0.16,-0.12,4.76
+1794275282.85,GOTO,target missing 1.1s,-0.16,-0.12,4.76
+1794275282.95,GOTO,target missing 1.2s,-0.17,-0.11,4.77
+1794275283.05,GOTO,target missing 1.3s,-0.17,-0.11,4.77
+1794275283.15,GOTO,target missing 1.4s,-0.17,-0.11,4.77
+1794275283.25,GOTO,target missing 1.5s,-0.17,-0.1,4.78
+1794275283.35,GOTO,target missing 1.6s,-0.17,-0.1,4.78
+1794275283.45,GOTO,target missing 1.7s,-0.17,-0.1,4.78
+1794275283.55,GOTO,target missing 1.8s,-0.17,-0.09,4.78
+1794275283.65,GOTO,target missing 1.9s,-0.17,-0.09,4.78
+1794275283.75,GOTO,target missing 2.0s,-0.17,-0.07,4.79
+1794275283.79,HOVER,target_lost,-0.17,-0.06,4.79
+1794275285.99,GOTO,target reacquired,-0.09,0.11,4.82
+1794275286.01,GOTO,,-0.08,0.12,4.82
+1794275289.87,GOTO,target missing 0.0s,0.43,0.18,4.87
+1794275289.93,GOTO,target missing 0.1s,0.43,0.18,4.87
+1794275290.03,GOTO,target missing 0.2s,0.43,0.18,4.87
+1794275290.13,GOTO,target missing 0.3s,0.44,0.18,4.87
+1794275290.23,GOTO,target missing 0.4s,0.46,0.19,4.88
+1794275290.33,GOTO,target missing 0.5s,0.46,0.19,4.88
+1794275290.43,GOTO,target missing 0.6s,0.49,0.21,4.88
+1794275290.53,GOTO,target missing 0.7s,0.49,0.21,4.88
+1794275290.63,GOTO,target missing 0.8s,0.49,0.21,4.88
+1794275290.73,GOTO,target missing 0.9s,0.52,0.23,4.89
+1794275290.83,GOTO,target missing 1.0s,0.52,0.23,4.89
+1794275290.93,GOTO,target missing 1.1s,0.52,0.23,4.89
+1794275291.03,GOTO,target missing 1.2s,0.56,0.26,4.9
+1794275291.13,GOTO,target missing 1.3s,0.56,0.26,4.9
+1794275291.23,GOTO,target missing 1.4s,0.56,0.26,4.9
+1794275291.33,GOTO,target missing 1.5s,0.6,0.3,4.91
+1794275291.43,GOTO,target missing 1.6s,0.6,0.3,4.91
+1794275291.53,GOTO,target missing 1.7s,0.6,0.3,4.91
+1794275291.63,GOTO,target missing 1.8s,0.64,0.34,4.91
+1794275291.73,GOTO,target missing 1.9s,0.64,0.34,4.91
+1794275291.83,GOTO,target missing 2.0s,0.66,0.35,4.92
+1794275291.87,HOVER,target_lost,0.67,0.38,4.92
+1794275292.69,GOTO,target reacquired,0.83,0.51,4.93
+1794275292.71,GOTO,,0.83,0.51,4.93
+1794275307.09,HOVER,arrived,3.85,0.14,5.02
+1794275310.11,LAND,hover complete,3.58,-0.58,4.99
+1794275310.13,LAND,,3.58,-0.58,4.99
+1794275363.63,IDLE,waiting for arming,0.0,0.0,0.0
+1794275365.75,TAKEOFF,climb to 5.0 m,0.11,-0.15,0.25
+1794275365.77,TAKEOFF,,0.11,-0.15,0.25
+1794275417.09,GOTO,takeoff altitude reached,0.02,-0.22,4.7
+1794275417.11,GOTO,,0.02,-0.22,4.7
+1794275419.19,GOTO,target missing 0.0s,0.02,-0.22,4.74
+1794275419.25,GOTO,target missing 0.1s,0.02,-0.22,4.74
+1794275419.35,GOTO,target missing 0.2s,0.02,-0.22,4.74
+1794275419.45,GOTO,target missing 0.3s,0.02,-0.22,4.75
+1794275419.55,GOTO,target missing 0.4s,0.02,-0.22,4.75
+1794275419.65,GOTO,target missing 0.5s,0.02,-0.22,4.75
+1794275419.75,GOTO,target missing 0.6s,0.02,-0.21,4.75
+1794275419.85,GOTO,target missing 0.7s,0.02,-0.21,4.75
+1794275419.95,GOTO,target missing 0.8s,0.02,-0.21,4.75
+1794275420.05,GOTO,target missing 0.9s,0.02,-0.2,4.76
+1794275420.15,GOTO,target missing 1.0s,0.02,-0.2,4.76
+1794275420.25,GOTO,target missing 1.1s,0.02,-0.2,4.76
+1794275420.35,GOTO,target missing 1.2s,0.02,-0.19,4.76
+1794275420.45,GOTO,target missing 1.3s,0.02,-0.19,4.76
+1794275420.55,GOTO,target missing 1.4s,0.02,-0.19,4.76
+1794275420.65,GOTO,target missing 1.5s,0.02,-0.18,4.77
+1794275420.75,GOTO,target missing 1.6s,0.02,-0.18,4.77
+1794275420.85,GOTO,target missing 1.7s,0.01,-0.17,4.77
+1794275420.95,GOTO,target missing 1.8s,0.01,-0.17,4.77
+1794275421.05,GOTO,target missing 1.9s,0.01,-0.17,4.77
+1794275421.15,GOTO,target missing 2.0s,0.02,-0.15,4.78
+1794275421.21,HOVER,target_lost,0.02,-0.15,4.78
+1794275423.07,GOTO,target reacquired,0.08,0.0,4.8
+1794275423.09,GOTO,,0.08,0.0,4.8
+1794275427.21,GOTO,target missing 0.0s,0.64,0.1,4.87
+1794275427.27,GOTO,target missing 0.1s,0.66,0.11,4.87
+1794275427.37,GOTO,target missing 0.2s,0.66,0.11,4.87
+1794275427.47,GOTO,target missing 0.3s,0.67,0.11,4.87
+1794275427.57,GOTO,target missing 0.4s,0.69,0.12,4.87
+1794275427.67,GOTO,target missing 0.5s,0.69,0.12,4.87
+1794275427.77,GOTO,target missing 0.6s,0.73,0.15,4.88
+1794275427.87,GOTO,target missing 0.7s,0.73,0.15,4.88
+1794275427.97,GOTO,target missing 0.8s,0.73,0.15,4.88
+1794275428.07,GOTO,target missing 0.9s,0.76,0.17,4.88
+1794275428.17,GOTO,target missing 1.0s,0.76,0.17,4.88
+1794275428.27,GOTO,target missing 1.1s,0.76,0.17,4.88
+1794275428.37,GOTO,target missing 1.2s,0.8,0.2,4.89
+1794275428.47,GOTO,target missing 1.3s,0.8,0.2,4.89
+1794275428.57,GOTO,target missing 1.4s,0.8,0.2,4.89
+1794275428.67,GOTO,target missing 1.5s,0.86,0.24,4.89
+1794275428.77,GOTO,target missing 1.6s,0.86,0.24,4.89
+1794275428.87,GOTO,target missing 1.7s,0.86,0.24,4.89
+1794275428.97,GOTO,target missing 1.8s,0.9,0.28,4.9
+1794275429.07,GOTO,target missing 1.9s,0.9,0.28,4.9
+1794275429.17,GOTO,target missing 2.0s,0.94,0.32,4.9
+1794275429.21,HOVER,target_lost,0.94,0.32,4.9
+1794275429.73,GOTO,target reacquired,1.07,0.41,4.9
+1794275429.75,GOTO,,1.07,0.41,4.9
+1794275443.95,HOVER,arrived,3.81,0.01,5.01
+1794275446.95,LAND,hover complete,3.52,-0.73,5.0
+1794275446.97,LAND,,3.52,-0.73,5.0
+1794275498.13,IDLE,waiting for arming,0.0,0.0,0.0
+1794275500.23,TAKEOFF,climb to 5.0 m,-0.06,0.28,0.87
+1794275500.25,TAKEOFF,,-0.06,0.28,0.87
+1794275552.23,GOTO,takeoff altitude reached,-0.09,0.3,4.7
+1794275552.25,GOTO,,-0.09,0.3,4.7
+1794275553.81,GOTO,target missing 0.0s,-0.11,0.28,4.73
+1794275553.87,GOTO,target missing 0.1s,-0.11,0.28,4.73
+1794275553.97,GOTO,target missing 0.2s,-0.11,0.28,4.73
+1794275554.07,GOTO,target missing 0.3s,-0.11,0.28,4.73
+1794275554.17,GOTO,target missing 0.4s,-0.11,0.28,4.74
+1794275554.27,GOTO,target missing 0.5s,-0.11,0.28,4.74
+1794275554.37,GOTO,target missing 0.6s,-0.12,0.28,4.74
+1794275554.47,GOTO,target missing 0.7s,-0.12,0.28,4.74
+1794275554.57,GOTO,target missing 0.8s,-0.12,0.28,4.74
+1794275554.67,GOTO,target missing 0.9s,-0.12,0.28,4.75
+1794275554.77,GOTO,target missing 1.0s,-0.12,0.28,4.75
+1794275554.87,GOTO,target missing 1.1s,-0.12,0.28,4.75
+1794275554.97,GOTO,target missing 1.2s,-0.13,0.28,4.76
+1794275555.07,GOTO,target missing 1.3s,-0.13,0.28,4.76
+1794275555.17,GOTO,target missing 1.4s,-0.13,0.28,4.76
+1794275555.27,GOTO,target missing 1.5s,-0.13,0.29,4.77
+1794275555.37,GOTO,target missing 1.6s,-0.13,0.29,4.77
+1794275555.47,GOTO,target missing 1.7s,-0.13,0.29,4.77
+1794275555.57,GOTO,target missing 1.8s,-0.14,0.3,4.77
+1794275555.67,GOTO,target missing 1.9s,-0.14,0.3,4.77
+1794275555.77,GOTO,target missing 2.0s,-0.14,0.3,4.78
+1794275555.81,HOVER,target_lost,-0.14,0.3,4.78
+1794275558.03,GOTO,target reacquired,-0.1,0.41,4.82
+1794275558.05,GOTO,,-0.1,0.41,4.82
+1794275560.79,GOTO,target missing 0.0s,0.1,0.45,4.85
+1794275560.85,GOTO,target missing 0.1s,0.1,0.45,4.85
+1794275560.95,GOTO,target missing 0.2s,0.1,0.45,4.85
+1794275561.05,GOTO,target missing 0.3s,0.1,0.45,4.85
+1794275561.15,GOTO,target missing 0.4s,0.12,0.46,4.86
+1794275561.25,GOTO,target missing 0.5s,0.12,0.46,4.86
+1794275561.35,GOTO,target missing 0.6s,0.13,0.46,4.86
+1794275561.45,GOTO,target missing 0.7s,0.14,0.46,4.86
+1794275561.55,GOTO,target missing 0.8s,0.14,0.46,4.86
+1794275561.65,GOTO,target missing 0.9s,0.16,0.48,4.87
+1794275561.75,GOTO,target missing 1.0s,0.16,0.48,4.87
+1794275561.85,GOTO,target missing 1.1s,0.16,0.48,4.87
+1794275561.95,GOTO,target missing 1.2s,0.18,0.49,4.87
+1794275562.05,GOTO,target missing 1.3s,0.18,0.49,4.87
+1794275562.15,GOTO,target missing 1.4s,0.18,0.49,4.87
+1794275562.25,GOTO,target missing 1.5s,0.2,0.5,4.87
+1794275562.35,GOTO,target missing 1.6s,0.2,0.5,4.87
+1794275562.45,GOTO,target missing 1.7s,0.2,0.5,4.87
+1794275562.55,GOTO,target missing 1.8s,0.23,0.53,4.88
+1794275562.65,GOTO,target missing 1.9s,0.23,0.53,4.88
+1794275562.75,GOTO,target missing 2.0s,0.23,0.53,4.88
+1794275562.79,HOVER,target_lost,0.25,0.55,4.88
+1794275564.47,GOTO,target reacquired,0.46,0.71,4.88
+1794275564.49,GOTO,,0.46,0.71,4.88
+1794275591.25,GOTO,target missing 0.0s,1.64,0.15,5.08
+1794275591.31,GOTO,target missing 0.1s,1.64,0.15,5.08
+1794275591.41,GOTO,target missing 0.2s,1.64,0.15,5.08
+1794275591.51,GOTO,target missing 0.3s,1.64,0.15,5.08
+1794275591.61,GOTO,target missing 0.4s,1.62,0.22,5.08
+1794275591.71,GOTO,target missing 0.5s,1.62,0.22,5.08
+1794275591.81,GOTO,target missing 0.6s,1.61,0.26,5.08
+1794275591.91,GOTO,target missing 0.7s,1.61,0.29,5.08
+1794275592.01,GOTO,target missing 0.8s,1.61,0.29,5.08
+1794275592.11,GOTO,target missing 0.9s,1.61,0.34,5.08
+1794275592.21,GOTO,target missing 1.0s,1.61,0.34,5.08
+1794275592.31,GOTO,target missing 1.1s,1.61,0.34,5.08
+1794275592.41,GOTO,target missing 1.2s,1.63,0.41,5.08
+1794275592.51,GOTO,target missing 1.3s,1.63,0.41,5.08
+1794275592.61,GOTO,target missing 1.4s,1.63,0.41,5.08
+1794275592.71,GOTO,target missing 1.5s,1.65,0.47,5.07
+1794275592.81,GOTO,target missing 1.6s,1.65,0.47,5.07
+1794275592.91,GOTO,target missing 1.7s,1.65,0.47,5.07
+1794275593.01,GOTO,target missing 1.8s,1.67,0.52,5.07
+1794275593.11,GOTO,target missing 1.9s,1.67,0.52,5.07
+1794275593.21,GOTO,target missing 2.0s,1.7,0.56,5.07
+1794275593.25,HOVER,target_lost,1.72,0.59,5.07
+1794275594.05,GOTO,target reacquired,1.87,0.76,5.06
+1794275594.07,GOTO,,1.89,0.78,5.06
+1794275600.87,GOTO,target missing 0.0s,4.32,1.28,4.99
+1794275600.93,GOTO,target missing 0.1s,4.32,1.28,4.99
+1794275601.03,GOTO,target missing 0.2s,4.32,1.28,4.99
+1794275601.13,GOTO,target missing 0.3s,4.32,1.28,4.99
+1794275601.15,GOTO,,4.4,1.24,5.0
+1794275604.85,GOTO,target missing 0.0s,4.93,0.08,5.04
+1794275604.91,GOTO,target missing 0.1s,4.93,0.08,5.04
+1794275605.01,GOTO,target missing 0.2s,4.93,0.08,5.04
+1794275605.11,GOTO,target missing 0.3s,4.93,0.02,5.04
+1794275605.21,GOTO,target missing 0.4s,4.92,-0.06,5.04
+1794275605.31,GOTO,target missing 0.5s,4.92,-0.06,5.04
+1794275605.41,GOTO,target missing 0.6s,4.9,-0.15,5.04
+1794275605.51,GOTO,target missing 0.7s,4.89,-0.2,5.05
+1794275605.61,GOTO,target missing 0.8s,4.89,-0.2,5.05
+1794275605.71,GOTO,target missing 0.9s,4.86,-0.29,5.05
+1794275605.81,GOTO,target missing 1.0s,4.86,-0.29,5.05
+1794275605.91,GOTO,target missing 1.1s,4.86,-0.29,5.05
+1794275606.01,GOTO,target missing 1.2s,4.82,-0.43,5.05
+1794275606.11,GOTO,target missing 1.3s,4.82,-0.43,5.05
+1794275606.21,GOTO,target missing 1.4s,4.82,-0.43,5.05
+1794275606.31,GOTO,target missing 1.5s,4.77,-0.55,5.04
+1794275606.41,GOTO,target missing 1.6s,4.77,-0.55,5.04
+1794275606.51,GOTO,target missing 1.7s,4.77,-0.55,5.04
+1794275606.61,GOTO,target missing 1.8s,4.72,-0.66,5.04
+1794275606.71,GOTO,target missing 1.9s,4.72,-0.66,5.04
+1794275606.81,GOTO,target missing 2.0s,4.72,-0.66,5.04
+1794275606.87,HOVER,target_lost,4.66,-0.78,5.04
+1794275607.13,GOTO,target reacquired,4.58,-0.92,5.04
+1794275607.15,GOTO,,4.58,-0.92,5.04
+1794275610.01,GOTO,target missing 0.0s,3.59,-1.9,5.0
+1794275610.07,GOTO,target missing 0.1s,3.59,-1.9,5.0
+1794275610.17,GOTO,target missing 0.2s,3.59,-1.9,5.0
+1794275610.27,GOTO,target missing 0.3s,3.48,-1.97,5.0
+1794275610.37,GOTO,target missing 0.4s,3.48,-1.97,5.0
+1794275610.47,GOTO,target missing 0.5s,3.33,-2.05,5.0
+1794275610.57,GOTO,target missing 0.6s,3.33,-2.05,5.0
+1794275610.67,GOTO,target missing 0.7s,3.24,-2.09,5.0
+1794275610.77,GOTO,target missing 0.8s,3.24,-2.09,5.0
+1794275610.87,GOTO,target missing 0.9s,3.1,-2.16,5.0
+1794275610.97,GOTO,target missing 1.0s,3.1,-2.16,5.0
+1794275611.07,GOTO,target missing 1.1s,2.98,-2.21,4.99
+1794275611.17,GOTO,target missing 1.2s,2.98,-2.21,4.99
+1794275611.27,GOTO,target missing 1.3s,2.89,-2.24,4.99
+1794275611.37,GOTO,target missing 1.4s,2.89,-2.24,4.99
+1794275611.47,GOTO,target missing 1.5s,2.74,-2.28,4.99
+1794275611.57,GOTO,target missing 1.6s,2.74,-2.28,4.99
+1794275611.67,GOTO,target missing 1.7s,2.63,-2.3,4.99
+1794275611.77,GOTO,target missing 1.8s,2.63,-2.3,4.99
+1794275611.87,GOTO,target missing 1.9s,2.52,-2.32,4.99
+1794275611.97,GOTO,target missing 2.0s,2.52,-2.32,4.99
+1794275612.03,HOVER,target_lost,2.38,-2.34,4.99
+1794275614.25,GOTO,target reacquired,1.3,-2.1,4.94
+1794275614.27,GOTO,,1.3,-2.1,4.94
+1794275668.62,IDLE,waiting for arming,0.0,0.0,0.0
+1794275670.86,TAKEOFF,climb to 5.0 m,0.35,-0.15,0.22
+1794275670.88,TAKEOFF,,0.35,-0.15,0.22
+1794275722.9,GOTO,takeoff altitude reached,0.23,-0.07,4.7
+1794275722.92,GOTO,,0.23,-0.07,4.7
+1794275725.28,GOTO,target missing 0.0s,0.23,-0.09,4.75
+1794275725.34,GOTO,target missing 0.1s,0.22,-0.08,4.75
+1794275725.44,GOTO,target missing 0.2s,0.22,-0.08,4.75
+1794275725.54,GOTO,target missing 0.3s,0.22,-0.08,4.75
+1794275725.64,GOTO,target missing 0.4s,0.22,-0.08,4.76
+1794275725.74,GOTO,target missing 0.5s,0.22,-0.08,4.76
+1794275725.84,GOTO,target missing 0.6s,0.22,-0.07,4.77
+1794275725.94,GOTO,target missing 0.7s,0.22,-0.07,4.77
+1794275726.04,GOTO,target missing 0.8s,0.22,-0.07,4.77
+1794275726.14,GOTO,target missing 0.9s,0.22,-0.05,4.78
+1794275726.24,GOTO,target missing 1.0s,0.22,-0.05,4.78
+1794275726.34,GOTO,target missing 1.1s,0.22,-0.05,4.78
+1794275726.44,GOTO,target missing 1.2s,0.21,-0.04,4.79
+1794275726.54,GOTO,target missing 1.3s,0.21,-0.04,4.79
+1794275726.64,GOTO,target missing 1.4s,0.21,-0.04,4.79
+1794275726.74,GOTO,target missing 1.5s,0.21,-0.03,4.79
+1794275726.84,GOTO,target missing 1.6s,0.21,-0.03,4.79
+1794275726.94,GOTO,target missing 1.7s,0.21,-0.03,4.79
+1794275727.04,GOTO,target missing 1.8s,0.22,-0.01,4.8
+1794275727.14,GOTO,target missing 1.9s,0.22,-0.01,4.8
+1794275727.24,GOTO,target missing 2.0s,0.22,0.01,4.81
+1794275727.28,HOVER,target_lost,0.22,0.02,4.81
+1794275729.18,GOTO,target reacquired,0.32,0.19,4.84
+1794275729.2,GOTO,,0.32,0.19,4.84
+1794275733.64,GOTO,target missing 0.0s,1.06,0.38,4.89
+1794275733.7,GOTO,target missing 0.1s,1.06,0.38,4.89
+1794275733.8,GOTO,target missing 0.2s,1.06,0.38,4.89
+1794275733.9,GOTO,target missing 0.3s,1.06,0.38,4.89
+1794275734.0,GOTO,target missing 0.4s,1.1,0.41,4.89
+1794275734.1,GOTO,target missing 0.5s,1.1,0.41,4.89
+1794275734.2,GOTO,target missing 0.6s,1.15,0.44,4.89
+1794275734.3,GOTO,target missing 0.7s,1.15,0.44,4.89
+1794275734.4,GOTO,target missing 0.8s,1.15,0.44,4.89
+1794275734.5,GOTO,target missing 0.9s,1.21,0.48,4.89
+1794275734.6,GOTO,target missing 1.0s,1.21,0.48,4.89
+1794275734.7,GOTO,target missing 1.1s,1.21,0.48,4.89
+1794275734.8,GOTO,target missing 1.2s,1.26,0.52,4.89
+1794275734.9,GOTO,target missing 1.3s,1.26,0.52,4.89
+1794275735.0,GOTO,target missing 1.4s,1.26,0.52,4.89
+1794275735.1,GOTO,target missing 1.5s,1.3,0.56,4.89
+1794275735.2,GOTO,target missing 1.6s,1.3,0.56,4.89
+1794275735.3,GOTO,,1.34,0.59,4.89
+1794275749.28,HOVER,arrived,4.0,0.11,4.96
+1794275752.28,LAND,hover complete,3.43,-0.72,4.95
+1794275752.3,LAND,,3.43,-0.72,4.95
+1794275808.24,IDLE,waiting for arming,0.0,0.0,0.0
+1794275810.42,TAKEOFF,climb to 5.0 m,-0.23,-0.33,0.26
+1794275810.44,TAKEOFF,,-0.23,-0.33,0.26
+1794275864.02,GOTO,takeoff altitude reached,-0.34,-0.32,4.7
+1794275864.04,GOTO,,-0.34,-0.32,4.7
+1794275866.12,GOTO,target missing 0.0s,-0.34,-0.3,4.73
+1794275866.18,GOTO,target missing 0.1s,-0.34,-0.29,4.74
+1794275866.28,GOTO,target missing 0.2s,-0.34,-0.29,4.74
+1794275866.38,GOTO,target missing 0.3s,-0.34,-0.29,4.74
+1794275866.48,GOTO,target missing 0.4s,-0.34,-0.29,4.74
+1794275866.58,GOTO,target missing 0.5s,-0.34,-0.29,4.74
+1794275866.68,GOTO,target missing 0.6s,-0.34,-0.28,4.75
+1794275866.78,GOTO,target missing 0.7s,-0.34,-0.28,4.75
+1794275866.88,GOTO,target missing 0.8s,-0.34,-0.28,4.75
+1794275866.98,GOTO,target missing 0.9s,-0.35,-0.27,4.76
+1794275867.08,GOTO,target missing 1.0s,-0.35,-0.27,4.76
+1794275867.18,GOTO,target missing 1.1s,-0.35,-0.27,4.76
+1794275867.28,GOTO,target missing 1.2s,-0.35,-0.26,4.76
+1794275867.38,GOTO,target missing 1.3s,-0.35,-0.26,4.76
+1794275867.48,GOTO,target missing 1.4s,-0.35,-0.26,4.76
+1794275867.58,GOTO,target missing 1.5s,-0.35,-0.24,4.77
+1794275867.68,GOTO,target missing 1.6s,-0.35,-0.24,4.77
+1794275867.78,GOTO,target missing 1.7s,-0.35,-0.23,4.78
+1794275867.88,GOTO,target missing 1.8s,-0.35,-0.23,4.78
+1794275867.98,GOTO,target missing 1.9s,-0.35,-0.23,4.78
+1794275868.08,GOTO,target missing 2.0s,-0.35,-0.21,4.78
+1794275868.14,HOVER,target_lost,-0.35,-0.21,4.78
+1794275870.26,GOTO,target reacquired,-0.29,-0.07,4.81
+1794275870.28,GOTO,,-0.28,-0.06,4.81
+1794275874.08,GOTO,target missing 0.0s,0.19,-0.0,4.85
+1794275874.14,GOTO,target missing 0.1s,0.2,0.0,4.85
+1794275874.24,GOTO,target missing 0.2s,0.2,0.0,4.85
+1794275874.34,GOTO,target missing 0.3s,0.2,0.0,4.85
+1794275874.44,GOTO,target missing 0.4s,0.24,0.02,4.86
+1794275874.54,GOTO,target missing 0.5s,0.24,0.02,4.86
+1794275874.64,GOTO,target missing 0.6s,0.26,0.03,4.87
+1794275874.74,GOTO,target missing 0.7s,0.27,0.03,4.87
+1794275874.84,GOTO,target missing 0.8s,0.27,0.03,4.87
+1794275874.94,GOTO,target missing 0.9s,0.29,0.05,4.87
+1794275875.04,GOTO,target missing 1.0s,0.29,0.05,4.87
+1794275875.14,GOTO,target missing 1.1s,0.29,0.05,4.87
+1794275875.24,GOTO,target missing 1.2s,0.34,0.08,4.88
+1794275875.34,GOTO,target missing 1.3s,0.34,0.08,4.88
+1794275875.44,GOTO,target missing 1.4s,0.34,0.08,4.88
+1794275875.54,GOTO,target missing 1.5s,0.38,0.11,4.88
+1794275875.64,GOTO,target missing 1.6s,0.38,0.11,4.88
+1794275875.74,GOTO,target missing 1.7s,0.39,0.12,4.88
+1794275875.84,GOTO,target missing 1.8s,0.41,0.14,4.88
+1794275875.94,GOTO,target missing 1.9s,0.41,0.14,4.88
+1794275876.04,GOTO,target missing 2.0s,0.46,0.17,4.88
+1794275876.08,HOVER,target_lost,0.47,0.18,4.88
+1794275876.9,GOTO,target reacquired,0.62,0.29,4.89
+1794275876.92,GOTO,,0.62,0.29,4.89
+1794275891.46,HOVER,arrived,3.63,-0.07,4.94
+1794275894.46,LAND,hover complete,3.37,-0.71,4.92
+1794275894.48,LAND,,3.37,-0.71,4.92

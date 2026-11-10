@@ -1,1 +1,10 @@
 trial,target_id,error_m,latency_p50_ms,latency_p95_ms,success,notes
+1,0,0.846,145.6,279.9,True,hover complete
+2,0,1.284,143.0,271.2,True,hover complete
+3,0,0.797,146.8,279.0,True,hover complete
+4,1,0.501,138.4,263.8,True,hover complete
+5,1,0.936,141.9,268.8,True,hover complete
+6,1,0.583,144.1,275.0,True,hover complete
+7,2,0.732,143.7,274.0,True,hover complete
+8,2,0.728,141.5,270.6,True,hover complete
+9,2,0.721,142.2,269.2,True,hover complete
