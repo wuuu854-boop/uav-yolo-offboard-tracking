@@ -306,6 +306,11 @@ class OffboardNode(Node):
             self._move_towards(self.east, self.north, self.cfg.takeoff_altitude_m)
         elif decision.command == "goto" and target is not None:
             self._move_towards(target[0], target[1], self.cfg.takeoff_altitude_m)
+        elif decision.command == "hover":
+            # Hold where the vehicle actually is. Leaving the setpoint where GOTO
+            # left it makes the vehicle finish closing a lag of up to a metre
+            # during the hover, which is what the landing error then measures.
+            self._move_towards(self.east, self.north, self.cfg.takeoff_altitude_m)
         elif decision.command == "search":
             self._fly_search_pattern()
         elif decision.command == "land":
