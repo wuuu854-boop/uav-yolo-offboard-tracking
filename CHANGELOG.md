@@ -7,6 +7,15 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `control/qa.py:association_confidence()` and the report's confidence columns:
+  a per-detection score that multiplies a Gaussian on the distance to the asset
+  by how much support the track has. On the north-cube run with the true asset
+  position the median is 0.71, and 34 of 76 detections sit below 0.5 — mostly the
+  second, spurious track. It is a heuristic, and `docs/enterprise-needs.md` says
+  so instead of implying a calibrated probability.
+
 ## [0.6.1] - 2026-11-10
 
 ### Added

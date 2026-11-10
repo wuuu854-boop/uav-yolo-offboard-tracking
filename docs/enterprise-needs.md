@@ -48,7 +48,7 @@ customer or an aircraft: a **structured, georeferenced deliverable**, and a
 | GIS-ready, structured output | **done**: `scripts/export_geojson.py`, sample in `results/detections.geojson` | small |
 | QA over the data, not just the flight | **done**: `scripts/qa_report.py` — coverage, longest gap, track continuity, association error, exit code for CI | small |
 | Model governance | **done**: [`model-card.md`](model-card.md) | small |
-| Association accuracy | measured per detection now; per-detection confidence is not modelled | medium |
+| Association accuracy | **done**: `association_confidence()` multiplies a Gaussian on the distance by track support, so a detection says both "how close" and "how well supported" | small |
 | Resolution/metadata standards | partially in `config/camera.yaml`; a "shot sheet" concept does not exist | large |
 
 ## The QA report's runs
@@ -80,6 +80,20 @@ because takeoff and landing frames drag a whole-flight average down without
 telling anyone anything.
 
 Sample reports: `results/qa_moving.json`, `results/qa_north.json`.
+
+## The confidence score
+
+Distance alone answers "is it close?". The question an operator actually asks is
+"may I file this image under this asset?", which is also a question about support:
+one frame that happens to land on the asset is not the same evidence as a track
+seen forty times. `association_confidence()` multiplies a Gaussian on the
+distance with a support factor that saturates at three hits.
+
+On the north-cube run with the true asset position: **median 0.71**, with 34 of
+76 detections below 0.5 — and those are mostly the second, spurious track the
+track count already flagged. The score is a heuristic, not a calibration: there
+is no labelled ground truth for "belongs to this asset" here, and the document
+says so rather than implying a probability.
 
 `scripts/qa_report.py` over two existing captures:
 
