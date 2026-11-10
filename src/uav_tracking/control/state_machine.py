@@ -51,6 +51,11 @@ class MissionConfig:
     # it becomes a setpoint.
     geofence_radius_m: float = 30.0
 
+    # How many consecutive frames with a target before a transition is believed.
+    # One frame is enough in unit tests; in SITL a single bad projection during a
+    # search produced a 5.6 m landing error, so the shipped config uses 3.
+    confirm_frames: int = 1
+
 
 @dataclass(frozen=True)
 class Observation:
@@ -87,6 +92,15 @@ class MissionStateMachine:
         self._hover_started_s = 0.0
         self._lost_since_s: float | None = None
         self._airborne_since_s: float | None = None
+        self._confirm_count = 0
+
+    def _confirmed(self, obs: Observation) -> bool:
+        """True once the target has been seen for ``confirm_frames`` in a row."""
+        if obs.distance_to_target_m is None:
+            self._confirm_count = 0
+            return False
+        self._confirm_count += 1
+        return self._confirm_count >= self.cfg.confirm_frames
 
     def step(self, obs: Observation) -> Decision:
         if self.state is State.IDLE:
@@ -125,6 +139,7 @@ class MissionStateMachine:
 
         if self.state is State.GOTO:
             if obs.distance_to_target_m is None:
+                self._confirm_count = 0
                 if self._lost_since_s is None:
                     self._lost_since_s = obs.now_s
                 lost_for = obs.now_s - self._lost_since_s
@@ -132,6 +147,10 @@ class MissionStateMachine:
                     return self._enter_hover(obs, "target_lost")
                 return Decision(self.state, "goto", f"target missing {lost_for:.1f}s")
             self._lost_since_s = None
+            if not self._confirmed(obs):
+                return Decision(
+                    self.state, "goto", f"confirming {self._confirm_count}/{self.cfg.confirm_frames}"
+                )
             if obs.distance_to_target_m <= self.cfg.reach_tolerance_m:
                 return self._enter_hover(obs, "arrived")
             return Decision(self.state, "goto", "")
@@ -141,7 +160,7 @@ class MissionStateMachine:
             # target-loss hover the mission resumes when the target reappears,
             # whereas after arriving it lands on a timer. Collapsing them into
             # one state would make a single missed frame end the mission.
-            if self._hover_reason == "target_lost" and obs.distance_to_target_m is not None:
+            if self._hover_reason == "target_lost" and self._confirmed(obs):
                 self.state = State.GOTO
                 self._lost_since_s = None
                 return Decision(self.state, "goto", "target reacquired")
@@ -157,7 +176,7 @@ class MissionStateMachine:
             return Decision(self.state, "hover", self._hover_reason)
 
         if self.state is State.SEARCH:
-            if obs.distance_to_target_m is not None:
+            if self._confirmed(obs):
                 self.state = State.GOTO
                 self._lost_since_s = None
                 return Decision(self.state, "goto", "target reacquired during search")
@@ -173,6 +192,7 @@ class MissionStateMachine:
     def _enter_hover(self, obs: Observation, reason: str) -> Decision:
         self.state = State.HOVER
         self._hover_reason = reason
+        self._confirm_count = 0
         self._hover_started_s = obs.now_s
         return Decision(self.state, "hover", reason)
 

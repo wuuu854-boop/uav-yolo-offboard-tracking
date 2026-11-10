@@ -471,6 +471,7 @@ def main() -> int:
         search_spacing_m=mission_raw.get("search_spacing_m", 8.9),
         max_mission_s=mission_raw.get("max_mission_s", 0.0),
         geofence_radius_m=mission_raw.get("geofence_radius_m", 30.0),
+        confirm_frames=int(mission_raw.get("confirm_frames", 3)),
     )
 
     rclpy.init()

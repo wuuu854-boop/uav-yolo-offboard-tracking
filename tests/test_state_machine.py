@@ -195,3 +195,46 @@ def test_the_timeout_budget_restarts_after_a_disarm():
     sm.step(Observation(11.0, 5.0, armed=True))  # new mission, budget restarts
     sm.step(Observation(15.0, 5.0, armed=True, distance_to_target_m=8.0))
     assert sm.state is State.GOTO
+
+
+def test_arrival_needs_three_consecutive_frames_when_configured():
+    sm = MissionStateMachine(MissionConfig(confirm_frames=3))
+    _arm_and_take_off(sm)
+    sm.step(Observation(3.0, 5.0, armed=True))
+
+    sm.step(Observation(4.0, 5.0, armed=True, distance_to_target_m=0.5))
+    sm.step(Observation(4.2, 5.0, armed=True, distance_to_target_m=0.5))
+    assert sm.state is State.GOTO  # two frames are not enough
+
+    decision = sm.step(Observation(4.4, 5.0, armed=True, distance_to_target_m=0.5))
+    assert decision.state is State.HOVER
+    assert decision.note == "arrived"
+
+
+def test_a_missed_frame_resets_the_confirmation():
+    sm = MissionStateMachine(MissionConfig(confirm_frames=3, target_loss_hover_s=5.0))
+    _arm_and_take_off(sm)
+    sm.step(Observation(3.0, 5.0, armed=True))
+
+    sm.step(Observation(4.0, 5.0, armed=True, distance_to_target_m=0.5))
+    sm.step(Observation(4.2, 5.0, armed=True, distance_to_target_m=0.5))
+    sm.step(Observation(4.4, 5.0, armed=True, distance_to_target_m=None))  # reset
+    sm.step(Observation(4.6, 5.0, armed=True, distance_to_target_m=0.5))
+    sm.step(Observation(4.8, 5.0, armed=True, distance_to_target_m=0.5))
+    assert sm.state is State.GOTO
+
+    assert sm.step(Observation(5.0, 5.0, armed=True, distance_to_target_m=0.5)).state is State.HOVER
+
+
+def test_reacquiring_after_a_loss_needs_the_same_confirmation():
+    sm = MissionStateMachine(MissionConfig(confirm_frames=2, target_loss_hover_s=1.0))
+    _arm_and_take_off(sm)
+    sm.step(Observation(3.0, 5.0, armed=True))
+    sm.step(Observation(4.0, 5.0, armed=True, distance_to_target_m=5.0))
+    sm.step(Observation(5.1, 5.0, armed=True, distance_to_target_m=None))
+    sm.step(Observation(6.2, 5.0, armed=True, distance_to_target_m=None))
+    assert sm.state is State.HOVER
+
+    sm.step(Observation(7.0, 5.0, armed=True, distance_to_target_m=4.0))
+    assert sm.state is State.HOVER  # one frame does not reacquire
+    assert sm.step(Observation(7.2, 5.0, armed=True, distance_to_target_m=4.0)).state is State.GOTO
