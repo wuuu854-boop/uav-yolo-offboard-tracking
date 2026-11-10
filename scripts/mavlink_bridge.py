@@ -42,7 +42,10 @@ class MavlinkMirror(Node):
         from pymavlink import mavutil  # noqa: PLC0415 - optional dependency
 
         self.link = mavutil.mavlink_connection(target)
+        self.target = target
         self.seq = 0
+        self.sent = 0
+        self.received = 0
         self.armed = False
         self.pose: tuple[float, float, float, float, float, float, float] | None = None
         self.create_subscription(
@@ -61,6 +64,9 @@ class MavlinkMirror(Node):
         yaw = quaternion_to_heading_ned(msg.q)  # radians, NED
         roll, pitch = quaternion_to_roll_pitch(msg.q)
         self.pose = (north, east, down, vn, ve, vd, roll, pitch, yaw)
+        if self.received == 0:
+            self.get_logger().info(f"first odometry: n={north:.2f} e={east:.2f} d={down:.2f}")
+        self.received += 1
 
     def on_status(self, msg: VehicleStatus) -> None:
         self.armed = int(msg.arming_state) == 2
@@ -68,6 +74,9 @@ class MavlinkMirror(Node):
     def on_timer(self) -> None:
         if self.pose is None:
             return
+        if self.sent == 0:
+            self.get_logger().info(f"sending to {self.target}")
+        self.sent += 1
         north, east, down, vn, ve, vd, roll, pitch, yaw = self.pose
         snapshot = Telemetry(
             armed=self.armed,
