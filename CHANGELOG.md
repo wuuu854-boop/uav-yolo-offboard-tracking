@@ -7,6 +7,16 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `scripts/bench_detector.py` and `YoloOnnxDetector(intra_op_threads=...)`:
+  detector latency per input size and thread count, measured on 60 recorded
+  frames. 320 px at 4 threads is 8.1 ms / 119 FPS; 640 px at 4 threads is
+  26.1 ms / 37 FPS; 8 threads buys nothing. Recorded in `docs/deployment.md`,
+  with what it does not measure (no Jetson, no TensorRT, no INT8).
+- `docs/market.md`: five current UAV-autonomy postings read against this
+  repository, a coverage table, and the resulting build order.
+
 ## [0.4.0] - 2026-11-10
 
 ### Added

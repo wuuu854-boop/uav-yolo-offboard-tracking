@@ -3,7 +3,9 @@
 | Document | Answers |
 |---|---|
 | [architecture](architecture.md) | Data flow, frame conventions, topic contract, why two nodes |
-| [model](model.md) | The YOLO detector: dataset, training, the decoder bug it exposed, and why it does not fly yet |
+| [model](model.md) | The YOLO detector: dataset, training, the decoder bug it exposed, and how it was made to fly |
+| [deployment](deployment.md) | Detector throughput per input size and thread count, and what it does not measure |
+| [market](market.md) | What UAV-autonomy postings ask for, where this project stands, what to build next |
 | [review-guide](review-guide.md) | What each module guarantees, and the test that proves it |
 | [experiment-protocol](experiment-protocol.md) | How a trial is run, what each metric means, spawn poses |
 | [scenario](scenario.md) | Camera maths, range budget, why the targets are 20 m apart |

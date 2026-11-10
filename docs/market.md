@@ -1,36 +1,70 @@
-# Market requirements → evidence in this repository
+# What the market asks for, and where this project stands
 
-The job postings this project was written against, and the file that answers
-each of them. The right-hand column is what a reviewer can open, not a claim.
+A sample of current UAV-autonomy postings (November 2026), read against this
+repository. The point is not to collect buzzwords; it is to decide what to build
+next and what to stop pretending.
 
-Sample: 10 public postings collected on 2026-11-09 (Chengdu and national),
-listed in `docs/prior-art.md`'s companion notes and summarised here.
+## Sources
 
-| What the postings ask for | Where this repository shows it |
-|---|---|
-| PX4 architecture: uORB, modules, control loop, EKF2 | `src/uav_tracking/control/offboard_node.py`, `docs/px4-notes.md` |
-| ROS 2 nodes, custom messages, launch, QoS | `src/uav_interfaces/`, `launch/`, the `SensorDataQoS` fix in `CHANGELOG.md` |
-| Gazebo / SITL, algorithm-in-the-loop | `sim/`, `scripts/doctor.py`, `check_world_targets.py` |
-| YOLO training/export, ONNX Runtime, CPU inference | `src/uav_tracking/perception/yolo.py`, `scripts/export_onnx.py`, `scripts/verify_model.py` |
-| Small-object / low-light robustness | v0.2.0 scope, stated in the README's limitations — not claimed today |
-| TensorRT / RKNN / INT8 quantization | **not implemented**; `config/detector.yaml` and the roadmap say so |
-| Frame conventions, camera model, calibration | `src/uav_tracking/control/frames.py`, `src/uav_tracking/perception/projection.py`, `config/camera.yaml` |
-| Experiment method: baselines, repeats, failure analysis | `docs/experiment-protocol.md`, `src/uav_tracking/control/recorder.py`, `scripts/benchmark.py` |
-| Engineering habits: CI, tests, releases, changelog | `.github/workflows/`, `tests/`, `CHANGELOG.md`, the draft `v0.1.0` |
-| AI-assisted development, used honestly | `docs/ai-usage.md` (what was delegated, what was verified, where it failed) |
-| Debugging a real stack from source | `docs/verification-log.md` — ten claims, four of which were defects |
+- Kapxha Dynamics, *UAV Autonomy/R&D Engineer* — defence-tech, India:
+  PX4/ArduPilot custom modes and failsafes, MAVLink/MAVROS integration,
+  detection and tracking, **Jetson + TensorRT deployment**, EKF tuning and
+  GPS-denied navigation, ROS 2 obstacle avoidance, Gazebo SITL/HITL first.
+  <https://wellfound.com/jobs/4817734-r-d-engineer-uav-robotics>
+- Karta Innovations, *Aerial Robotics Engineer* — autonomy stack across
+  simulation and flight.
+  <https://wellfound.com/jobs/3975786-2-aerial-robotics-engineer-mid-senior-position>
+- IMPACT Drones (YC), *Autonomy Engineer, Interceptor Drones* — tracking and
+  interception of moving targets.
+  <https://www.ycombinator.com/companies/impact-drones/jobs/yVR7VxO-autonomy-engineer-interceptor-drones>
+- ASUS, *Senior Computer Vision Engineer* — model optimisation and deployment.
+  <https://jobs.jobvite.com/asus/job/o8NpAfwE>
+- Ambarella, edge AI for drones ahead of CES — the silicon vendors are pushing
+  onboard inference, not cloud.
+  <https://www.securityinfowatch.com/ces-show/news/55341169/ambarella-ambarella-doubles-down-on-edge-ai-for-drones-ahead-of-ces-citing-growing-demand-for-autonomous-aerial-systems>
 
-## What this table is not
+This is a sample, not a survey: five postings and one vendor announcement. It is
+enough to see which capabilities repeat, not enough to estimate salaries or
+frequencies.
 
-It is not a skills list. A row only survives if the linked file exists and does
-what the row says; the two rows marked **not implemented** are there to make the
-gap obvious rather than to be quietly omitted.
+## The demand, condensed
 
-## The one row that is still open
+| Capability | How it appeared | This project | Evidence |
+|---|---|---|---|
+| PX4 / ArduPilot, custom modes, failsafe | "work inside ArduPilot / PX4 … failsafe and geofence logic" | **PX4 via uXRCE-DDS, Offboard mode**, geofence and mission timeout in our own control loop | `docs/architecture.md`, `control/geofence.py` |
+| MAVLink / MAVROS | "flight controller to companion computer integration over MAVLink" | **Not used** — we speak uXRCE-DDS/ROS 2 directly | — |
+| Detection + tracking | "object detection and tracking" | **Both**, single target, IoU tracker plus per-target lock | `perception/`, `control/tracking.py` |
+| Camera calibration | "camera calibration" | Intrinsics and mount offset in config, projection round-trip tested | `config/camera.yaml`, `tests/test_projection_forward.py` |
+| Edge deployment, Jetson, TensorRT | "model deployment on NVIDIA Jetson with TensorRT" | **CPU ONNX Runtime measured**; TensorRT/INT8 **not done** | `docs/deployment.md` |
+| Real-time performance | "real-time cognitive cycle" | 8.1 ms / 119 FPS at 320 px, 4 threads; end-to-end 143 ms | `docs/deployment.md` |
+| Simulation first, SITL → real | "simulation first (Gazebo, SITL and HITL), then real flight" | **Gazebo Harmonic SITL**, 9+6 closed-loop trials, reproducible patch | `docs/experiment-protocol.md` |
+| State estimation, EKF, VIO | "EKF tuning … GPS-denied navigation" | **PX4's EKF only**, no tuning, no VIO | — |
+| Obstacle avoidance, LiDAR/depth | "path planning and obstacle avoidance with ROS 2" | **Not implemented** | — |
+| Multi-target / counter-drone | "detection, tracking and classification of airborne targets" | Single target per run | `control/selection.py` |
+| Dataset + labelling pipeline | not named, but implied by "model deployment" | **Geometry-based auto-labelling** on real frames | `scripts/label_real_frames.py` |
 
-| Requirement | Status |
-|---|---|
-| Closed loop in simulation, with measured landing error | `results/landing_error.csv` is empty until the nine SITL trials run |
+## What this tells us to build next
 
-That is the difference between a repository that describes a pipeline and one
-that has demonstrated it. The README says which one this is.
+Ordered by (market weight × what is feasible without hardware we do not have):
+
+1. **Multi-target tracking with per-target identity** — the gap between "follow
+   one cube" and "track everything in frame" is exactly what counter-drone and
+   inspection work asks for, and it is testable in SITL. *Feasible now.*
+2. **TensorRT / INT8 path** — the most repeated phrase in the postings. Blocked
+   on a Jetson or an NVIDIA GPU; the honest interim is the CPU benchmark we now
+   have, plus an export path that is ready for it. *Needs hardware.*
+3. **MAVLink bridge** — many stacks expect it even when the autopilot speaks
+   DDS. A read-only MAVLink telemetry mirror is small and testable against
+   `pymavlink`. *Feasible now, medium value.*
+4. **EKF/estimator work** — real value, but it is PX4-internal tuning and needs
+   flight data to mean anything. *Needs a vehicle.*
+5. **Obstacle avoidance** — a depth camera or LiDAR in Gazebo would let us build
+   it, but it is a second project, not an increment. *Defer.*
+
+## What we deliberately stop pretending
+
+The README says SITL only, and this page says why that matters: three of the
+five postings are about things that happen on a vehicle — hardware buses,
+vibration, EKF convergence, field trials. No amount of simulation closes that.
+The value of this repository is that everything it claims is measured and
+reproducible, not that it covers the field.
