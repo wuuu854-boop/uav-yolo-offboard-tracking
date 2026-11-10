@@ -1,0 +1,80 @@
+{
+  "capture": "/root/capture_north/trial_1",
+  "assets": [
+    [
+      0.0,
+      3.5
+    ]
+  ],
+  "qa": {
+    "capture": "/root/capture_north/trial_1",
+    "assets": [
+      [
+        0.0,
+        3.5
+      ]
+    ],
+    "thresholds": {
+      "detection_rate_min": 0.6,
+      "max_gap_s": 2.0,
+      "association_p95_m": 1.5,
+      "confidence_sigma_m": 0.75
+    },
+    "metrics": {
+      "frames": 105,
+      "detections": 76,
+      "detection_rate": 0.7238095238095238,
+      "level_detection_rate": 0.8837209302325582,
+      "longest_gap_s": 4.423,
+      "track_ids": 2,
+      "longest_track_run": 43,
+      "association_m": {
+        "median": 0.6178963396207304,
+        "p95": 5.355432134237376,
+        "max": 5.558772964234161
+      },
+      "association_confidence": {
+        "median": 0.7107534126857884,
+        "p95": 0.8940227291160642,
+        "max": 0.9382066877554033
+      },
+      "weak_associations": 34,
+      "assets_seen": [
+        0
+      ],
+      "phases": {
+        "level": {
+          "frames": 86,
+          "detection_rate": 0.8837209302325582
+        },
+        "climb": {
+          "frames": 19,
+          "detection_rate": 0.0
+        }
+      }
+    },
+    "passed": false,
+    "failures": [
+      "longest gap 4.4s > 2.0s",
+      "association p95 5.36m > 1.5m"
+    ]
+  },
+  "shot_sheet": {
+    "counts": {
+      "0": {
+        "nadir": 26
+      }
+    },
+    "rejected": {
+      "0": {
+        "target closer than 24 px to the frame edge": 50
+      }
+    },
+    "passed": true,
+    "summary": {
+      "asset0.nadir": 26
+    }
+  },
+  "features": 76,
+  "passed": false
+}

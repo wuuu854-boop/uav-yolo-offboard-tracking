@@ -51,6 +51,27 @@ customer or an aircraft: a **structured, georeferenced deliverable**, and a
 | Association accuracy | **done**: `association_confidence()` multiplies a Gaussian on the distance by track support, so a detection says both "how close" and "how well supported" | small |
 | Resolution/metadata standards | **done**: a shot sheet (`config/shot_sheet.yaml`) and a checker — views, GSD threshold, framing margin, minimum frames | small |
 
+## One command, because that is what gets bought
+
+`make pipeline CAPTURE=<dir> [ASSET=east,north]` runs the QA report, the shot
+sheet and the GeoJSON export in one pass and returns a single verdict. On the
+north-cube capture:
+
+```
+frames            105 (76 detections)
+qa                level coverage 88%, association 0.62 m, FAIL: longest gap 4.4s > 2.0s; association p95 5.36m > 1.5m
+shot sheet        asset0.nadir 26 frames - PASS
+features          76
+verdict           FAIL
+```
+
+That is the useful shape of a review: the shot standard was met, and the data
+still fails because a 4.4 s gap and a spurious track mean it cannot be filed
+without a look. A single "PASS" over both would have hidden that.
+
+Output: `results/pipeline.json` (all three sections) and
+`results/pipeline.geojson`.
+
 ## The QA report's runs
 
 `scripts/qa_report.py` over existing captures. The asset position is now an

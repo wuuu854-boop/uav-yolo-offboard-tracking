@@ -9,6 +9,11 @@ Notable changes to this project. The format follows
 
 ### Added
 
+- **One pipeline over a capture.** `scripts/pipeline.py` (and `make pipeline`)
+  runs the QA report, the shot sheet and the GeoJSON export in one pass and
+  returns a single verdict: on the north-cube flight the shot standard passes,
+  the data quality fails, and the summary says both. Output in
+  `results/pipeline.json` and `results/pipeline.geojson`.
 - **A shot sheet and a checker.** `config/shot_sheet.yaml` states what a usable
   capture of this structure type requires — mounting, ground sample distance,
   framing margin, minimum frames — and `scripts/shot_sheet_check.py` enforces it
