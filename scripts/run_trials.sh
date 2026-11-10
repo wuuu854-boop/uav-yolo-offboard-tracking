@@ -98,7 +98,9 @@ for i in $(seq 1 "$COUNT"); do
   if [[ -n "${CAPTURE_DIR:-}" ]]; then
     (
       cd "$REPO_ROOT" || exit 1
-      setsid nohup python3 scripts/capture_pose_frames.py --out "$CAPTURE_DIR" \
+      # One directory per trial: a later run would otherwise truncate the poses
+      # of the run whose frames are being analysed.
+      setsid nohup python3 scripts/capture_pose_frames.py --out "$CAPTURE_DIR/trial_$i" \
         > "/tmp/capture_t$i.log" 2>&1 < /dev/null &
     )
     sleep 3
