@@ -14,7 +14,12 @@ Notable changes to this project. The format follows
   predicted one, then falls back to nearest predicted centre within a gate, which
   is what lets a target bootstrap its velocity. Seven tests cover a fast target
   keeping its id, a missed frame, two crossing targets and the cap.
-  **Unit-tested only** — no moving target has been flown yet.
+- **Moving-target recording.** `scripts/move_target.py` drives a target with
+  `gz service set_pose`; a flight with the cube moving 3 m at 0.5 m/s recorded
+  120 airborne frames and the tracker held one id across 88 detections
+  (`results/v07_moving_target.txt`). At that speed plain IoU suffices; the
+  motion model earns its place when the per-frame shift exceeds the overlap
+  window, which the unit tests set up.
 - **Multi-target patrol.** `patrol_waypoints` in `config/mission.yaml` turns the
   mission into an ordered route: fly each local ENU waypoint, hover, land after
   the last. One SITL run with two waypoints 20 m apart visited both and landed

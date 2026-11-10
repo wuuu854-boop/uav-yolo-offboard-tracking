@@ -47,19 +47,21 @@ frequencies.
 
 Ordered by (market weight × what is feasible without hardware we do not have):
 
-1. **Multi-target mission** — *partly delivered*: `patrol_waypoints` now flies an
+1. **Multi-target mission** — *delivered in part*: `patrol_waypoints` flies an
    ordered route and lands after the last waypoint (one SITL run, 0.44 m from the
-   second target). The tracker also gained a constant-velocity model plus a
-   nearest-centre bootstrap pass, so a moving target keeps its id across frames
-   where the box moves faster than IoU can follow.
+   second target). The tracker gained a constant-velocity model plus a
+   nearest-centre bootstrap pass, and a **real moving-target recording** now backs
+   the claim: `scripts/move_target.py` drove `target_0` 3 m north at 0.5 m/s while
+   the drone approached, the flight recorded 120 airborne frames, and the replay
+   kept **one id across 88 detections** (`results/v07_moving_target.txt`).
 
-   **The moving-target flight was attempted and did not produce evidence.**
-   `scripts/move_target.py` drives a target with `gz service set_pose` and does
-   move it (verified: pose `(0, 0, 0.25)` → `(0, 1.4, 0.05)`), but the flight
-   that was supposed to record it captured 120 ground-level frames of a flat
-   grey image — the recorder attached before the camera and odometry were live.
-   The replay over those frames found zero detections, so it validated nothing.
-   The tracker therefore stays **unit-tested only**, and the README says so.
+   The honest reading: at 0.5 m/s and ~4 Hz the plain IoU association already
+   holds the id — the motion model was not required for this run. It earns its
+   place when the per-frame shift exceeds the overlap window, which is exactly
+   what `tests/test_tracking_motion.py` sets up (30 px per frame on 40 px boxes).
+   The first attempt at this recording captured 120 ground-level frames because
+   the recorder attached before takeoff; the recorder now waits until the vehicle
+   is airborne (`--min-altitude`).
 2. **TensorRT / INT8 path** — the most repeated phrase in the postings. Blocked
    on a Jetson or an NVIDIA GPU; the honest interim is the CPU benchmark we now
    have, plus an export path that is ready for it. *Needs hardware.*

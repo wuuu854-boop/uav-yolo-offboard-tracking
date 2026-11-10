@@ -1,0 +1,5 @@
+# Moving target: target_0 driven 3 m north at 0.5 m/s, drone approaching
+# capture: 120 airborne frames at every camera frame
+# tracker replay over the recording, IoU-only vs motion model
+IoU only (before)       88 detections,   1 ids, longest run  88 frames
+motion model (after)    88 detections,   1 ids, longest run  88 frames
