@@ -65,7 +65,8 @@ preflight() {
 
   echo "== python =="
   if python3 -c "import rclpy" >/dev/null 2>&1; then
-    echo "  ok   rclpy (a ROS environment is sourced)"  else
+    echo "  ok   rclpy (a ROS environment is sourced)"
+  else
     echo "  MISS rclpy: source /opt/ros/humble/setup.bash"
     failed=1
   fi
