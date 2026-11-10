@@ -167,14 +167,6 @@ class OffboardNode(Node):
         self.yaw = heading_ned_to_yaw_enu(quaternion_to_heading_ned(msg.q))
         self.roll, self.pitch = quaternion_to_roll_pitch(msg.q)
         self.update_count += 1
-        # A pose line every ~2 s at 50 Hz. The capture tool records the same
-        # quantities from the same message; when the two disagreed by 90 deg in
-        # yaw, this line is what settles which side was wrong.
-        if self.update_count % 100 == 1:
-            self.get_logger().info(
-                f"pose e={self.east:.2f} n={self.north:.2f} alt={self.altitude:.2f}"
-                f" yaw_deg={math.degrees(self.yaw):.1f} q={msg.q}"
-            )
 
     def on_status(self, msg: VehicleStatus) -> None:
         # px4_msgs/VehicleStatus: arming_state == 2 means ARMED.

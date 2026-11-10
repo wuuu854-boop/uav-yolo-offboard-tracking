@@ -65,20 +65,27 @@ sits at local `(3.5, 0)`, and the cube had been driven 3 m north, so every
 detection is legitimately several metres from the declared asset. A QA pass that
 did **not** flag that would be worthless.
 
-The first row is honest but unresolved, and looking at the frames moved the
-question one step closer. The capture records 70 frames; the first 35 are ground
-level or climb-out with no detection at all, which explains the coverage and the
-gap. The frames that do detect show a **real red cube at the top edge of the
-image** — not a false positive — while the recorded pose says the vehicle was at
-`(east -0.2, north -0.4, yaw 90°)` and the cube sits 3.5 m *east* of the spawn.
+The first row is honest but unresolved, and three measurements have since narrowed
+it. What was measured:
 
-A cube that is east of the vehicle cannot appear at the image's top edge when
-`image_up_is_forward` is true and yaw is 90°; it would be at the right edge. So
-one of three things is true: the recorded yaw is 90° off, the camera mounting is
-rotated about its optical axis, or the asset is not where `targets.yaml` says.
-The closed-loop trials land within a metre using the same projection, which
-argues against a mounting error — but that is reasoning, not a measurement, and
-it is the next thing to measure rather than the last thing to publish.
+1. **The capture is not mis-recording the pose.** During a probe flight the node
+   logged `e=0.05 n=-0.48 yaw=89.5°` and the capture recorded `e=0.02 n=-0.49
+   yaw=90.3°` at the same moment. The quaternion was essentially identity, so the
+   vehicle really was facing north by PX4's own estimate.
+2. **The frames show a real red cube at the top edge**, not a false positive, in
+   a capture whose pose is `(east -0.2, north -0.4, yaw 90°)` — where a cube
+   3.5 m east should be at the right edge, not the top.
+3. **A second, independent capture shows the same 90° pattern**: the
+   moving-target run puts the cube at `east 0.03, north 3.05` in the export while
+   its true position was `(3.5, 3)`.
+
+What that leaves is a contradiction this repository has not resolved: a fixed 90°
+mapping error would put the closed-loop landings metres from the target, and the
+nine trials land within 0.73 m. The remaining candidates are the camera mounting
+(an unmodelled roll about the optical axis) and a discrepancy between PX4's
+estimated heading and the model's physical heading that only shows up in some
+flights. The next measurement is a hover with the cube placed due north of the
+vehicle — one frame decides between them.
 
 Sample reports: `results/qa_static.json`, `results/qa_moving.json`.
 
