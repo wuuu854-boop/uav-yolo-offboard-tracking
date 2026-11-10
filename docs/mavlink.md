@@ -40,6 +40,9 @@ loop imports it.
 `tests/test_mavlink.py` encodes a snapshot, decodes the bytes with `pymavlink`,
 and checks the three messages, the armed bit, the NED semantics and the attitude
 values; one test sends the stream through a real UDP socket and parses it back.
-That is the encoding and the transport. The ROS wiring is exercised by running
-the node against a live simulation — it is not covered by a unit test, and this
-page says so rather than implying otherwise.
+
+The ROS wiring was checked against a live simulation: the bridge ran at 2 Hz for
+35 s against PX4 + Gazebo + the uXRCE agent, and a `pymavlink` listener on the
+other end received **69 HEARTBEAT, 69 ATTITUDE and 69 LOCAL_POSITION_NED**
+messages (`results/mavlink_mirror.txt`). That is the whole path — uORB to DDS to
+ROS 2 to MAVLink over UDP — not a mock of it.

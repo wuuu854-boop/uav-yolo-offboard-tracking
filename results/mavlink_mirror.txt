@@ -1,0 +1,13 @@
+# sbt: two captures, ten seconds apart
+capture=attitude-flight-70-frames
+
+# Mavlink mirror check: bridge to udpout:127.0.0.1:14660, listener on udpin
+# 35 s at 2 Hz against a live SITL session (px4 + gz + uXRCE agent)
+ATTITUDE 69
+HEARTBEAT 69
+LOCAL_POSITION_NED 69
+
+# bridge startup lines
+# [mavlink_mirror]: mirroring to udpout:127.0.0.1:14660 at 2.0 Hz (read-only)
+# [mavlink_mirror]: first odometry: n=-0.25 e=0.14 d=-0.10
+# [mavlink_mirror]: sending to udpout:127.0.0.1:14660
