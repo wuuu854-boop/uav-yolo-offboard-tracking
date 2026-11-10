@@ -50,9 +50,9 @@ Notable changes to this project. The format follows
 ### Changed
 
 - Three trials per backend after the fix (`results/v04_attitude.csv`): baseline
-  0.86/1.00/0.66 m, YOLO 0.64/1.57/1.49 m. The 2.2 m YOLO failure mode is gone;
-  the detector's remaining 0.6 m bias keeps it at the edge of tolerance, so the
-  measured loop stays on the colour baseline.
+  0.86/1.00/0.66 m, YOLO 0.64/1.57/1.49 m. The 2.2 m YOLO failure mode is gone.
+  The detector's remaining 0.6 m bias kept it at the edge of tolerance at that
+  point; 0.4.0 removes it.
 
 ### CI
 

@@ -204,18 +204,12 @@ The 2.2 m failure mode is gone: the worst YOLO run is now 1.57 m instead of
 change (0.66–1.00 m), which is the control that says the fix is not moving
 everything.
 
-YOLO still starts 0.6 m off, so it sits at the edge of the 1.5 m tolerance.
-Removing that last bias is a detector job, not a projection one — the box
-covering part of the shadow — and the honest summary stays: **the measured loop
-is the baseline.**
+YOLO still starts about 0.6 m off, so it sits at the edge of the 1.5 m tolerance.
+Removing that last bias turns out to be a detector job, not a projection one — and
+the next two sections are how it was done.
 
-The measured closed loop therefore remains the colour baseline, and the honest
-summary of the YOLO backend is: **it flies, and the reason it missed is now
-measured, fixed, and re-measured.**
-
-**The measured closed loop therefore remains the colour baseline.** The YOLO row
-stays out of the results table until it can match it, and `results/v03_yolo_trials.csv`
-is committed so the claim can be checked rather than trusted.
+(The rows behind this section are kept in `results/v03_yolo_trials.csv` and
+`results/v04_attitude.csv`, including the failures.)
 
 ## The boxes are the problem
 
