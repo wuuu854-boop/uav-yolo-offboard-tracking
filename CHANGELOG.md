@@ -27,6 +27,8 @@ search, which is what `confirm_frames` now prevents.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-10
+
 ### Fixed
 
 - `perception/yolo.py` decoded a channel-first export `(1, 4 + C, N)` as if the
