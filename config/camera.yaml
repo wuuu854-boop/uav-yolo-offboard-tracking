@@ -26,7 +26,7 @@ cy: 480.0
 # puts the optical axis on body -z (down) and the image top towards body +x.
 # Getting this wrong mirrors the target along one axis; verify with one known
 # target before flying the full mission.
-image_up_is_forward: false
+image_up_is_forward: true
 
 # Camera optical centre relative to the vehicle origin, metres, body FLU
 # (x forward, y left, z up) as used by the Gazebo model.
