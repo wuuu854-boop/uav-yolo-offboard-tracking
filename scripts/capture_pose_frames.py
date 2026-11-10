@@ -37,13 +37,18 @@ from uav_tracking.control.frames import (  # noqa: E402
 
 
 class PoseFrameRecorder(Node):
-    def __init__(self, out_dir: pathlib.Path, every: int, max_frames: int) -> None:
+    def __init__(
+        self, out_dir: pathlib.Path, every: int, max_frames: int, min_altitude: float = 0.8
+    ) -> None:
         super().__init__("pose_frame_recorder")
         self.out_dir = out_dir
         self.out_dir.mkdir(parents=True, exist_ok=True)
         self.pose_file = (out_dir / "poses.jsonl").open("w", encoding="utf-8")
         self.every = max(1, every)
         self.max_frames = max_frames
+        # Ground frames are useless for a tracking replay, and one whole run got
+        # recorded as a flat grey image of the ground. Wait until it is airborne.
+        self.min_altitude = min_altitude
         self.seen = 0
         self.saved = 0
         self.bridge = CvBridge()
@@ -62,7 +67,12 @@ class PoseFrameRecorder(Node):
 
     def on_image(self, msg: Image) -> None:
         self.seen += 1
-        if self.pose is None or self.seen % self.every or self.saved >= self.max_frames:
+        if (
+            self.pose is None
+            or self.pose[2] < self.min_altitude
+            or self.seen % self.every
+            or self.saved >= self.max_frames
+        ):
             return
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
         name = f"frame_{self.saved:04d}.jpg"
@@ -94,10 +104,13 @@ def main() -> int:
     parser.add_argument("--out", default="/root/capture")
     parser.add_argument("--every", type=int, default=5)
     parser.add_argument("--max-frames", type=int, default=120)
+    parser.add_argument(
+        "--min-altitude", type=float, default=0.8, help="record only while airborne"
+    )
     args = parser.parse_args()
 
     rclpy.init()
-    node = PoseFrameRecorder(pathlib.Path(args.out), args.every, args.max_frames)
+    node = PoseFrameRecorder(pathlib.Path(args.out), args.every, args.max_frames, args.min_altitude)
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
