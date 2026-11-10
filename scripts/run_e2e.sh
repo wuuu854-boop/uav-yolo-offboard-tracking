@@ -21,6 +21,9 @@ RESULTS="results/landing_error.csv"
 # Same file by default; override to measure a different detector config (for
 # example a YOLO backend that only exists on machines with the model).
 DETECTOR_CONFIG="${DETECTOR_CONFIG:-config/detector.yaml}"
+# Same idea for the mission: a trial can point at a generated variant (a patrol
+# route, a different tolerance) without editing the shipped config.
+MISSION_CONFIG="${MISSION_CONFIG:-config/mission.yaml}"
 
 usage() {
   cat <<'EOF'
@@ -101,7 +104,7 @@ if [[ "$MODE" == "dry" ]]; then
 
 would run:
   python3 src/uav_tracking/perception/detector_node.py --config "$DETECTOR_CONFIG"
-  python3 src/uav_tracking/control/offboard_node.py
+  python3 src/uav_tracking/control/offboard_node.py --config "$MISSION_CONFIG"
 and wait up to ${DURATION_S}s for a new row in ${RESULTS}.
 EOF
   exit 0
@@ -144,7 +147,7 @@ echo "== starting nodes (logs in log/) =="
 python3 src/uav_tracking/perception/detector_node.py --config "$DETECTOR_CONFIG" \
   > log/detector.log 2>&1 &
 DETECTOR_PID=$!
-python3 src/uav_tracking/control/offboard_node.py > log/offboard.log 2>&1 &
+python3 src/uav_tracking/control/offboard_node.py --config "$MISSION_CONFIG" > log/offboard.log 2>&1 &
 OFFBOARD_PID=$!
 
 cleanup() {
