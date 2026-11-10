@@ -18,7 +18,10 @@ max_detections: 10
 # decoupling the two keeps setpoints smooth when inference jitters (see docs/architecture.md).
 publish_rate_hz: 5
 
-# Colour-threshold baseline (used for the comparison table, not for the mission).
-baseline_hsv_lower: [35, 80, 80]
-baseline_hsv_upper: [85, 255, 255]
+# Colour-threshold baseline (drives the mission when backend: baseline).
+# Range 1 covers hue 0..10, range 2 covers 170..180: red wraps around the end of
+# the OpenCV hue scale, so one range would only see half the cube's pixels.
+baseline_hsv_ranges:
+  - [[0, 120, 70], [10, 255, 255]]
+  - [[170, 120, 70], [180, 255, 255]]
 baseline_min_area_px: 150

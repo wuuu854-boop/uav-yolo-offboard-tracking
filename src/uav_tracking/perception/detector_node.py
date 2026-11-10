@@ -64,10 +64,18 @@ class DetectorNode(Node):
             )
             description = model_path.name
         elif self.backend == "baseline":
-            self.hsv_lower = tuple(config.get("baseline_hsv_lower", [35, 80, 80]))
-            self.hsv_upper = tuple(config.get("baseline_hsv_upper", [85, 255, 255]))
+            # baseline_hsv_ranges is a list of [lower, upper] pairs, OR-ed
+            # together; a red target needs two because hue wraps at 180.
+            ranges = config.get("baseline_hsv_ranges")
+            if ranges:
+                self.hsv_lower = [tuple(r[0]) for r in ranges]
+                self.hsv_upper = [tuple(r[1]) for r in ranges]
+                description = f"HSV ranges {ranges}"
+            else:
+                self.hsv_lower = tuple(config.get("baseline_hsv_lower", [35, 80, 80]))
+                self.hsv_upper = tuple(config.get("baseline_hsv_upper", [85, 255, 255]))
+                description = f"HSV threshold {self.hsv_lower}..{self.hsv_upper}"
             self.min_area_px = int(config.get("baseline_min_area_px", 150))
-            description = f"HSV threshold {self.hsv_lower}..{self.hsv_upper}"
         else:
             raise ValueError(f"unknown backend {self.backend!r}: expected 'yolo' or 'baseline'")
 

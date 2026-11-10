@@ -42,3 +42,31 @@ def test_ignores_blobs_below_the_minimum_area():
 def test_rejects_a_frame_that_is_not_bgr():
     with pytest.raises(ValueError):
         detect_color_centroid(np.zeros((480, 640), dtype=np.uint8), GREEN_LOWER, GREEN_UPPER)
+
+
+RED_LOWER = [[0, 120, 70], [170, 120, 70]]
+RED_UPPER = [[10, 255, 255], [180, 255, 255]]
+
+
+def test_two_ranges_are_or_ed_into_one_blob():
+    """Red wraps at hue 180, so half the object falls in the other range."""
+    frame = np.zeros((240, 320, 3), dtype=np.uint8)
+    cv2.rectangle(frame, (60, 80), (139, 159), (30, 30, 220), thickness=-1)  # hue ~1
+    cv2.rectangle(frame, (100, 80), (179, 159), (40, 40, 240), thickness=-1)  # hue ~178
+
+    found = detect_color_centroid(frame, RED_LOWER, RED_UPPER, min_area_px=200)
+
+    assert found is not None
+    u, _v, area, _w, _h = found
+    assert 60 < u < 180
+    assert area > 200
+
+
+def test_a_single_range_still_works():
+    frame = np.zeros((240, 320, 3), dtype=np.uint8)
+    cv2.rectangle(frame, (100, 80), (179, 159), (0, 0, 220), thickness=-1)
+
+    found = detect_color_centroid(frame, RED_LOWER[0], RED_UPPER[0], min_area_px=200)
+
+    assert found is not None
+    assert found[0] == pytest.approx(139.0, abs=4.0)

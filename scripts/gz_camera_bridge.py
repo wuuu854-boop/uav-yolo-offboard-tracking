@@ -16,15 +16,14 @@ from __future__ import annotations
 
 import argparse
 
+import gz.msgs10.image_pb2 as gz_image
+import gz.transport13 as gz_transport
 import numpy as np
 import rclpy
 from cv_bridge import CvBridge
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image
-
-import gz.msgs10.image_pb2 as gz_image
-import gz.transport13 as gz_transport
 
 
 class GzCameraBridge(Node):

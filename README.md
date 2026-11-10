@@ -36,7 +36,7 @@ Source: [`results/detection_bench.csv`](results/detection_bench.csv) ·
 
 | Layer | Status | Evidence |
 |---|---|---|
-| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (171 tests) + `make demo` |
+| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (173 tests) + `make demo` |
 | YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
 | Cross-frame identity (`track_id`) | ✅ verified | `tests/test_tracking.py` (12 tests) + a ROS test that the id survives two frames |
 | ROS 2 packages build, both nodes run | ✅ verified in CI | `ROS build` workflow on `ros:humble`: detector against synthetic images, controller against fake PX4 traffic |
