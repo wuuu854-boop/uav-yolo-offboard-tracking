@@ -1,4 +1,4 @@
-# Camera intrinsics for PX4's `x500_mono_cam_down` model.
+﻿# Camera intrinsics for PX4's `x500_mono_cam_down` model.
 #
 # Source of truth: models/mono_cam/model.sdf in PX4/PX4-gazebo-models
 #   <horizontal_fov>1.74</horizontal_fov>   (rad, ~99.7 deg)
@@ -26,7 +26,7 @@ cy: 480.0
 # puts the optical axis on body -z (down) and the image top towards body +x.
 # Getting this wrong mirrors the target along one axis; verify with one known
 # target before flying the full mission.
-image_up_is_forward: true
+image_up_is_forward: false
 
 # Camera optical centre relative to the vehicle origin, metres, body FLU
 # (x forward, y left, z up) as used by the Gazebo model.
