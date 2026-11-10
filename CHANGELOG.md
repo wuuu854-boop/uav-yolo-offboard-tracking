@@ -7,6 +7,8 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-10
+
 ### Added
 
 - **One pipeline over a capture.** `scripts/pipeline.py` (and `make pipeline`)
