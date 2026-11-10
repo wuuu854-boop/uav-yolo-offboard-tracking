@@ -7,7 +7,13 @@ track continuity, and how far each detection lands from the asset it claims.
 This runs those checks over a capture directory and exits non-zero when the run
 fails its thresholds, so it can gate a pipeline.
 
-    python3 scripts/qa_report.py --capture /root/capture/trial_1 --out results/qa.json
+Coverage is reported per flight phase, because takeoff and landing frames drag a
+whole-flight average down without telling anyone anything. The asset position is
+an input, not an assumption: a moved target must not look like a broken
+projection.
+
+    python3 scripts/qa_report.py --capture /root/capture/trial_1 \
+        --asset 3.5,0 --out results/qa.json
 """
 
 from __future__ import annotations
@@ -28,6 +34,7 @@ from uav_tracking.control.qa import (  # noqa: E402
     longest_gap,
     nearest_target,
     percentiles,
+    summarise_phases,
     verdict,
 )
 from uav_tracking.perception.color_baseline import detect_color_centroid  # noqa: E402
@@ -39,6 +46,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--capture", required=True)
     parser.add_argument("--config", default="config")
+    parser.add_argument(
+        "--asset",
+        action="append",
+        default=[],
+        metavar="EAST,NORTH",
+        help="asset position in the local frame, repeatable; defaults to targets.yaml",
+    )
     parser.add_argument("--out", default="")
     args = parser.parse_args()
 
@@ -55,14 +69,21 @@ def main() -> int:
     config_dir = pathlib.Path(args.config)
     camera = yaml.safe_load((config_dir / "camera.yaml").read_text(encoding="utf-8"))
     detector = yaml.safe_load((config_dir / "detector.yaml").read_text(encoding="utf-8"))
-    mission = yaml.safe_load((config_dir / "mission.yaml").read_text(encoding="utf-8"))
-    targets_raw = yaml.safe_load((config_dir / "targets.yaml").read_text(encoding="utf-8"))[
-        "targets"
-    ]
-    spawn = mission.get("spawn_offset_enu", (0.0, 0.0))
-    targets = [
-        (float(t["x"]) - float(spawn[0]), float(t["y"]) - float(spawn[1])) for t in targets_raw
-    ]
+
+    if args.asset:
+        targets = [tuple(float(value) for value in asset.split(",")) for asset in args.asset]
+    else:
+        mission = yaml.safe_load((config_dir / "mission.yaml").read_text(encoding="utf-8"))
+        targets_raw = yaml.safe_load((config_dir / "targets.yaml").read_text(encoding="utf-8"))[
+            "targets"
+        ]
+        spawn = mission.get("spawn_offset_enu", (0.0, 0.0))
+        targets = [
+            (float(t["x"]) - float(spawn[0]), float(t["y"]) - float(spawn[1])) for t in targets_raw
+        ]
+    if any(len(target) != 2 for target in targets):
+        print("each --asset needs two values: east,north")
+        return 2
 
     ranges = detector.get("baseline_hsv_ranges") or [
         [detector["baseline_hsv_lower"], detector["baseline_hsv_upper"]]
@@ -76,7 +97,7 @@ def main() -> int:
 
     tracker = IouTracker()
     started = poses[0]["wall_time"]
-    detected_times: list[float] = []
+    samples: list[tuple[float, float, bool]] = []
     association_errors: list[float] = []
     associations: list[int] = []
     ids: list[int] = []
@@ -91,9 +112,9 @@ def main() -> int:
             detections.append(
                 {"bbox_cx": found[0], "bbox_cy": found[1], "bbox_w": found[3], "bbox_h": found[4]}
             )
-        annotated = tracker.update(detections, pose["wall_time"] - started)
-        if annotated:
-            detected_times.append(pose["wall_time"] - started)
+        now_s = pose["wall_time"] - started
+        annotated = tracker.update(detections, now_s)
+        samples.append((now_s, pose["altitude"], bool(annotated)))
         for detection in annotated:
             ids.append(detection["track_id"])
             east, north, _ = estimate_target_enu(
@@ -113,20 +134,40 @@ def main() -> int:
             association_errors.append(distance)
 
     total_s = poses[-1]["wall_time"] - started
+    phases = summarise_phases(samples)
+    level = phases.get(
+        "level", {"frames": 0, "detections": 0, "detection_rate": 0.0, "detection_times": []}
+    )
     distinct_ids = sorted(set(ids))
+    association_summary = percentiles(association_errors)
+
+    # The verdict is about the survey phase: that is when the camera should be
+    # seeing the asset. Ground and climb frames are reported, not judged.
+    checked = {
+        "detection_rate": level["detection_rate"],
+        "longest_gap_s": round(longest_gap(level["detection_times"], total_s), 3),
+        "association_m": association_summary,
+    }
+    passed, reasons = verdict(checked, DEFAULT_THRESHOLDS)
+
     metrics = {
         "frames": len(poses),
         "detections": len(ids),
-        "detection_rate": len(detected_times) / len(poses),
-        "longest_gap_s": round(longest_gap(detected_times, total_s), 3),
+        "detection_rate": len([s for s in samples if s[2]]) / len(samples) if samples else 0.0,
+        "level_detection_rate": level["detection_rate"],
+        "longest_gap_s": checked["longest_gap_s"],
         "track_ids": len(distinct_ids),
         "longest_track_run": max((ids.count(track_id) for track_id in distinct_ids), default=0),
-        "association_m": percentiles(association_errors),
+        "association_m": association_summary,
         "assets_seen": sorted(set(associations)),
+        "phases": {
+            phase: {"frames": entry["frames"], "detection_rate": entry["detection_rate"]}
+            for phase, entry in phases.items()
+        },
     }
-    passed, reasons = verdict(metrics, DEFAULT_THRESHOLDS)
     report = {
         "capture": str(capture),
+        "assets": targets,
         "thresholds": DEFAULT_THRESHOLDS,
         "metrics": metrics,
         "passed": passed,
@@ -137,9 +178,12 @@ def main() -> int:
         pathlib.Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         pathlib.Path(args.out).write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
-    print(f"frames            {metrics['frames']}")
-    print(f"detections        {metrics['detections']} ({metrics['detection_rate']:.0%})")
-    print(f"longest gap       {metrics['longest_gap_s']:.2f} s of {total_s:.1f} s")
+    print(f"frames            {metrics['frames']} ({metrics['detections']} detections)")
+    for phase, entry in sorted(metrics["phases"].items()):
+        print(
+            f"  {phase:<8}        {entry['frames']:>4} frames, {entry['detection_rate']:.0%} detected"
+        )
+    print(f"level gap         {metrics['longest_gap_s']:.2f} s of {total_s:.1f} s")
     print(f"track ids         {metrics['track_ids']} (longest run {metrics['longest_track_run']})")
     print(
         f"association       median {metrics['association_m']['median']:.2f} m, "

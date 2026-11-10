@@ -17,6 +17,72 @@ DEFAULT_THRESHOLDS = {
     "association_p95_m": 1.5,
 }
 
+GROUND_ALTITUDE_M = 0.5
+VERTICAL_SPEED_BAND_MPS = 0.2
+
+
+def phase_of(
+    altitude_m: float,
+    vertical_speed_mps: float,
+    ground_m: float = GROUND_ALTITUDE_M,
+    band: float = VERTICAL_SPEED_BAND_MPS,
+) -> str:
+    """Coarse flight phase from altitude and vertical speed.
+
+    Whole-flight averages hide the thing an operator cares about: coverage while
+    the camera is actually looking at the asset. Takeoff and landing frames drag
+    the number down without telling you anything.
+    """
+    if altitude_m < ground_m:
+        return "ground"
+    if vertical_speed_mps > band:
+        return "climb"
+    if vertical_speed_mps < -band:
+        return "descent"
+    return "level"
+
+
+def summarise_phases(samples: list[tuple[float, float, bool]]) -> dict[str, dict]:
+    """Per-phase frame counts and detection rates.
+
+    ``samples`` is ``(time_s, altitude_m, detected)`` per recorded frame, in
+    order. Vertical speed comes from consecutive samples; the first one has no
+    predecessor and is classified as level.
+    """
+    phases: dict[str, dict] = {}
+    previous: tuple[float, float] | None = None
+    for time_s, altitude_m, detected in samples:
+        vertical_speed = 0.0
+        if previous is not None:
+            previous_time, previous_altitude = previous
+            elapsed = time_s - previous_time
+            if elapsed > 0.0:
+                vertical_speed = (altitude_m - previous_altitude) / elapsed
+        previous = (time_s, altitude_m)
+
+        entry = phases.setdefault(
+            phase_of(altitude_m, vertical_speed),
+            {
+                "frames": 0,
+                "detections": 0,
+                "times": [],
+            },
+        )
+        entry["frames"] += 1
+        if detected:
+            entry["detections"] += 1
+            entry["times"].append(time_s)
+
+    return {
+        phase: {
+            "frames": entry["frames"],
+            "detections": entry["detections"],
+            "detection_rate": entry["detections"] / entry["frames"] if entry["frames"] else 0.0,
+            "detection_times": entry["times"],
+        }
+        for phase, entry in phases.items()
+    }
+
 
 def nearest_target(
     east: float, north: float, targets: list[tuple[float, float]]
