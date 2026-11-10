@@ -65,27 +65,30 @@ sits at local `(3.5, 0)`, and the cube had been driven 3 m north, so every
 detection is legitimately several metres from the declared asset. A QA pass that
 did **not** flag that would be worthless.
 
-The first row is honest but unresolved, and three measurements have since narrowed
-it. What was measured:
+The first row is honest, and the question it raised is now closed by a fourth
+measurement. What was measured, in order:
 
 1. **The capture is not mis-recording the pose.** During a probe flight the node
    logged `e=0.05 n=-0.48 yaw=89.5°` and the capture recorded `e=0.02 n=-0.49
-   yaw=90.3°` at the same moment. The quaternion was essentially identity, so the
-   vehicle really was facing north by PX4's own estimate.
-2. **The frames show a real red cube at the top edge**, not a false positive, in
-   a capture whose pose is `(east -0.2, north -0.4, yaw 90°)` — where a cube
-   3.5 m east should be at the right edge, not the top.
-3. **A second, independent capture shows the same 90° pattern**: the
-   moving-target run puts the cube at `east 0.03, north 3.05` in the export while
-   its true position was `(3.5, 3)`.
+   yaw=90.3°` at the same moment, with a quaternion that was essentially identity.
+2. **An east-side cube appeared at the top edge** of a capture whose pose said the
+   vehicle faced north — which the model says should put it on the right edge.
+3. A second capture showed the same 90°-looking pattern.
+4. **The decider: the cube was moved 3.5 m due north and flown again.** The
+   detections then projected to `(east ≈ 0, north ≈ 3.5)` — where the cube
+   actually was — and the QA report put them **4.95 m** from the declared asset at
+   `(3.5, 0)`, exactly `hypot(3.5, 3.5)`.
 
-What that leaves is a contradiction this repository has not resolved: a fixed 90°
-mapping error would put the closed-loop landings metres from the target, and the
-nine trials land within 0.73 m. The remaining candidates are the camera mounting
-(an unmodelled roll about the optical axis) and a discrepancy between PX4's
-estimated heading and the model's physical heading that only shows up in some
-flights. The next measurement is a hover with the cube placed due north of the
-vehicle — one frame decides between them.
+So the projection maps north to north correctly, and the QA number is the report
+doing its job: the asset was not where `targets.yaml` said. What the earlier
+east-side frames were showing is still unexplained, and the answer is almost
+certainly the boring one — the asset in that capture was not at `(3.5, 0)` either,
+which the capture's own pose cannot tell you.
+
+The lesson worth keeping: a QA metric is only meaningful against a known asset
+position, and this repository's `targets.yaml` is a static assumption that the
+mover script breaks. The report should take the asset position as an input
+instead of assuming the config is the truth.
 
 Sample reports: `results/qa_static.json`, `results/qa_moving.json`.
 
