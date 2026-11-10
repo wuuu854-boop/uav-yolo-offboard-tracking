@@ -104,7 +104,7 @@ if [[ "$MODE" == "dry" ]]; then
 
 would run:
   python3 src/uav_tracking/perception/detector_node.py --config "$DETECTOR_CONFIG"
-  python3 src/uav_tracking/control/offboard_node.py --config "$MISSION_CONFIG"
+  python3 src/uav_tracking/control/offboard_node.py --mission "$MISSION_CONFIG"
 and wait up to ${DURATION_S}s for a new row in ${RESULTS}.
 EOF
   exit 0
@@ -147,7 +147,7 @@ echo "== starting nodes (logs in log/) =="
 python3 src/uav_tracking/perception/detector_node.py --config "$DETECTOR_CONFIG" \
   > log/detector.log 2>&1 &
 DETECTOR_PID=$!
-python3 src/uav_tracking/control/offboard_node.py --config "$MISSION_CONFIG" > log/offboard.log 2>&1 &
+python3 src/uav_tracking/control/offboard_node.py --mission "$MISSION_CONFIG" > log/offboard.log 2>&1 &
 OFFBOARD_PID=$!
 
 cleanup() {
