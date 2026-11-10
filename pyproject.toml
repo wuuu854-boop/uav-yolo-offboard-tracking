@@ -16,6 +16,8 @@ dependencies = [
     "opencv-python-headless>=4.9,<4.11",
     "onnxruntime>=1.17,<2.0",
     "PyYAML>=6.0,<7.0",
+    # read-only MAVLink telemetry mirror (scripts/mavlink_bridge.py)
+    "pymavlink>=2.4,<3.0",
 ]
 
 [tool.setuptools]
