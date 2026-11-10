@@ -3,10 +3,14 @@ FROM ros:humble-ros-base
 ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-c"]
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends -o Acquire::Retries=8 \
-         python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+RUN set -eux; \
+    for attempt in 1 2 3 4; do \
+      if apt-get update; then break; fi; \
+      echo "apt update failed (attempt $attempt), retrying"; \
+      sleep 20; \
+    done; \
+    apt-get install -y --no-install-recommends -o Acquire::Retries=8 python3-pip; \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /ws
 
