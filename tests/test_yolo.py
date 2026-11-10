@@ -118,3 +118,36 @@ def test_decode_rejects_an_empty_class_list():
 def test_decode_rejects_a_one_dimensional_tensor():
     with pytest.raises(ValueError):
         decode(np.zeros((7,), dtype=float), classes=(0,))
+
+
+def test_a_channel_first_export_decodes_to_boxes_not_channels():
+    """(1, 4+C, N) is the normal ONNX layout; reading it as N rows gives garbage."""
+    output = np.array(
+        [
+            [
+                [160.0, 40.0],  # cx
+                [160.0, 40.0],  # cy
+                [60.0, 20.0],  # w
+                [60.0, 20.0],  # h
+                [0.9, 0.1],  # score
+            ]
+        ],
+        dtype=np.float32,
+    )
+
+    detections = decode(output, scale=1.0, classes=(0,), conf_threshold=0.5)
+
+    assert len(detections) == 1
+    assert detections[0]["bbox_cx"] == pytest.approx(160.0)
+    assert detections[0]["confidence"] == pytest.approx(0.9, abs=1e-6)
+    assert 0.0 <= detections[0]["confidence"] <= 1.0
+
+
+def test_a_single_box_channel_first_export_decodes():
+    output = np.array([[[100.0]], [[120.0]], [[40.0]], [[40.0]], [[0.8]]], dtype=np.float32)
+
+    detections = decode(output, scale=1.0, classes=(0,), conf_threshold=0.5)
+
+    assert len(detections) == 1
+    assert detections[0]["bbox_cx"] == pytest.approx(100.0)
+    assert detections[0]["bbox_cy"] == pytest.approx(120.0)

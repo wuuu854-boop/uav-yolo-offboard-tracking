@@ -65,11 +65,16 @@ def decode(
     if prediction.ndim != 2:
         raise ValueError(f"expected a 2D prediction, got shape {output.shape}")
 
-    # The export can come out as (4 + C, N) or (N, 4 + C). Decide by asking which
-    # orientation can hold at least the requested classes; `rows < cols` alone
-    # fails when there are fewer boxes than columns (e.g. a 1-box export).
-    minimum_columns = int(class_indices.max()) + 5
-    if prediction.shape[1] < minimum_columns <= prediction.shape[0]:
+    # A YOLO export is (4 + C, N) or (N, 4 + C). Ask which side equals the
+    # channel count rather than guessing from the sizes: for a 1-class model a
+    # channel-first tensor is (5, 2100), and "rows < columns" logic happily
+    # treats those five channels as five boxes, which decodes to nonsense
+    # coordinates and confidences above 1.
+    channels = 4 + int(class_indices.max()) + 1
+    if prediction.shape[1] != channels and prediction.shape[0] == channels:
+        prediction = prediction.T
+    elif prediction.shape[1] != channels and prediction.shape[0] < prediction.shape[1]:
+        # an export with an extra column set (objectness, or a different head)
         prediction = prediction.T
 
     if prediction.shape[1] <= class_indices.max() + 4:
