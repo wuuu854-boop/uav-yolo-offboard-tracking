@@ -1,0 +1,28 @@
+{
+  "capture": "/root/capture_moving2/trial_1",
+  "thresholds": {
+    "detection_rate_min": 0.6,
+    "max_gap_s": 2.0,
+    "association_p95_m": 1.5
+  },
+  "metrics": {
+    "frames": 120,
+    "detections": 88,
+    "detection_rate": 0.7333333333333333,
+    "longest_gap_s": 0.494,
+    "track_ids": 1,
+    "longest_track_run": 88,
+    "association_m": {
+      "median": 6.091355065935765,
+      "p95": 7.140654454972294,
+      "max": 7.190263074814719
+    },
+    "assets_seen": [
+      0
+    ]
+  },
+  "passed": false,
+  "failures": [
+    "association p95 7.14m > 1.5m"
+  ]
+}

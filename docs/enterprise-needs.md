@@ -45,11 +45,33 @@ customer or an aircraft: a **structured, georeferenced deliverable**, and a
 
 | Enterprise ask | Smallest honest version here | Effort |
 |---|---|---|
-| GIS-ready, structured output | export detections as GeoJSON with pose, timestamp, confidence and track id; validate the schema | small |
-| QA over the data, not just the flight | a run report: frames received vs used, detection rate, association error, gaps | small |
-| Model governance | a model card: intended use, metrics, failure modes, version, evaluation protocol | small |
-| Association accuracy | already measured as landing error; the missing piece is reporting it per detection, not per trial | medium |
+| GIS-ready, structured output | **done**: `scripts/export_geojson.py`, sample in `results/detections.geojson` | small |
+| QA over the data, not just the flight | **done**: `scripts/qa_report.py` — coverage, longest gap, track continuity, association error, exit code for CI | small |
+| Model governance | **done**: [`model-card.md`](model-card.md) | small |
+| Association accuracy | measured per detection now; per-detection confidence is not modelled | medium |
 | Resolution/metadata standards | partially in `config/camera.yaml`; a "shot sheet" concept does not exist | large |
+
+## The QA report's first two runs
+
+`scripts/qa_report.py` over two existing captures:
+
+| Capture | Coverage | Longest gap | Track ids | Association p95 | Verdict |
+|---|---|---|---|---|---|
+| static-target flight (70 frames) | 40% | 4.98 s | 10 | 4.82 m | FAIL: all three |
+| moving-target flight (120 frames) | 73% | 0.49 s | 1 | 7.14 m | FAIL: association |
+
+The second row is the report doing its job: the asset in `config/targets.yaml`
+sits at local `(3.5, 0)`, and the cube had been driven 3 m north, so every
+detection is legitimately several metres from the declared asset. A QA pass that
+did **not** flag that would be worthless.
+
+The first row is honest but unresolved: 40% coverage over 70 frames and a 4.7 m
+median association do not match what that flight was expected to be. Either the
+capture covers phases where the target is out of frame (takeoff, the hover after
+arrival, landing) or its spawn does not match `mission.yaml`. Both are exactly
+the kind of question this report exists to raise, and neither is answered here —
+the sample reports are in `results/qa_static.json` and `results/qa_moving.json`
+so someone can check.
 
 The first three are the ones that fit the project's own rule — every claim
 measurable — and they are what an enterprise reviewer would look for before

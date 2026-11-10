@@ -18,6 +18,11 @@ Notable changes to this project. The format follows
   this repository.
 - `docs/model-card.md`: the governance document — intended use, data provenance,
   metrics, failure modes, and what it does not certify.
+- `scripts/qa_report.py` and `control/qa.py`: a data-quality report over a
+  recorded flight — detection coverage, longest gap, track continuity, and the
+  distance from every detection to the asset it is associated with. Six tests on
+  the arithmetic; the script exits non-zero when a run fails its thresholds.
+  Sample reports are in `results/qa_static.json` and `results/qa_moving.json`.
 
 ## [0.5.0] - 2026-11-10
 

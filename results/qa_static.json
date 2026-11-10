@@ -1,0 +1,30 @@
+{
+  "capture": "/root/capture_att/trial_1",
+  "thresholds": {
+    "detection_rate_min": 0.6,
+    "max_gap_s": 2.0,
+    "association_p95_m": 1.5
+  },
+  "metrics": {
+    "frames": 70,
+    "detections": 28,
+    "detection_rate": 0.4,
+    "longest_gap_s": 4.983,
+    "track_ids": 10,
+    "longest_track_run": 16,
+    "association_m": {
+      "median": 4.705613470692313,
+      "p95": 4.81574444239958,
+      "max": 4.821145911894639
+    },
+    "assets_seen": [
+      0
+    ]
+  },
+  "passed": false,
+  "failures": [
+    "detection rate 40% < 60%",
+    "longest gap 5.0s > 2.0s",
+    "association p95 4.82m > 1.5m"
+  ]
+}
