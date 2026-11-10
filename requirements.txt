@@ -9,9 +9,12 @@
 # OpenCV are built against the numpy 1.x ABI. With numpy 2 the import fails with
 # "_ARRAY_API not found" and then segfaults inside cv_bridge.
 numpy>=1.26,<2.0
+# Headless, not opencv-python: the GUI build links libGL, which CI containers and
+# headless SITL machines do not have, and importing cv2 then fails with
+# "libGL.so.1: cannot open shared object file". Nothing here calls imshow.
 # 4.11+ requires numpy>=2, which the pin above forbids: pip then backtracks
 # through every opencv release, downloading 70 MB wheels each time, and takes
 # minutes to fail on a fresh Ubuntu 22.04. Keep the ceiling.
-opencv-python>=4.9,<4.11
+opencv-python-headless>=4.9,<4.11
 onnxruntime>=1.17,<2.0
 PyYAML>=6.0,<7.0
