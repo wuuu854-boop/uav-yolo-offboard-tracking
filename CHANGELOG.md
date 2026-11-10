@@ -7,6 +7,8 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-10
+
 ### Added
 
 - `scripts/export_geojson.py`: a recorded flight becomes a GeoJSON feature
