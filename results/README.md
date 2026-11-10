@@ -16,6 +16,8 @@ README and in the resume, so they are written by scripts, never by hand.
 | `v04_attitude.csv` | three trials per backend after the projection learned roll/pitch | baseline 0.86/1.00/0.66 m, YOLO 0.64/1.57/1.49 m — the 2.2 m mode is gone |
 | `yolo_pixel_boxes.txt` | raw boxes from both models on the recorded 1280×960 frames | YOLO predicts 436–490 px boxes for a 54 px cube in every configuration: the model detects the region, not the object |
 | `v05_yolo_real.csv` | six YOLO trials after fine-tuning on auto-labelled real frames | 1.265 / 0.822 / 0.386 / 1.066 / 1.321 / 1.235 m — 6/6 within tolerance, median 1.15 m |
+| `v06_patrol.csv` | one two-waypoint patrol run | visited both waypoints, landed 0.438 m from the second target |
+| `v07_moving_target.txt` | tracker replay over a moving-target flight | cube moved 3 m at 0.5 m/s; 88 detections, one id, with and without the motion model |
 | `latency.csv` | `scripts/benchmark.py` (via `make bench`) | aggregate error/latency statistics for the README table |
 | `projection_error.csv` | W2 static test | pixel-to-ground error against the three known target coordinates |
 | `detection_bench.csv` | `scripts/verify_model.py` + manual runs | detection rate and latency per backend |
