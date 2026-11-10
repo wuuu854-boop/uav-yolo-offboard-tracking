@@ -258,12 +258,16 @@ class OffboardNode(Node):
         rewritten by every frame.
         """
         now_s = self.get_clock().now().nanoseconds / 1e9
-        target = None if self._target_is_stale() else self._project_best_detection()
+        estimate = None if self._target_is_stale() else self._project_best_detection()
+        # The goal can come from a detection or, on a patrol leg, from the
+        # waypoint. They are not the same thing: only the detection carries an
+        # image stamp, so the latency measurement below hangs off ``estimate``.
+        target = estimate
         if target is None and (waypoint := self.patrol.current()) is not None:
             # A patrol leg with no detection: fly the waypoint. When the target
             # comes back in view, the detection refines the same leg.
             target = waypoint
-        if target is None:
+        if estimate is None:
             # A lost target releases the identity lock: the next sighting may be
             # a different object, and holding the id would make the mission
             # refuse to follow anything.
@@ -279,6 +283,7 @@ class OffboardNode(Node):
             pose.pose.position.z = 0.0
             self.target_pub.publish(pose)
 
+        if estimate is not None:
             # Latency is measured against the image stamp, not the receipt time,
             # because the transport delay is exactly what is being measured. The
             # bounds reject the first frames after a clock jump or a bag replay
