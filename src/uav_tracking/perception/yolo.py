@@ -148,8 +148,14 @@ class YoloOnnxDetector:
         classes: tuple[int, ...] = (0,),
         max_detections: int = 10,
         session: object | None = None,
+        intra_op_threads: int = 0,
     ) -> None:
-        """``session`` exists so tests can inject a fake ONNX Runtime session."""
+        """``session`` exists so tests can inject a fake ONNX Runtime session.
+
+        ``intra_op_threads`` is passed to ONNX Runtime; 0 leaves its default.
+        It exists because the interesting number on a companion computer is the
+        latency/thread trade-off, not just latency (docs/deployment.md).
+        """
         if session is None:
             if model_path is None:
                 raise ValueError("model_path or session is required")
@@ -166,7 +172,12 @@ class YoloOnnxDetector:
                 raise ImportError(
                     "the yolo backend needs ONNX Runtime: pip install onnxruntime"
                 ) from exc
-            session = ort.InferenceSession(str(model_path), providers=["CPUExecutionProvider"])
+            options = ort.SessionOptions()
+            if intra_op_threads > 0:
+                options.intra_op_num_threads = int(intra_op_threads)
+            session = ort.InferenceSession(
+                str(model_path), sess_options=options, providers=["CPUExecutionProvider"]
+            )
 
         self.session = session
         self.input_name = self.session.get_inputs()[0].name
