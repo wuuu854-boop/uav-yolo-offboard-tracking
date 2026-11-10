@@ -1,4 +1,4 @@
-# uav-yolo-offboard-tracking 鈥?one-command workflows
+# uav-yolo-offboard-tracking 閳?one-command workflows
 # Recipes use tabs (GNU make requirement). Do not reformat with spaces.
 
 SHELL    := /bin/bash
@@ -11,7 +11,7 @@ PX4_MODEL ?= gz_x500_mono_cam_down
 # Per-target poses are listed in docs/experiment-protocol.md.
 POSE     ?= -3.5,0,0.05
 
-.PHONY: help setup doctor demo patch-px4 install-world sim detect e2e preflight test lint fmt lock bench check clean
+.PHONY: help setup doctor demo trials patch-px4 install-world sim detect e2e preflight test lint fmt lock bench check clean
 
 help: ## show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-8s\033[0m %s\n", $$1, $$2}'
@@ -63,6 +63,9 @@ detect: ## run the detection node only
 
 e2e: ## closed loop: takeoff -> detect -> approach -> hover -> land
 	bash scripts/run_e2e.sh
+
+trials: ## run N closed-loop trials (N=3 default), restarting the sim each time
+	bash scripts/run_trials.sh --count $(or $(N),3)
 
 preflight: ## check the trial environment without a simulator
 	bash scripts/run_e2e.sh --dry-run
