@@ -39,8 +39,10 @@ Restart the simulation between targets; do not teleport a running vehicle.
    vehicle has taken off.
 1. Restart the simulation (a fresh Gazebo instance, not a reused one).
 2. `make e2e` — this starts the nodes and waits for one landing row.
-3. Record the row that appears in `results/landing_error.csv`.
-4. Repeat until you have 9 rows (3 targets × 3 runs).
+3. `make trials N=3` — the same thing three times, restarting the simulator
+   between runs so every trial starts from the same pose.
+4. Repeat for the other targets (nine rows total: 3 targets × 3 runs); the
+   per-target pose and spawn offset are in the table above.
 5. Do **not** delete failed trials. A failure is a result.
 6. Run `make bench` to turn the rows into the table — never compute the numbers
    by hand, and never copy a number that the script did not print.

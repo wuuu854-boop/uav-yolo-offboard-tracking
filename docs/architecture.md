@@ -85,7 +85,17 @@ stateDiagram-v2
   GOTO --> IDLE: disarmed
   HOVER --> IDLE: disarmed
   SEARCH --> IDLE: disarmed
+  TAKEOFF --> LAND: mission timeout
+  GOTO --> LAND: mission timeout
+  HOVER --> LAND: mission timeout
+  SEARCH --> LAND: mission timeout
 ```
+
+The four `mission timeout` edges land a mission that never converges
+(`max_mission_s`, disabled by default) so a broken detector cannot hover until
+the battery decides. Separately from the state machine, every horizontal setpoint
+is clamped to `geofence_radius_m` around the spawn point before it is published:
+a bad estimate becomes a boundary command, not a flight away.
 
 The three `disarmed` edges exist because PX4 can disarm in flight (failsafe,
 battery, a manual kill). Without them the node would keep commanding a climb or

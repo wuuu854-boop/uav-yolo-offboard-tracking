@@ -4,6 +4,21 @@ Notable changes to this project. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-11-10
+
+### Added
+
+- `control/geofence.py`: every horizontal setpoint is clamped to
+  `geofence_radius_m` (30 m by default) around the spawn point, so a bad
+  estimate becomes a boundary command instead of a flight away.
+- `max_mission_s`: a mission that never converges lands instead of hovering until
+  the battery decides (disabled by default).
+- `confirm_frames`: arrival, reacquisition and the end of a loss hover need
+  several consecutive frames with a target (3 in the shipped config). A single
+  bad projection during a search produced a 5.6 m miss without it.
+- `scripts/run_trials.sh` / `make trials N=3`: the nine-trial procedure as a
+  script — restart the simulation between runs, one row per trial.
+
 ## [Unreleased]
 
 ### Added

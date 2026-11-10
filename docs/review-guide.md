@@ -28,6 +28,8 @@ is enforced in `make check`; nothing is aspirational.
 | `control/arming.py` | bounded retries, then one actionable warning | `tests/test_arming.py` (6) |
 | `control/recorder.py` | append-only; raw latency samples are kept for pooling | `tests/test_recorder.py` (6) |
 | `control/trace.py` | one row per state change, and a second run appends | `tests/test_trace.py` (6) |
+| `control/geofence.py` | a target outside the circle is pulled onto it, direction preserved | `tests/test_geofence.py` (7) |
+| `control/state_machine.py` (safety) | a mission that never converges lands; a target is believed only after `confirm_frames` frames | `tests/test_state_machine.py` (18) |
 | `control/offline_sim.py` | the whole loop terminates and converges with a fixed seed | `tests/test_offline_sim.py` (8) |
 
 ## What is not unit-tested, and where it is covered instead
