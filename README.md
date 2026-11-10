@@ -83,6 +83,21 @@ detection nonsense, boxes that were half the frame, a projection that ignored
 pitch, and finally domain shift. [`docs/model.md`](docs/model.md) walks through
 all four with the measurements that separated them.
 
+### Multi-target patrol
+
+`patrol_waypoints` turns the mission into an inspection route: visit each local
+ENU waypoint in order, hover at each, land after the last one. One SITL run with
+two waypoints 20 m apart (local `(3.5, 0)` then `(23.5, 0)`) visited both and
+landed **0.44 m** from the second target
+([`results/v06_patrol.csv`](results/v06_patrol.csv)).
+
+The three attempts before it worked are in the git log, and they are the reason
+the design is what it is: the vehicle turned back to the target it had just left
+(detections overrode the waypoint), then crashed the control tick on a `None`
+detection message, then flew home after the last waypoint. Patrol legs are now
+waypoint-driven and the mission ends with an explicit `request_land` rather than
+by chasing an estimate. Each fix has a test.
+
 **Version provenance.** The table is the nine-trial set measured with **v0.1.0**.
 v0.2.0 changes safety behaviour only — a geofence, a mission timeout and a
 requirement that a target be seen for consecutive frames before the mission acts
