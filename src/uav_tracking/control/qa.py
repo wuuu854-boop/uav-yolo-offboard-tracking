@@ -117,6 +117,33 @@ def longest_gap(times: list[float], total_s: float) -> float:
     return max(times[i + 1] - times[i] for i in range(len(times) - 1))
 
 
+def association_confidence(
+    distance_m: float,
+    track_hits: int = 1,
+    sigma_m: float = 0.5,
+    support_hits: int = 3,
+) -> float:
+    """How much to trust that a detection belongs to the declared asset.
+
+    Two independent doubts, multiplied:
+
+    * how far the projected point is from the asset — a Gaussian around zero, so
+      0.5 m is 0.61 and 2 m is 0.0003, not a hard cut-off that hides near-misses;
+    * how much support the track has — a single-frame blip is worth less than a
+      track that has been seen three times.
+
+    A distance alone answers "is it close?"; an operator asking "may I file this
+    image under this asset?" is asking both questions at once.
+    """
+    if distance_m < 0.0:
+        raise ValueError("distance_m must be non-negative")
+    if sigma_m <= 0.0:
+        raise ValueError("sigma_m must be positive")
+    distance_score = math.exp(-0.5 * (distance_m / sigma_m) ** 2)
+    support = min(1.0, track_hits / float(support_hits))
+    return distance_score * support
+
+
 def verdict(metrics: dict, thresholds: dict) -> tuple[bool, list[str]]:
     """Pass/fail plus the reason for every failed metric."""
     reasons = []

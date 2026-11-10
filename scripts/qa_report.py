@@ -31,6 +31,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from uav_tracking.control.qa import (  # noqa: E402
     DEFAULT_THRESHOLDS,
+    association_confidence,
     longest_gap,
     nearest_target,
     percentiles,
@@ -77,6 +78,7 @@ def analyse_capture(
     started = poses[0]["wall_time"]
     samples: list[tuple[float, float, bool]] = []
     association_errors: list[float] = []
+    confidences: list[float] = []
     associations: list[int] = []
     ids: list[int] = []
 
@@ -93,6 +95,7 @@ def analyse_capture(
         now_s = pose["wall_time"] - started
         annotated = tracker.update(detections, now_s)
         samples.append((now_s, pose["altitude"], bool(annotated)))
+        hits = {track.track_id: track.hits for track in tracker.active}
         for detection in annotated:
             ids.append(detection["track_id"])
             east, north, _ = estimate_target_enu(
@@ -110,6 +113,7 @@ def analyse_capture(
             index, distance = nearest_target(east, north, targets)
             associations.append(index)
             association_errors.append(distance)
+            confidences.append(association_confidence(distance, hits.get(detection["track_id"], 1)))
 
     total_s = poses[-1]["wall_time"] - started
     phases = summarise_phases(samples)
@@ -118,6 +122,7 @@ def analyse_capture(
     )
     distinct_ids = sorted(set(ids))
     association_summary = percentiles(association_errors)
+    confidence_summary = percentiles(confidences)
 
     # The verdict is about the survey phase: that is when the camera should be
     # seeing the asset. Ground and climb frames are reported, not judged.
@@ -136,6 +141,8 @@ def analyse_capture(
         "track_ids": len(distinct_ids),
         "longest_track_run": max((ids.count(track_id) for track_id in distinct_ids), default=0),
         "association_m": association_summary,
+        "association_confidence": confidence_summary,
+        "weak_associations": sum(1 for value in confidences if value < 0.5),
         "assets_seen": sorted(set(associations)),
         "phases": {
             phase: {"frames": entry["frames"], "detection_rate": entry["detection_rate"]}
@@ -204,6 +211,10 @@ def main() -> int:
     print(
         f"association       median {metrics['association_m']['median']:.2f} m, "
         f"p95 {metrics['association_m']['p95']:.2f} m"
+    )
+    print(
+        f"confidence        median {metrics['association_confidence']['median']:.2f}"
+        f", {metrics['weak_associations']} detections below 0.5"
     )
     print(
         "verdict           "
