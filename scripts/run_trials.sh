@@ -17,7 +17,7 @@ MODEL="${MODEL:-gz_x500_mono_cam_down}"
 POSE="${POSE:--3.5,0,0.05}"
 SPAWN="${SPAWN:--3.5,0}"
 COUNT=1
-DURATION=120
+DURATION=180
 HEADLESS=1
 
 usage() {
