@@ -1,4 +1,4 @@
-﻿"""Mission recorder: the CSV that the README numbers are quoted from."""
+"""Mission recorder: the CSV that the README numbers are quoted from."""
 
 from __future__ import annotations
 
