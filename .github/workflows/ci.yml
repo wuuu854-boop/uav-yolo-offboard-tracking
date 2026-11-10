@@ -19,7 +19,7 @@ jobs:
         run: docker build -t uav-tracking:ci .
 
       - name: Unit tests inside the image
-        run: docker run --rm uav-tracking:ci python3 -m pytest tests -q
+        run: docker run --rm uav-tracking:ci python3 -m pytest tests -o addopts="" -q
 
   test:
     runs-on: ubuntu-22.04
