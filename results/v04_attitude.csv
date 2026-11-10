@@ -1,0 +1,7 @@
+trial,backend,target_id,error_m,latency_p50_ms,latency_p95_ms,success,notes
+10,baseline,0,0.862,139.8,264.9,True,hover complete
+11,baseline,0,1.003,140.8,264.4,True,hover complete
+12,baseline,0,0.655,147.5,279.1,True,hover complete
+13,yolo,0,0.64,198.9,340.9,True,hover complete
+14,yolo,0,1.572,204.7,354.3,False,hover complete
+15,yolo,0,1.493,200.6,347.4,True,hover complete

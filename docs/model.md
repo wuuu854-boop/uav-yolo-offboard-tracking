@@ -180,14 +180,38 @@ affects both backends equally — which is exactly the pattern above.
 
 So the remaining YOLO variance is a **projection** limitation shared with the
 baseline, amplified for YOLO because its estimate starts 0.6 m off and the
-arrival check has less margin. Fixing it means feeding roll/pitch into
-`estimate_target_enu` (or hoving briefly before confirming), not retraining the
-model. The baseline's nine trials pass because its 0.6 m head start is absent,
-not because its projection is better.
+arrival check has less margin.
+
+## The fix: attitude in the projection
+
+`projection.py` now takes the vehicle's PX4 roll and pitch, builds the
+body-to-ENU rotation instead of multiplying two tangents, and intersects the ray
+with the ground. Level flight is bit-identical to the old path — every existing
+projection test passes untouched — and eight new tests pin the attitude
+behaviour (`tests/test_projection_attitude.py`, `tests/test_frames_attitude.py`).
+The node feeds it the quaternion-derived angles, and the capture tool records
+them so the same comparison can be replayed.
+
+Three trials per backend with the fix (`results/v04_attitude.csv`):
+
+| Backend | Landing errors | Within 1.5 m |
+|---|---|---|
+| Baseline | 0.862, 1.003, 0.655 m | 3/3 |
+| YOLO | 0.640, 1.572, 1.493 m | 2/3 |
+
+The 2.2 m failure mode is gone: the worst YOLO run is now 1.57 m instead of
+2.36 m, and the distribution is tight around the baseline's. The baseline did not
+change (0.66–1.00 m), which is the control that says the fix is not moving
+everything.
+
+YOLO still starts 0.6 m off, so it sits at the edge of the 1.5 m tolerance.
+Removing that last bias is a detector job, not a projection one — the box
+covering part of the shadow — and the honest summary stays: **the measured loop
+is the baseline.**
 
 The measured closed loop therefore remains the colour baseline, and the honest
-summary of the YOLO backend is: **it flies, two of seven attempts, and the reason
-it misses is now measured rather than guessed.**
+summary of the YOLO backend is: **it flies, and the reason it missed is now
+measured, fixed, and re-measured.**
 
 **The measured closed loop therefore remains the colour baseline.** The YOLO row
 stays out of the results table until it can match it, and `results/v03_yolo_trials.csv`

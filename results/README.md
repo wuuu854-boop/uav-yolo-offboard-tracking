@@ -13,6 +13,7 @@ README and in the resume, so they are written by scripts, never by hand.
 | `backend_comparison.txt` | both backends on the same 30 recorded frames and poses | mean difference (+0.49, +0.35) m — the per-frame projection is close; the trial error is closed-loop |
 | `yolo_close_range.txt` | the same comparison on a YOLO flight, 30 frames | (+0.52, +0.39) m — the bias is stable across both backends' flights |
 | `yolo_failure_trial2.txt`, `yolo_failure_trial3.txt` | replay of the two failing YOLO trials | both backends' projections swing ~1 m near the target while their difference stays ~0.6 m: the swing is the flat-nadir projection under pitch, not the detector |
+| `v04_attitude.csv` | three trials per backend after the projection learned roll/pitch | baseline 0.86/1.00/0.66 m, YOLO 0.64/1.57/1.49 m — the 2.2 m mode is gone |
 | `latency.csv` | `scripts/benchmark.py` (via `make bench`) | aggregate error/latency statistics for the README table |
 | `projection_error.csv` | W2 static test | pixel-to-ground error against the three known target coordinates |
 | `detection_bench.csv` | `scripts/verify_model.py` + manual runs | detection rate and latency per backend |

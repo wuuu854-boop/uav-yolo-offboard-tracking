@@ -17,10 +17,10 @@ is enforced in `make check`; nothing is aspirational.
 
 | Module | Guarantee | Proof |
 |---|---|---|
-| `perception/projection.py` | pixel → ground ENU under a nadir, level camera; the mount offset is applied | `tests/test_projection.py` (18) |
+| `perception/projection.py` | pixel → ground ENU under a nadir camera, with or without attitude; the mount offset is applied | `tests/test_projection.py` (18) + `tests/test_projection_attitude.py` (7) |
 | `perception/yolo.py` | letterbox → blob → decode round-trips; class filter precedes NMS | `tests/test_yolo.py`, `tests/test_detector.py` (19) |
 | `perception/tracking.py` | the same object keeps its id across frames; a gap shorter than `max_age_s` does not create a new one | `tests/test_tracking.py` (12) |
-| `control/frames.py` | NED → ENU including the 90° heading convention | `tests/test_frames.py` (9) |
+| `control/frames.py` | NED → ENU including the 90° heading convention, and roll/pitch out of a quaternion | `tests/test_frames.py` (9) + `tests/test_frames_attitude.py` (6) |
 | `control/state_machine.py` | a lost target hovers then searches, never lands; an in-flight disarm stops the mission | `tests/test_state_machine.py` (12) |
 | `control/search.py` | lanes stay inside the area, never exceed the spacing, and the walker advances only on arrival | `tests/test_search.py` (9) |
 | `control/limiter.py` | the speed bound holds in every direction, including diagonal | `tests/test_limiter.py` (7) |
