@@ -36,8 +36,23 @@ is enforced in `make check`; nothing is aspirational.
 |---|---|---|
 | `perception/detector_node.py` | needs `rclpy` and a middleware to import | the `ROS build` workflow: publishes a synthetic `Image`, asserts the `TargetArray` a normal subscriber receives |
 | `control/offboard_node.py` | needs `rclpy` and PX4 message types | the `ROS build` workflow: feeds `VehicleOdometry`/`VehicleStatus` at 50 Hz and asserts the mode request, the arming request, the setpoint stream, the NED sign, and the projected target for two known pixels |
-| `scripts/run_e2e.sh` | needs a running simulator | manual, documented in `docs/experiment-protocol.md` |
+| `scripts/run_e2e.sh` | needs a running simulator | manual, documented in `docs/experiment-protocol.md`; `--dry-run` runs in CI |
 | Gazebo world | needs Gazebo to load it | `scripts/check_world_targets.py` (structure, physics, lights, ground truth) |
+| `patches/px4-v1.15-gz-magnetometer.patch` | it is a change to another project | `scripts/apply_px4_patch.sh` guards the tag and detects an applied tree; the nine trials are the functional proof |
+| `Dockerfile` | needs Docker | the `docker` job in `ci.yml` builds it and runs the unit tests inside |
+
+## Reproducing the trials
+
+1. `bash scripts/sitl_setup.sh` — installs and verifies the stack, checks before
+   it installs anything.
+2. `make patch-px4` — applies the one PX4 change the trials need, with a version
+   guard.
+3. `make install-world` — puts the world **and** the nadir camera model where
+   PX4 v1.15's launcher actually reads them.
+4. `make sim`, then `make e2e` per trial; `make bench` regenerates the table.
+
+The exact dependency set is `requirements.lock.txt`; the environment the numbers
+came from is `docs/setup-log.md`, including what broke on the way.
 
 ## Questions a reviewer should ask
 
