@@ -121,8 +121,11 @@ The false positives are gone: the trials now **land** instead of wandering
 | 2 | 2.362 m | no |
 | 3 | 2.278 m | no |
 | 4 | 0.515 m | **yes** |
+| 5 | 0.638 m | **yes** |
+| 6 | 2.176 m | no |
+| 7 | 1.654 m | no |
 
-One in four, against nine of nine for the baseline.
+Two of seven, against nine of nine for the baseline.
 
 ## The controlled comparison
 
@@ -183,8 +186,8 @@ model. The baseline's nine trials pass because its 0.6 m head start is absent,
 not because its projection is better.
 
 The measured closed loop therefore remains the colour baseline, and the honest
-summary of the YOLO backend is: **it flies, four times out of seven, and the
-reason it misses is now measured rather than guessed.**
+summary of the YOLO backend is: **it flies, two of seven attempts, and the reason
+it misses is now measured rather than guessed.**
 
 **The measured closed loop therefore remains the colour baseline.** The YOLO row
 stays out of the results table until it can match it, and `results/v03_yolo_trials.csv`

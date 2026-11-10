@@ -61,11 +61,12 @@ The YOLO row is deliberately absent: no ONNX model has matched the baseline
 0.98 mAP@50 on held-out synthetic data, 100/100 detections in the batch tool),
 and a channel-order decoding bug that made it unusable was found and fixed. The
 first three trials with it wandered off; after hard negatives harvested from real
-Gazebo frames four further trials landed, one within tolerance (0.52 m) and three
-at 2.2–2.4 m (`results/v03_yolo_trials.csv`). A controlled comparison — both
-backends on the same recorded frames and poses — puts the per-frame projection
-difference at a stable 0.6 m, so the variance is in the closed loop, not in the
-detector. The measured loop therefore stays on the colour baseline.
+Gazebo frames seven further trials landed, **two within tolerance (0.52 m,
+0.64 m)** and five at 1.65–2.36 m (`results/v03_yolo_trials.csv`). A controlled
+comparison — both backends on the same recorded frames and poses — puts the
+per-frame projection difference at a stable 0.6 m, and a replay of the failing
+trials shows the remaining swing is the flat-nadir projection under pitch, shared
+with the baseline. The measured loop therefore stays on the colour baseline.
 
 **Version provenance.** The table is the nine-trial set measured with **v0.1.0**.
 v0.2.0 changes safety behaviour only — a geofence, a mission timeout and a
