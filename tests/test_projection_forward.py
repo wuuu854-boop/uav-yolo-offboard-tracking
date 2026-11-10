@@ -20,7 +20,9 @@ HEIGHT = 5.0
 def test_pixel_ground_pixel_round_trips(u, v):
     east, north = pixel_to_ground(u, v, HEIGHT, K, yaw=0.3, roll=0.05, pitch=-0.04)
 
-    back_u, back_v = ground_point_to_pixel((east, north), (0.0, 0.0), HEIGHT, K, yaw=0.3, roll=0.05, pitch=-0.04)
+    back_u, back_v = ground_point_to_pixel(
+        (east, north), (0.0, 0.0), HEIGHT, K, yaw=0.3, roll=0.05, pitch=-0.04
+    )
 
     assert back_u == pytest.approx(u, abs=1e-6)
     assert back_v == pytest.approx(v, abs=1e-6)
@@ -49,7 +51,9 @@ def test_a_point_behind_the_camera_is_rejected():
 
 def test_pitch_moves_the_projection_like_a_real_camera():
     level_u, level_v = ground_point_to_pixel((0.0, 0.0), (0.0, 0.0), HEIGHT, K)
-    pitched_u, pitched_v = ground_point_to_pixel((0.0, 0.0), (0.0, 0.0), HEIGHT, K, pitch=math.radians(10.0))
+    pitched_u, pitched_v = ground_point_to_pixel(
+        (0.0, 0.0), (0.0, 0.0), HEIGHT, K, pitch=math.radians(10.0)
+    )
 
     # nose up: the ground below the vehicle moves down in the image (v grows)
     assert pitched_v > level_v
