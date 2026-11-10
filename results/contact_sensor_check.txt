@@ -1,0 +1,40 @@
+Positive check: the obstacle wall's contact sensor publishes
+================================================================
+
+The avoidance flight reports contacts_total=0. That is only evidence if the
+sensor and the contact system can produce a contact at all, so this check drops
+a box on the same wall and counts the messages.
+
+Setup
+-----
+World: a copy of sim/worlds/target_tracking_obstacle.sdf with the world renamed
+to contact_probe and one dynamic box added:
+
+    <model name="drop_box">
+      <pose>-0.8 0 7.5 0 0 0</pose>          # 1.5 m above the wall top (z=6.0)
+      <mass>0.5</mass>
+      <box><size>0.4 0.4 0.4</size></box>
+    </model>
+
+Command (the subscriber attaches before physics starts, then runs for 20 s):
+
+    gz sim -s -r --headless-rendering /root/work/contact_probe.sdf
+    python3 /root/work/count_contacts.py \
+      /world/contact_probe/model/obstacle_wall/link/link/sensor/contact/contact 20
+
+Raw output
+----------
+subscribed /world/contact_probe/model/obstacle_wall/link/link/sensor/contact/contact
+contact: obstacle_wall::link::collision <-> drop_box::link::collision
+contact: obstacle_wall::link::collision <-> drop_box::link::collision
+contact: obstacle_wall::link::collision <-> drop_box::link::collision
+RESULT messages=4632 contacts=4632
+
+Conclusion
+----------
+gz-sim-contact-system, the wall's contact sensor and the topic are all working:
+a real contact produces thousands of messages. The zero in
+results/avoidance_run.csv is therefore a measured zero, not a missing topic.
+
+This check is manual (it starts a simulator), so it is recorded here rather than
+in the pytest suite. The avoidance run itself is repeated by `make avoid`.

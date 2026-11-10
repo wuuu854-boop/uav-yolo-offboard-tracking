@@ -1,28 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  X500 with a nadir camera.
+  X500 with the nadir tracking camera and a forward depth camera.
 
-  PX4 v1.15 ships only `x500_mono_cam`, whose camera looks forward (+x) with a
-  640x480 sensor. The mission in this repository projects pixels onto the ground
-  under the assumption that the optical axis points down, so the stock model
-  cannot be used.
+  WHY THIS FILE IS THE INSTALLED MODEL, NOT A PX4 SOURCE MODEL
+  PX4 v1.15 launches `gz sim` with the model store at ~/.simulation-gazebo, and
+  the wrapper there shadows the same-named model in the PX4 source tree. This
+  file is that wrapper: `make install-world` copies it over the installed copy,
+  so the camera link names and the sensor topics below are the ones the running
+  simulation actually uses. Do not rename `camera_link` without updating
+  scripts/run_trials.sh and scripts/gz_camera_bridge.py.
 
-  Geometry:
-    * mount 10 cm above base_link (matches config/camera.yaml mount_offset_xyz)
-    * pitch +90 deg about y maps the camera's +x (view axis) to -z (down)
-    * 1280x960 at 1.74 rad horizontal FOV gives fx = fy = 538.4 px, cx = 640,
-      cy = 480 - the intrinsics in config/camera.yaml
-    * after that rotation the image "down" direction (+v) points along body +x,
-      so config/camera.yaml sets image_up_is_forward: false
+  NADIR CAMERA (unchanged from v0.8.0)
+    * mono_cam included at 0.10 m above base_link, pitched +90 deg about y, so
+      the optical axis is body -z. 1280x960, HFOV 1.74 rad -> fx = 538.4 px.
+    * Link name camera_link and sensor name camera come from the included
+      model, which is why the Gazebo topic ends in
+      /link/camera_link/sensor/camera/image.
+    * config/camera.yaml carries the matching intrinsics and mount offset.
+
+  DEPTH CAMERA (new in v0.9.0)
+    * Mounted 0.20 m forward of base_link (the x500 body half-length is 0.177 m)
+      and 0.02 m down, so the airframe is behind the lens and cannot appear in
+      the centre of its own depth image.
+    * Pitched +30 deg about y (0.5236 rad). A strictly forward camera misses
+      anything closer than ~3.9 m at 5 m altitude because the obstacle top drops
+      below the vertical field of view; the tilt puts the useful band (3 deg to
+      57 deg below the horizon) on the approach path.
+    * 640x480, R_FLOAT32, HFOV 1.2 rad, clip 0.2-20 m. Gazebo publishes the
+      depth image on the topic named below (`/depth_camera`), with the point
+      cloud on `/depth_camera/points`. It is z-depth along the optical axis, not
+      Euclidean range.
+    * scripts/gz_depth_bridge.py converts it to ROS 2 `32FC1` on
+      /camera/depth/image_raw; config/depth.yaml carries the ROI and thresholds.
 -->
 <sdf version='1.9'>
   <model name='x500_mono_cam_down'>
+    <self_collide>false</self_collide>
     <include merge='true'>
       <uri>x500</uri>
     </include>
 
-    <link name="down_cam_link">
-      <pose>0 0 0.10 0 0 0</pose>
+    <include merge='true'>
+      <uri>model://mono_cam</uri>
+      <pose>0 0 .10 0 1.5707 0</pose>
+      <name>mono_cam</name>
+    </include>
+
+    <joint name="CameraJoint" type="fixed">
+      <parent>base_link</parent>
+      <child>camera_link</child>
+      <pose relative_to="base_link">0 0 0 0 1.5707 0</pose>
+    </joint>
+
+    <link name="depth_cam_link">
+      <pose>0.20 0 -0.02 0 0 0</pose>
       <inertial>
         <mass>0.05</mass>
         <inertia>
@@ -34,29 +65,32 @@
           <izz>0.00004</izz>
         </inertia>
       </inertial>
-      <sensor name="mono_cam" type="camera">
-        <pose>0 0 0 0 1.5708 0</pose>
+      <sensor name="depth_camera" type="depth_camera">
+        <gz_frame_id>depth_cam_link</gz_frame_id>
+        <pose>0 0 0 0 0.5236 0</pose>
         <camera>
-          <horizontal_fov>1.74</horizontal_fov>
+          <horizontal_fov>1.2</horizontal_fov>
           <image>
-            <width>1280</width>
-            <height>960</height>
+            <width>640</width>
+            <height>480</height>
+            <format>R_FLOAT32</format>
           </image>
           <clip>
-            <near>0.1</near>
-            <far>3000</far>
+            <near>0.2</near>
+            <far>20</far>
           </clip>
         </camera>
         <always_on>1</always_on>
-        <update_rate>30</update_rate>
+        <update_rate>15</update_rate>
         <visualize>true</visualize>
-        <topic>camera</topic>
+        <topic>depth_camera</topic>
       </sensor>
     </link>
 
-    <joint name="CameraJoint" type="fixed">
+    <joint name="DepthCameraJoint" type="fixed">
       <parent>base_link</parent>
-      <child>down_cam_link</child>
+      <child>depth_cam_link</child>
+      <pose relative_to="base_link">0.20 0 -0.02 0 0 0</pose>
     </joint>
   </model>
 </sdf>

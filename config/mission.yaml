@@ -29,6 +29,12 @@ geofence_radius_m: 30.0
 
 control_rate_hz: 50
 
+# Heading commanded to PX4, degrees clockwise from north. 0 (north) keeps the
+# nadir camera's image-up direction constant between trials. The avoidance
+# mission uses 90 (east) because its forward depth camera has to face the wall;
+# leaving this at 0 there points the sensor at empty ground beside the obstacle.
+heading_yaw_deg: 0.0
+
 # Multi-target patrol. Empty means the single-target mission: detect one target,
 # approach, land. With entries, the mission flies each (east, north) waypoint in
 # order, hovers at each, and lands after the last one. Local ENU, relative to the

@@ -7,6 +7,44 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-10
+
+### Added
+
+- **A forward depth camera and a reactive stop.** `sim/models/x500_mono_cam_down`
+  now carries a 640×480 `R_FLOAT32` depth camera, mounted 0.20 m forward and
+  pitched 30° down, next to the nadir tracking camera. `scripts/gz_depth_bridge.py`
+  republishes `/depth_camera` as ROS `32FC1`; `src/uav_tracking/perception/depth_node.py`
+  turns it into `/avoidance/stop`. The thresholds, ROI and fail-safe are in
+  `config/depth.yaml`; the statistics, hysteresis and watchdog are pure Python in
+  `src/uav_tracking/perception/depth.py`, with unit and ROS tests.
+- **The controller holds instead of advancing.** `offboard_node` latches the
+  vehicle position on the first stopped tick and holds the horizontal setpoint,
+  but only in `GOTO` — takeoff, hover and landing keep their commands. A 1.0 s
+  watchdog treats a `/avoidance/stop` stream that stops arriving as a stop; before
+  the first message it is inactive, so missions without the depth node are
+  unchanged. `MissionConfig.heading_yaw_deg` makes the camera face the approach
+  (90° east here); the previous fixed 0° was only harmless because the tracking
+  camera is nadir.
+- **A scenario and a harness.** `sim/worlds/target_tracking_obstacle.sdf` adds a
+  6 m wall 0.8 m in front of `target_0`, with a contact sensor;
+  `config/mission_avoidance.yaml` is a one-waypoint patrol at 0.6 m/s. `make avoid`
+  runs the headless flight and `scripts/record_avoidance.py` writes the pose, depth
+  distance, stop flag and contacts. `scripts/avoidance_report.py` checks the run
+  and writes `results/avoidance_summary.json`; it fails on no stop, insufficient
+  clearance, drift or a contact. One run: stop at 19.8 s, held 25.1 s, settled
+  drift 0.124 m, min clearance 2.204 m, 0 contacts, 822 depth frames.
+- `docs/avoidance.md`, four troubleshooting entries, and a positive test of the
+  wall contact sensor (a dropped box produced 4632 messages).
+
+### Why
+
+Stopping is the safety floor before path planning, and it is the last item on the
+market checklist that can be verified in simulation without new hardware. The
+design is deliberately the smallest one that can be measured: one camera, one
+boolean, one hold. Going around the wall is phase 2; claiming it here would make
+the verified table lie.
+
 ## [0.8.0] - 2026-11-10
 
 ## [0.7.0] - 2026-11-10

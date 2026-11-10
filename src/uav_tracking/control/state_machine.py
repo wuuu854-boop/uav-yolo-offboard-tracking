@@ -56,6 +56,19 @@ class MissionConfig:
     # search produced a 5.6 m landing error, so the shipped config uses 3.
     confirm_frames: int = 1
 
+    # Heading commanded to PX4, degrees clockwise from north (NED). The default
+    # of 0 makes the nadir camera's image-up direction constant between trials;
+    # a forward sensor needs the vehicle pointed at the obstacle, so the
+    # avoidance mission sets 90 (east) to match its eastbound approach.
+    heading_yaw_deg: float = 0.0
+
+    # A /avoidance/stop stream that has been seen and then goes quiet for this
+    # long holds position instead of trusting a stale "clear". Longer than the
+    # depth node's own 0.5 s fail-safe, so one dropped frame does not trip it;
+    # it catches the node dying. The watchdog is inactive until the first
+    # message, so missions without the avoidance node are unchanged.
+    avoidance_timeout_s: float = 1.0
+
     # Empty unless the mission is a patrol: local ENU (east, north) waypoints
     # visited in order, with a hover at each and a landing after the last.
     patrol_waypoints: tuple[tuple[float, float], ...] = ()

@@ -1,0 +1,308 @@
+#!/usr/bin/env python3
+"""Turn an avoidance flight CSV into the numbers the docs quote.
+
+Reads what `scripts/record_avoidance.py` wrote and checks the claim "the vehicle
+stopped in front of the wall and did not collide", using the wall geometry from
+config/obstacle.yaml and the spawn point from the mission config. Writes a JSON
+summary and a two-panel plot; exits non-zero when a check fails, so a bad run
+cannot be quoted as a good one.
+
+    python3 scripts/avoidance_report.py \
+        --csv results/avoidance_run.csv \
+        --summary results/avoidance_summary.json \
+        --plot results/avoidance_run.png
+"""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import json
+import math
+import sys
+from pathlib import Path
+
+import yaml
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def read_rows(path: Path) -> list[dict]:
+    with path.open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        rows = []
+        for raw in reader:
+            row = {
+                "t_s": float(raw["t_s"]),
+                "east_m": float(raw["east_m"]),
+                "north_m": float(raw["north_m"]),
+                "altitude_m": float(raw["altitude_m"]),
+                "yaw_deg": float(raw["yaw_deg"]),
+                "stop": bool(int(raw["stop"])),
+                "contacts_total": int(raw["contacts_total"]),
+                "depth_frames": int(raw["depth_frames"]),
+            }
+            nearest = raw.get("nearest_m", "").strip()
+            row["nearest_m"] = None if nearest in ("", "nan") else float(nearest)
+            rows.append(row)
+    return rows
+
+
+def point_to_aabb_distance(x: float, y: float, bounds: tuple[float, float, float, float]) -> float:
+    """Shortest 2-D distance from a point to an axis-aligned rectangle."""
+    x_min, x_max, y_min, y_max = bounds
+    dx = max(x_min - x, 0.0, x - x_max)
+    dy = max(y_min - y, 0.0, y - y_max)
+    return math.hypot(dx, dy)
+
+
+def longest_stop_run(rows: list[dict]) -> tuple[int, int]:
+    """Indices of the longest consecutive stopped interval."""
+    best = (-1, -1)
+    start: int | None = None
+    for index, row in enumerate(rows):
+        if row["stop"] and start is None:
+            start = index
+        if not row["stop"] and start is not None:
+            if index - start > best[1] - best[0]:
+                best = (start, index - 1)
+            start = None
+    if start is not None and len(rows) - start > best[1] - best[0]:
+        best = (start, len(rows) - 1)
+    return best
+
+
+def analyse(rows: list[dict], obstacle: dict, mission: dict) -> dict:
+    if not rows:
+        raise ValueError("the CSV has no rows; did the recorder see odometry?")
+
+    spawn_east, spawn_north = (float(v) for v in mission["spawn_offset_enu"])
+    pose = obstacle["pose_enu"]
+    size = obstacle["size_m"]
+    x_min, x_max = pose[0] - size[0] / 2.0, pose[0] + size[0] / 2.0
+    y_min, y_max = pose[1] - size[1] / 2.0, pose[1] + size[1] / 2.0
+    bounds = (x_min, x_max, y_min, y_max)
+
+    world = [(spawn_east + row["east_m"], spawn_north + row["north_m"]) for row in rows]
+    clearances = [point_to_aabb_distance(x, y, bounds) for x, y in world]
+    min_index = min(range(len(clearances)), key=clearances.__getitem__)
+
+    start, end = longest_stop_run(rows)
+    stopped = start >= 0
+    stop_start_s = rows[start]["t_s"] if stopped else None
+    stop_end_s = rows[end]["t_s"] if stopped else None
+    stop_hold_s = (stop_end_s - stop_start_s) if stopped else 0.0
+    if stopped:
+        anchor = world[start]
+        drift = max(math.hypot(x - anchor[0], y - anchor[1]) for x, y in world[start : end + 1])
+        # The first seconds of a stop are braking and settling, not hovering:
+        # measuring drift from the instant the gate fired would charge the
+        # controller for its own stopping distance. Settle for 10 s, then
+        # measure what moved. Advance and retreat are reported separately so a
+        # coast toward the wall cannot hide inside a total distance.
+        settle_index = next(
+            (i for i in range(start, end + 1) if rows[i]["t_s"] - stop_start_s >= 10.0),
+            None,
+        )
+        if settle_index is not None:
+            settled = world[settle_index]
+            settled_drift = max(
+                math.hypot(x - settled[0], y - settled[1]) for x, y in world[settle_index : end + 1]
+            )
+        else:
+            settled_drift = None
+        # East is the wall direction for this scenario.
+        advance = max(x for x, _ in world[start : end + 1]) - anchor[0]
+        retreat = anchor[0] - min(x for x, _ in world[start : end + 1])
+    else:
+        drift = None
+        settled_drift = None
+        advance = None
+        retreat = None
+
+    return {
+        "obstacle": {
+            "model": obstacle["model"],
+            "centre_enu": [float(v) for v in pose],
+            "size_m": [float(v) for v in size],
+            "aabb_enu_m": [x_min, x_max, y_min, y_max],
+        },
+        "spawn_enu": [spawn_east, spawn_north],
+        "metrics": {
+            "rows": len(rows),
+            "duration_s": round(rows[-1]["t_s"] - rows[0]["t_s"], 2),
+            "stop_engaged": stopped,
+            "stop_start_s": stop_start_s,
+            "stop_end_s": stop_end_s,
+            "stop_hold_s": round(stop_hold_s, 2),
+            "stop_drift_m": None if drift is None else round(drift, 3),
+            "stop_advance_m": None if advance is None else round(advance, 3),
+            "stop_retreat_m": None if retreat is None else round(retreat, 3),
+            "settled_drift_m": None if settled_drift is None else round(settled_drift, 3),
+            "min_clearance_m": round(clearances[min_index], 3),
+            "min_clearance_at_s": rows[min_index]["t_s"],
+            "final_east_m": round(rows[-1]["east_m"], 3),
+            "max_east_m": round(max(row["east_m"] for row in rows), 3),
+            "max_altitude_m": round(max(row["altitude_m"] for row in rows), 3),
+            "contacts_total": max(row["contacts_total"] for row in rows),
+            "depth_frames": max(row["depth_frames"] for row in rows),
+            "min_nearest_m": (
+                None
+                if all(row["nearest_m"] is None for row in rows)
+                else round(min(row["nearest_m"] for row in rows if row["nearest_m"] is not None), 3)
+            ),
+        },
+        "checks": {},
+        "world_track": world,
+    }
+
+
+def verdict(report: dict, obstacle: dict) -> dict:
+    metrics = report["metrics"]
+    checks = {
+        "stop_engaged": {
+            "ok": bool(metrics["stop_engaged"]),
+            "detail": f"stop_start_s={metrics['stop_start_s']}",
+        },
+        "stop_held_at_least_3s": {
+            "ok": metrics["stop_hold_s"] >= 3.0,
+            "detail": f"stop_hold_s={metrics['stop_hold_s']}",
+        },
+        "settled_drift_under_0.3m": {
+            "ok": metrics["settled_drift_m"] is not None and metrics["settled_drift_m"] <= 0.3,
+            "detail": f"settled_drift_m={metrics['settled_drift_m']} after 10 s",
+        },
+        "advance_after_stop_under_1m": {
+            "ok": metrics["stop_advance_m"] is not None and metrics["stop_advance_m"] <= 1.0,
+            "detail": (
+                f"stop_advance_m={metrics['stop_advance_m']}, retreat_m={metrics['stop_retreat_m']}"
+            ),
+        },
+        "clearance_at_least_min": {
+            "ok": metrics["min_clearance_m"] >= float(obstacle["min_clearance_m"]),
+            "detail": (
+                f"min_clearance_m={metrics['min_clearance_m']} >= {obstacle['min_clearance_m']}"
+            ),
+        },
+        "no_contact": {
+            "ok": metrics["contacts_total"] == 0,
+            "detail": f"contacts_total={metrics['contacts_total']}",
+        },
+        "depth_frames_seen": {
+            "ok": metrics["depth_frames"] > 0,
+            "detail": f"depth_frames={metrics['depth_frames']}",
+        },
+    }
+    report["checks"] = checks
+    report["verdict"] = "PASS" if all(item["ok"] for item in checks.values()) else "FAIL"
+    return report
+
+
+def plot(report: dict, rows: list[dict], out: Path, stop_m: float, clear_m: float) -> None:
+    try:
+        import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        from matplotlib.patches import Rectangle
+    except ImportError:
+        print("matplotlib is not installed; skipping the plot")
+        return
+
+    world = report["world_track"]
+    obstacle = report["obstacle"]
+    x_min, x_max, y_min, y_max = obstacle["aabb_enu_m"]
+
+    figure, (top, bottom) = plt.subplots(2, 1, figsize=(7.2, 7.0), sharex=False)
+    top.plot([p[0] for p in world], [p[1] for p in world], color="#1f77b4", label="flight path")
+    stopped = [i for i, row in enumerate(rows) if row["stop"]]
+    if stopped:
+        start, end = stopped[0], stopped[-1]
+        top.plot(
+            [world[i][0] for i in range(start, end + 1)],
+            [world[i][1] for i in range(start, end + 1)],
+            color="#d62728",
+            linewidth=3,
+            label="stopped",
+        )
+    top.add_patch(
+        Rectangle(
+            (x_min, y_min),
+            x_max - x_min,
+            y_max - y_min,
+            color="#ff7f0e",
+            alpha=0.8,
+            label="obstacle_wall",
+        )
+    )
+    top.set_xlabel("east (world ENU, m)")
+    top.set_ylabel("north (world ENU, m)")
+    top.set_title("avoidance flight: the wall is on the path, the stop is before it")
+    top.axis("equal")
+    top.grid(True, alpha=0.3)
+    top.legend(loc="best")
+
+    times = [row["t_s"] for row in rows]
+    nearest = [math.nan if row["nearest_m"] is None else row["nearest_m"] for row in rows]
+    bottom.plot(times, nearest, color="#2ca02c", label="nearest depth in ROI (m)")
+    bottom.axhline(stop_m, color="#d62728", linestyle="--", label=f"stop threshold {stop_m} m")
+    bottom.axhline(clear_m, color="#9467bd", linestyle=":", label=f"clear threshold {clear_m} m")
+    bottom.set_xlabel("time (s)")
+    bottom.set_ylabel("z-depth (m)")
+    bottom.set_title("depth gate")
+    bottom.grid(True, alpha=0.3)
+    bottom.legend(loc="best")
+
+    figure.tight_layout()
+    out.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(out, dpi=150)
+    plt.close(figure)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--csv", default="results/avoidance_run.csv")
+    parser.add_argument("--summary", default="results/avoidance_summary.json")
+    parser.add_argument("--plot", default="results/avoidance_run.png")
+    parser.add_argument("--obstacle", default="config/obstacle.yaml")
+    parser.add_argument("--mission", default="config/mission_avoidance.yaml")
+    parser.add_argument("--depth-config", default="config/depth.yaml")
+    args = parser.parse_args()
+
+    rows = read_rows(Path(args.csv))
+    with open(args.obstacle, encoding="utf-8") as handle:
+        obstacle = yaml.safe_load(handle)
+    with open(args.mission, encoding="utf-8") as handle:
+        mission = yaml.safe_load(handle)
+    with open(args.depth_config, encoding="utf-8") as handle:
+        gate = yaml.safe_load(handle)
+
+    report = verdict(analyse(rows, obstacle, mission), obstacle)
+    report["gate"] = {
+        "stop_distance_m": float(gate["stop_distance_m"]),
+        "clear_distance_m": float(gate["clear_distance_m"]),
+        "roi_width_fraction": float(gate["roi_width_fraction"]),
+        "roi_height_fraction": float(gate["roi_height_fraction"]),
+        "source": str(args.depth_config),
+    }
+    plot(
+        report,
+        rows,
+        Path(args.plot),
+        float(gate["stop_distance_m"]),
+        float(gate["clear_distance_m"]),
+    )
+
+    summary = {key: value for key, value in report.items() if key != "world_track"}
+    summary["source_csv"] = str(args.csv)
+    Path(args.summary).parent.mkdir(parents=True, exist_ok=True)
+    Path(args.summary).write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+
+    for name, check in report["checks"].items():
+        print(f"  {'PASS' if check['ok'] else 'FAIL'}  {name:34s} {check['detail']}")
+    print(f"verdict: {report['verdict']}  (wrote {args.summary} and {args.plot})")
+    return 0 if report["verdict"] == "PASS" else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

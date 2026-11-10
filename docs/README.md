@@ -3,6 +3,7 @@
 | Document | Answers |
 |---|---|
 | [architecture](architecture.md) | Data flow, frame conventions, topic contract, why two nodes |
+| [avoidance](avoidance.md) | Forward depth camera, the reactive stop gate, the SITL evidence, and what it does not cover |
 | [model](model.md) | The YOLO detector: dataset, training, the decoder bug it exposed, and how it was made to fly |
 | [deployment](deployment.md) | Detector throughput per input size and thread count, and what it does not measure |
 | [market](market.md) | What UAV-autonomy postings ask for, where this project stands, what to build next |
@@ -10,7 +11,7 @@
 | [experiment-protocol](experiment-protocol.md) | How a trial is run, what each metric means, spawn poses |
 | [scenario](scenario.md) | Camera maths, range budget, why the targets are 20 m apart |
 | [adoption](adoption.md) | What to change for your own target, camera or scene |
-| [troubleshooting](troubleshooting.md) | Ten failures with the upstream source of each |
+| [troubleshooting](troubleshooting.md) | Fourteen failures with the upstream source of each |
 | [verification-log](verification-log.md) | What each non-obvious claim was checked against |
 | [prior-art](prior-art.md) | The existing projects, what they lack, and the gap |
 | [market](market.md) | Job requirements mapped to files in this repository |

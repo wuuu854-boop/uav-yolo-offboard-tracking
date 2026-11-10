@@ -16,11 +16,13 @@ on:
       - "sim/**"
       - "scripts/**"
       - "config/targets.yaml"
+      - "config/obstacle.yaml"
   pull_request:
     paths:
       - "sim/**"
       - "scripts/**"
       - "config/targets.yaml"
+      - "config/obstacle.yaml"
   workflow_dispatch:
 
 jobs:
@@ -29,8 +31,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: World file is valid XML
-        run: python3 -c "import xml.etree.ElementTree as ET; ET.parse('sim/worlds/target_tracking.sdf')"
+      - name: World files are valid XML
+        run: |
+          for world in sim/worlds/*.sdf; do
+            python3 -c "import xml.etree.ElementTree as ET; ET.parse('$world')"
+          done
 
       - name: Ground truth matches the world
         run: python3 scripts/check_world_targets.py

@@ -1,0 +1,49 @@
+# Mission used by the depth-camera avoidance flight (`make avoid`).
+#
+# It is a one-waypoint patrol rather than the normal detection mission on
+# purpose: the 6 m wall stands between the vehicle and target_0, so the nadir
+# camera cannot see the cube from the approach. This run is testing the stop
+# gate, not the detector. The waypoint is target_0 in local ENU; the vehicle
+# stops ~2 m in front of the wall and the mission timeout lands it from there.
+#
+# Spawn is -7.5 m west of target_0, facing east already (the sixth
+# PX4_GZ_MODEL_POSE value is yaw), so the vehicle does not have to rotate while
+# climbing and the forward depth camera is pointed at the wall from the start.
+# Keep this in sync with `make sim POSE=-7.5,0,0.05,0,0,1.5708` or the script's
+# --pose.
+takeoff_altitude_m: 5.0
+spawn_offset_enu: [-7.5, 0.0]
+reach_tolerance_m: 1.0
+max_speed_mps: 0.6
+hover_duration_s: 3.0
+
+target_loss_hover_s: 2.0
+setpoint_jump_limit_m: 3.0
+land_after_hover: true
+# The gate is expected to hold the vehicle short of the waypoint indefinitely.
+# Land after 40 s so the run ends on its own and the recorder gets a full trace;
+# the landing row this produces is evidence of where the stop happened, not a
+# tracking-trial result (the script writes it to avoidance_landing.csv).
+max_mission_s: 40.0
+
+confirm_frames: 3
+geofence_radius_m: 30.0
+control_rate_hz: 50.0
+
+# East, clockwise from north. The forward depth camera only sees the wall if the
+# airframe faces the direction it is flying; PX4's default heading is north.
+heading_yaw_deg: 90.0
+
+# A patrol leg to target_0, local ENU (east, north) relative to the spawn.
+patrol_waypoints:
+  - [7.5, 0.0]
+
+target_selection: nearest_centre
+search_after_s: 8.0
+search_area_m: 20.0
+search_spacing_m: 8.9
+
+# The controller holds position if /avoidance/stop stops arriving after it has
+# been seen. This is longer than the depth node's own 0.5 s fail-safe so a single
+# dropped frame does not trip it; it catches the node dying.
+avoidance_timeout_s: 1.0

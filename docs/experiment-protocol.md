@@ -30,6 +30,13 @@ target under test and no other target is in view:
 | `target_1` | `make sim POSE="16.5,0,0.05"` |
 | `target_2` | `make sim POSE="0,16.5,0.05"` |
 
+The depth-camera avoidance run is a separate protocol: world
+`target_tracking_obstacle`, pose `-7.5,0,0.05,0,0,1.5708` (facing east), mission
+`config/mission_avoidance.yaml`, one run via `make avoid`. Its landing row
+(`results/avoidance_landing.csv`) is evidence of where the vehicle stopped, **not**
+a tracking-trial row; keep it out of the nine-trial table. Details:
+[`avoidance.md`](avoidance.md).
+
 Restart the simulation between targets; do not teleport a running vehicle.
 
 ## Trial procedure

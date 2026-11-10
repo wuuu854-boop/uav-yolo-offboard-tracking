@@ -32,6 +32,7 @@ from px4_msgs.msg import (  # noqa: E402
 from rclpy.executors import SingleThreadedExecutor  # noqa: E402
 from rclpy.node import Node  # noqa: E402
 from rclpy.qos import qos_profile_sensor_data  # noqa: E402
+from std_msgs.msg import Bool  # noqa: E402
 
 from uav_tracking.control.offboard_node import OffboardNode  # noqa: E402
 from uav_tracking.control.recorder import MissionRecorder  # noqa: E402
@@ -110,16 +111,18 @@ def rig(tmp_path_factory):
         VehicleStatus, "/fmu/out/vehicle_status", qos_profile_sensor_data
     )
     detection_pub = helper.create_publisher(TargetArray, "/detections", 10)
+    stop_pub = helper.create_publisher(Bool, "/avoidance/stop", 10)
 
     executor = SingleThreadedExecutor()
     executor.add_node(node)
     executor.add_node(helper)
 
-    state = SimpleNamespace(armed=False)
+    state = SimpleNamespace(armed=False, stop=False)
 
     def tick(detection: tuple[float, float] | None = None) -> None:
         odometry_pub.publish(_odometry())
         status_pub.publish(_status(state.armed))
+        stop_pub.publish(Bool(data=bool(state.stop)))
         if detection is not None:
             detection_pub.publish(_detections(*detection))
         executor.spin_once(timeout_sec=0.02)
@@ -232,3 +235,28 @@ def test_no_detection_means_no_target_pose(rig):
 
     rig.poses.clear()
     assert not _pump(rig, lambda: bool(rig.poses), timeout_s=1.0, detection=None)
+
+
+def test_an_avoidance_stop_holds_the_setpoint_instead_of_advancing(rig):
+    rig.state.armed = True
+    # 316 px right of centre at 5.1 m is ~3 m east, so the vehicle is in GOTO
+    # with room to move.
+    detection = (CAMERA["cx"] + 316.0, CAMERA["cy"])
+
+    assert _pump(
+        rig, lambda: rig.setpoints[-1].position[1] > 0.15, timeout_s=5.0, detection=detection
+    ), "the setpoint never started advancing toward the target"
+
+    rig.state.stop = True
+    # The hold point is the vehicle position (0, 0); the setpoint retreats to it
+    # and then stays there.
+    assert _pump(
+        rig, lambda: rig.setpoints[-1].position[1] < 0.05, timeout_s=5.0, detection=detection
+    ), "the held setpoint did not settle at the vehicle position"
+
+    held = rig.setpoints[-1].position[1]
+    # Without the gate this would advance ~1 m in the next second at 1 m/s.
+    _pump(rig, lambda: False, timeout_s=1.0, detection=detection)
+    assert rig.setpoints[-1].position[1] == pytest.approx(held, abs=0.05)
+
+    rig.state.stop = False

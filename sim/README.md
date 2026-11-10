@@ -10,8 +10,14 @@
 # if $PX4_DIR/Tools/simulation/gz/worlds is empty:
 git -C "$PX4_DIR" submodule update --init --recursive
 
-cp sim/worlds/target_tracking.sdf "$PX4_DIR/Tools/simulation/gz/worlds/"
+make install-world   # both worlds + the depth-camera vehicle model
 ```
+
+`make install-world` writes to the model store PX4 actually reads
+(`~/.simulation-gazebo`), not just the source tree, and overwrites the installed
+vehicle model. That overwrite is deliberate: since v0.9.0 the model carries the
+forward depth camera, and keeping an older copy removes `/depth_camera` without
+an error.
 
 ## 2. Start it
 
@@ -36,7 +42,7 @@ cd "$PX4_DIR" && make px4_sitl list_vmd_make_targets | grep gz_
 | Model | Camera | Usable for ground projection? |
 |---|---|---|
 | `x500_mono_cam` | forward, pose `.12 .03 .242`, no rotation | ❌ sees the horizon |
-| **`x500_mono_cam_down`** | nadir, +90° pitch, 0.10 m above `base_link` | ✅ |
+| **`x500_mono_cam_down`** | nadir, +90° pitch, 0.10 m above `base_link`, **plus a 30° down forward depth camera** | ✅ |
 
 The intrinsics in `config/camera.yaml` come from `models/mono_cam/model.sdf`
 (1280×960, HFOV 1.74 rad, fx = 538.4) and are quoted in `docs/scenario.md`.
@@ -55,6 +61,16 @@ Copy the result into `sim/launch/sim.launch.py` (`WORLD`, `MODEL`, `SENSOR`,
 ```bash
 ros2 launch sim/launch/sim.launch.py
 ros2 topic hz /camera/image_raw     # expect ~30 Hz, 1280x960
+```
+
+The **depth** camera is different: its topic is not scoped under the model. It is
+`/depth_camera` (and `/depth_camera/points`), because the SDF names the sensor
+topic directly. `scripts/gz_depth_bridge.py` turns it into
+`/camera/depth/image_raw`:
+
+```bash
+python3 scripts/gz_depth_bridge.py --gz-topic /depth_camera \
+  --ros-topic /camera/depth/image_raw
 ```
 
 ## 5. Ground truth
@@ -97,3 +113,17 @@ YOLO runs on the same frames for the latency comparison. To get YOLO in the loop
 immediately, replace the cubes with textured objects (e.g. a Fuel model of a
 person) and switch `backend: yolo` in `config/detector.yaml`. Fine-tuning on
 Gazebo-rendered frames is the v0.2.0 task.
+
+## 8. The obstacle world
+
+`target_tracking_obstacle.sdf` is `target_tracking.sdf` plus one 0.2 × 3.0 × 6.0 m
+static wall at world `(-0.8, 0, 3.0)` and a contact sensor on it. It exists so the
+nine tracking trials keep flying the unobstructed world: a wall on the approach
+path there would invalidate every one of them.
+
+The wall's pose and size are duplicated in `config/obstacle.yaml`;
+`check_world_targets.py` fails when the two disagree, because the clearance metric
+is computed from the YAML. The obstacle world also loads
+`gz-sim-contact-system` — without it the contact sensor's topic is never created
+and "0 contacts" would be produced by a system that was never loaded. The
+positive check for that sensor is in [`docs/avoidance.md`](../docs/avoidance.md).

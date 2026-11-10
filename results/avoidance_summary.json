@@ -1,0 +1,84 @@
+{
+  "obstacle": {
+    "model": "obstacle_wall",
+    "centre_enu": [
+      -0.8,
+      0.0,
+      3.0
+    ],
+    "size_m": [
+      0.2,
+      3.0,
+      6.0
+    ],
+    "aabb_enu_m": [
+      -0.9,
+      -0.7000000000000001,
+      -1.5,
+      1.5
+    ]
+  },
+  "spawn_enu": [
+    -7.5,
+    0.0
+  ],
+  "metrics": {
+    "rows": 547,
+    "duration_s": 54.6,
+    "stop_engaged": true,
+    "stop_start_s": 19.8,
+    "stop_end_s": 54.6,
+    "stop_hold_s": 34.8,
+    "stop_drift_m": 0.608,
+    "stop_advance_m": 0.585,
+    "stop_retreat_m": 0.092,
+    "settled_drift_m": 0.124,
+    "min_clearance_m": 2.204,
+    "min_clearance_at_s": 21.2,
+    "final_east_m": 3.771,
+    "max_east_m": 4.396,
+    "max_altitude_m": 5.051,
+    "contacts_total": 0,
+    "depth_frames": 822,
+    "min_nearest_m": 0.25
+  },
+  "checks": {
+    "stop_engaged": {
+      "ok": true,
+      "detail": "stop_start_s=19.8"
+    },
+    "stop_held_at_least_3s": {
+      "ok": true,
+      "detail": "stop_hold_s=34.8"
+    },
+    "settled_drift_under_0.3m": {
+      "ok": true,
+      "detail": "settled_drift_m=0.124 after 10 s"
+    },
+    "advance_after_stop_under_1m": {
+      "ok": true,
+      "detail": "stop_advance_m=0.585, retreat_m=0.092"
+    },
+    "clearance_at_least_min": {
+      "ok": true,
+      "detail": "min_clearance_m=2.204 >= 1.0"
+    },
+    "no_contact": {
+      "ok": true,
+      "detail": "contacts_total=0"
+    },
+    "depth_frames_seen": {
+      "ok": true,
+      "detail": "depth_frames=822"
+    }
+  },
+  "verdict": "PASS",
+  "gate": {
+    "stop_distance_m": 2.5,
+    "clear_distance_m": 3.2,
+    "roi_width_fraction": 0.6,
+    "roi_height_fraction": 0.5,
+    "source": "config/depth.yaml"
+  },
+  "source_csv": "results/avoidance_run.csv"
+}

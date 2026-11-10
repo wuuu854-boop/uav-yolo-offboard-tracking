@@ -39,7 +39,7 @@ frequencies.
 | Real-time performance | "real-time cognitive cycle" | 8.1 ms / 119 FPS at 320 px, 4 threads; end-to-end 143 ms | `docs/deployment.md` |
 | Simulation first, SITL → real | "simulation first (Gazebo, SITL and HITL), then real flight" | **Gazebo Harmonic SITL**, 9+6 closed-loop trials, reproducible patch | `docs/experiment-protocol.md` |
 | State estimation, EKF, VIO | "EKF tuning … GPS-denied navigation" | **PX4's EKF only**, no tuning, no VIO | — |
-| Obstacle avoidance, LiDAR/depth | "path planning and obstacle avoidance with ROS 2" | **Not implemented** | — |
+| Obstacle avoidance, LiDAR/depth | "path planning and obstacle avoidance with ROS 2" | **Reactive stop only** (v0.9.0): forward depth camera, stop before a 6 m wall; no path planning, no global avoidance | `docs/avoidance.md`, `results/avoidance_summary.json` |
 | Multi-target / counter-drone | "detection, tracking and classification of airborne targets" | Single target per run | `control/selection.py` |
 | Dataset + labelling pipeline | not named, but implied by "model deployment" | **Geometry-based auto-labelling** on real frames | `scripts/label_real_frames.py` |
 
@@ -70,8 +70,11 @@ Ordered by (market weight × what is feasible without hardware we do not have):
    `pymavlink`. *Feasible now, medium value.*
 4. **EKF/estimator work** — real value, but it is PX4-internal tuning and needs
    flight data to mean anything. *Needs a vehicle.*
-5. **Obstacle avoidance** — a depth camera or LiDAR in Gazebo would let us build
-   it, but it is a second project, not an increment. *Defer.*
+5. **Obstacle avoidance** — *phase 1 delivered*: a forward depth camera and a
+   latched stop in Gazebo, verified with 2.204 m minimum clearance and zero
+   contacts ([`avoidance.md`](avoidance.md)). It is a stop, not a planner:
+   going around, dynamic obstacles and a real depth sensor are phase 2/3 and
+   need either more work or hardware.
 
 ## What we deliberately stop pretending
 

@@ -5,13 +5,16 @@ SHELL    := /bin/bash
 PY       ?= python3
 PX4_DIR  ?= $(HOME)/PX4-Autopilot
 WORLD    ?= target_tracking
+# Both worlds are installed: the tracking trials must keep the unobstructed one,
+# and the avoidance flight needs the wall. See sim/worlds/target_tracking_obstacle.sdf.
+WORLDS   := target_tracking target_tracking_obstacle
 # Forward-looking `x500_mono_cam` would break the nadir projection: use _down.
 PX4_MODEL ?= gz_x500_mono_cam_down
 # Spawn 3.5 m west of target_0 so it is the only target in view at takeoff.
 # Per-target poses are listed in docs/experiment-protocol.md.
 POSE     ?= -3.5,0,0.05
 
-.PHONY: help setup doctor demo trials qa shots pipeline patch-px4 install-world sim detect e2e preflight test lint fmt lock bench check clean
+.PHONY: help setup doctor demo trials qa shots pipeline patch-px4 install-world sim detect e2e avoid preflight test lint fmt lock bench check clean
 
 help: ## show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-8s\033[0m %s\n", $$1, $$2}'
@@ -41,19 +44,26 @@ check: ## everything CI runs, locally
 patch-px4: ## apply the PX4 v1.15 magnetometer patch and rebuild
 	bash scripts/apply_px4_patch.sh
 
-install-world: ## copy the world and the nadir camera model where PX4 looks
+install-world: ## copy the worlds and the depth-camera model where PX4 looks
 	@test -d "$(PX4_DIR)/Tools/simulation/gz/worlds" || { echo "PX4 gazebo tree not found at $(PX4_DIR); see sim/README.md"; exit 1; }
-	cp sim/worlds/$(WORLD).sdf "$(PX4_DIR)/Tools/simulation/gz/worlds/$(WORLD).sdf"
+	@for world in $(WORLDS); do \
+	  cp "sim/worlds/$$world.sdf" "$(PX4_DIR)/Tools/simulation/gz/worlds/$$world.sdf"; \
+	  echo "installed $$world.sdf"; \
+	done
 	# PX4 v1.15's launcher runs `gz sim -r $(HOME)/.simulation-gazebo/worlds/$(WORLD).sdf`,
 	# so a world copied only into the source tree is never opened.
-	@mkdir -p "$(HOME)/.simulation-gazebo/worlds"
-	cp sim/worlds/$(WORLD).sdf "$(HOME)/.simulation-gazebo/worlds/$(WORLD).sdf"
-	@if [ ! -d "$(HOME)/.simulation-gazebo/models/x500_mono_cam_down" ]; then \
-	  mkdir -p "$(HOME)/.simulation-gazebo/models"; \
-	  cp -r sim/models/x500_mono_cam_down "$(HOME)/.simulation-gazebo/models/"; \
-	  echo "installed the fallback nadir camera model"; \
-	fi
-	@echo "installed $(WORLD).sdf"
+	@mkdir -p "$(HOME)/.simulation-gazebo/worlds" "$(HOME)/.simulation-gazebo/models/x500_mono_cam_down"
+	@for world in $(WORLDS); do \
+	  cp "sim/worlds/$$world.sdf" "$(HOME)/.simulation-gazebo/worlds/$$world.sdf"; \
+	done
+	# Always overwrite the installed vehicle model. Since v0.9.0 it carries the
+	# forward depth camera; keeping an older copy silently removes the topic and
+	# every avoidance run then fails at "topic not found" instead of at the feat.
+	# PX4's source-tree copy is deliberately not touched: the model store shadows
+	# it, and editing the PX4 checkout would make its git status dirty.
+	cp sim/models/x500_mono_cam_down/model.sdf "$(HOME)/.simulation-gazebo/models/x500_mono_cam_down/model.sdf"
+	cp sim/models/x500_mono_cam_down/model.config "$(HOME)/.simulation-gazebo/models/x500_mono_cam_down/model.config"
+	@echo "installed x500_mono_cam_down (nadir + forward depth camera)"
 
 sim: install-world ## launch Gazebo + PX4 SITL with the target world
 	cd $(PX4_DIR) && PX4_GZ_WORLD=$(WORLD) PX4_GZ_MODEL_POSE=$(POSE) make px4_sitl $(PX4_MODEL)
@@ -63,6 +73,9 @@ detect: ## run the detection node only
 
 e2e: ## closed loop: takeoff -> detect -> approach -> hover -> land
 	bash scripts/run_e2e.sh
+
+avoid: install-world ## depth camera: takeoff -> stop before a wall -> land, with evidence
+	bash scripts/run_avoidance.sh
 
 trials: ## run N closed-loop trials (N=3 default), restarting the sim each time
 	bash scripts/run_trials.sh --count $(or $(N),3)

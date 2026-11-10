@@ -14,6 +14,7 @@ and because the *corrections* are the useful part of a project like this.
 | 6 | PX4 heading ≠ ROS yaw | `px4_msgs/VehicleOdometry.msg` ("FRD body frame to reference frame") | `frames.py` conversion plus 8 tests; the missing 90° was a real defect |
 | 7 | Message field names used by the nodes exist | every `.msg` in `px4_msgs` `release/1.15` | confirmed; no change needed |
 | 12 | The closed loop lands on target in SITL | 9 trials, 3 per target, `results/landing_error.csv` | 9/9 within 1.5 m, median 0.73 m, p50 latency 143 ms; two measurement defects (local/world frame, stale hover setpoint) found and fixed on the way |
+| 13 | The depth gate stops before a wall in SITL | `results/avoidance_run.csv`, `avoidance_summary.json`, `avoidance_trace.csv`, `contact_sensor_check.txt` | PASS: stop at 19.8 s, 25.1 s hold, settled drift 0.124 m, min clearance 2.204 m, 0 contacts, 822 depth frames. Three defects found on the way: the hold followed the vehicle's own drift (1.34 m), a frozen setpoint let it coast 1.17 m, and the first 1.2 m wall was stopped on its corner; the final design latches the vehicle position at 0.6 m/s and uses a 3 m wall |
 | 8 | The niche is not "detection" | GitHub API on 2026-11-09: the 406★ repo has no controller; `px4 offboard target tracking` returns 0 repositories | positioning rewritten; `docs/prior-art.md` |
 | 9 | Setup, not algorithms, is the blocker | 6 of 11 open issues in the leading repo | `doctor.py` and `docs/troubleshooting.md` |
 | 10 | The upstream install instructions are unpinned | `PX4/px4_msgs` and `PX4/px4_ros_com` branch lists | [PR #43](https://github.com/monemati/PX4-ROS2-Gazebo-YOLOv8/pull/43) opened upstream |
@@ -30,7 +31,7 @@ and because the *corrections* are the useful part of a project like this.
 
 ## What is deliberately not in this table
 
-- Gazebo SITL results. They are not a claim yet; `results/landing_error.csv` is
-  the place they will appear.
+- A claim without a file in `results/`. The CSV, JSON or log is the claim's
+  evidence; this table only says what was checked and what the check changed.
 - Anything from a blog post or a tutorial that could not be traced to a file in
   the pinned upstream version.

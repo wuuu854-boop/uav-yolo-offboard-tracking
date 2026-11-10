@@ -10,7 +10,13 @@ flowchart LR
   X -->|/fmu/out/vehicle_odometry| C
   X --> G
   C -->|/target_pose| R[debug: RViz / logs]
+  G -->|/depth_camera| Z[depth bridge<br/>+ stop gate] -->|/avoidance/stop| C
 ```
+
+The depth path is a second, intentionally small loop: the camera is forward and
+tilted down, the gate decides only "stop or not", and the control node treats a
+stop as "hold the horizontal setpoint". It does not plan around anything. Details:
+[`avoidance.md`](avoidance.md).
 
 The projection lives **inside** `offboard_node`, not in a separate node: it needs
 the vehicle pose, which the control side already has. Keeping it there means the
@@ -36,6 +42,13 @@ a 0.10 m vertical error that scales the ground offset by about 2 % at 5 m.
 The similarly named `x500_mono_cam` is **forward-looking** and cannot be used
 with this projection — see `docs/troubleshooting.md` #10.
 
+The forward depth camera added in v0.9.0 is mounted at body `(0.20, 0, -0.02)`
+and pitched 30° down. It is not the nadir camera and it is not used for
+projection: it publishes z-depth in metres on `/depth_camera`, which
+`scripts/gz_depth_bridge.py` republishes as a ROS `32FC1` image. The controller
+commands `heading_yaw_deg` (NED, clockwise from north) so the camera faces the
+direction of travel; the avoidance mission sets 90° (east).
+
 NED is converted to ENU **only at the PX4 boundary** (`src/uav_tracking/control/frames.py`):
 
 ```
@@ -56,6 +69,9 @@ Check them in that order — they are listed from most to least likely.
 | Topic | Type | Direction | QoS |
 |---|---|---|---|
 | `/camera/image_raw` | `sensor_msgs/Image` | bridge → detector | sensor data (best effort) |
+| `/camera/depth/image_raw` | `sensor_msgs/Image` (`32FC1`) | depth bridge → depth node | sensor data (best effort) |
+| `/avoidance/stop` | `std_msgs/Bool` | depth node → control | default (reliable, depth 10) |
+| `/avoidance/nearest_m` | `std_msgs/Float32` | depth node → recorder | default |
 | `/detections` | `uav_interfaces/TargetArray` | detector → control | default (reliable, depth 10) |
 | `/target_pose` | `geometry_msgs/PoseStamped` | control → debug | default |
 | `/fmu/out/vehicle_odometry` | `px4_msgs/VehicleOdometry` | PX4 → control | default |
@@ -115,6 +131,13 @@ seen: hovering forever only works if the target comes back on its own. Lanes are
 spaced at `coverage_spacing(11.9 m, 0.25)` — the footprint from
 `docs/scenario.md` minus a quarter overlap — so consecutive passes are contiguous.
 
+The stop gate is deliberately **not** a new mission state. It is a modifier on
+`GOTO`: while `/avoidance/stop` is true, the horizontal setpoint is latched at
+the vehicle position and the state machine keeps reporting `GOTO`. Takeoff,
+hover and landing ignore the gate. A watchdog turns a depth stream that stops
+arriving into a stop; before the first message it is inactive, so missions that
+do not run the depth node are unchanged. See [`avoidance.md`](avoidance.md).
+
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a
 single missed frame ends the mission.
@@ -138,3 +161,6 @@ single missed frame ends the mission.
 | Setpoint jumps every few frames | no jump filter / wrong filter limit | `config/mission.yaml` |
 | Control oscillates | detection running inside the control loop | `publish_rate_hz` vs `control_rate_hz` |
 | Landing error ~0 but wrong target | ground truth YAML not matching the world | `config/targets.yaml` vs the SDF |
+| No `/depth_camera` topic | depth-camera model not installed, or PX4 started with another model | `make install-world`, `gz topic -l \| grep depth` |
+| Depth gate stops on the ground at takeoff | near clip / low altitude; the controller ignores stop outside `GOTO` | `log/depth_node.log`, `stop_events` |
+| Vehicle flies past the wall | wrong `heading_yaw_deg`, so the forward camera was not pointed at it | `config/mission_avoidance.yaml`, yaw in `avoidance_run.csv` |

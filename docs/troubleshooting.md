@@ -238,3 +238,96 @@ make sim PX4_MODEL=gz_x500_mono_cam_down
 
 **Detected by** `doctor.py` → `gz assets` checks that the `_down` model exists.
 
+---
+
+## 11. `gz topic -l` shows no `/depth_camera`
+
+**Symptom** The avoidance run exits with "the vehicle depth camera did not
+appear"; `gz topic -l | grep depth` is empty, while the nadir camera topic is
+present.
+
+**Cause** The installed vehicle model is the *old* one. `make install-world` used
+to copy the model only when the directory was missing, so a store populated by
+v0.8.0 silently kept a camera-less model after the repository gained the depth
+sensor. The depth camera is also published on the sensor topic directly
+(`/depth_camera`), unlike the nadir camera, whose topic is scoped under
+`/world/<world>/model/.../link/camera_link/sensor/camera/image`.
+
+**Fix**
+
+```bash
+make install-world          # now always overwrites the installed model
+gz topic -l | grep depth    # /depth_camera and /depth_camera/points
+```
+
+**Detected by** `scripts/run_avoidance.sh`, which checks for `/depth_camera`
+before starting the nodes and prints the Gazebo topics it did see.
+
+**Source** found during v0.9.0 bring-up.
+
+---
+
+## 12. The depth image is all zeros, or `nearest` reads 0.25 m during takeoff
+
+**Symptom** The depth frame is black/empty at the start, then the node logs
+`STOP: nearest 0.25 m` while the vehicle is still climbing, and clears a second
+later.
+
+**Cause** At ground level the depth camera is inside its 0.2 m near clip and sees
+only the ground; 0.25 m is the `min_valid_m` filter, not an obstacle. It is the
+ground below the vehicle. The same happens if the airframe faces away from the
+approach: a forward camera looking at empty ground or sky returns no wall.
+
+**Fix** Do not lower the threshold. Confirm the vehicle is in `GOTO` before
+acting on the stop (the controller ignores it in `TAKEOFF`/`HOVER`/`LAND`), and
+confirm `heading_yaw_deg` points at the obstacle. `stop_events` in
+`results/avoidance_run.csv` makes the takeoff event visible instead of hiding it.
+
+**Detected by** `log/depth_node.log` and the `stop_events` column.
+
+**Source** found during v0.9.0 bring-up.
+
+---
+
+## 13. The stop never releases, or the vehicle stops immediately after takeoff
+
+**Symptom** `/avoidance/stop` stays true with a wall metres away, or the vehicle
+stops on the first control tick and never resumes.
+
+**Cause** Three separate things look the same:
+
+1. **Hysteresis.** The gate releases only above `clear_distance_m` (3.2 m), not
+   at the 2.5 m stop threshold. A vehicle that stopped at 2.4 m reads 2.4 m
+   forever and correctly stays stopped.
+2. **Stale stream.** Once `/avoidance/stop` has been seen, a gap longer than
+   `avoidance_timeout_s` is treated as stop. A crashed depth node therefore looks
+   like a permanently blocked path, by design.
+3. **Wrong ROI.** If the ROI is on the ground or the sky rather than the wall,
+   the nearest value can sit below the threshold without an obstacle in front.
+
+**Fix** Read the three numbers together: `nearest_m`, `stop`, and the vehicle
+position in `results/avoidance_run.csv`. If `nearest_m` is small while the wall
+is far, the ROI or the camera heading is wrong; if `nearest_m` is genuine and
+below 3.2 m, the stop is correct.
+
+**Detected by** `scripts/avoidance_report.py` fails a run with no stop, no hold,
+or insufficient clearance; it does not just print the numbers.
+
+**Source** found during v0.9.0 bring-up.
+
+---
+
+## 14. `make avoid` reports “depth-camera model not installed” after pulling
+
+**Cause** The model store and both worlds are installed copies; a `git pull`
+does not update them.
+
+**Fix**
+
+```bash
+make install-world
+```
+
+Then rerun `make avoid`. The target calls `install-world` itself, so this only
+bites when the simulator is started by hand with `make sim`.
+

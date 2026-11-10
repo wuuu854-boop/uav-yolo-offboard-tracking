@@ -4,6 +4,7 @@
 Subscribes
     px4_msgs/VehicleOdometry      /fmu/out/vehicle_odometry
     uav_interfaces/TargetArray    /detections
+    std_msgs/Bool                 /avoidance/stop     (hold horizontal cruise)
 Publishes
     px4_msgs/OffboardControlMode  /fmu/in/offboard_control_mode
     px4_msgs/TrajectorySetpoint   /fmu/in/trajectory_setpoint
@@ -40,6 +41,7 @@ from px4_msgs.msg import (  # noqa: E402
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node  # noqa: E402
 from rclpy.qos import qos_profile_sensor_data  # noqa: E402
+from std_msgs.msg import Bool  # noqa: E402
 
 from uav_interfaces.msg import TargetArray  # noqa: E402
 from uav_tracking.control.arming import ArmingSequencer  # noqa: E402
@@ -63,6 +65,7 @@ from uav_tracking.control.state_machine import (  # noqa: E402
     TargetJumpFilter,
 )
 from uav_tracking.control.trace import StateTrace  # noqa: E402
+from uav_tracking.perception.depth import StopWatchdog  # noqa: E402
 from uav_tracking.perception.projection import estimate_target_enu  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -134,6 +137,17 @@ class OffboardNode(Node):
         self.update_count = 0
 
         self.arming = ArmingSequencer()
+        # The depth node publishes a stop decision at ~10 Hz. The watchdog is
+        # inactive until the first message, so the tracking mission (which does
+        # not start that node) is unchanged; after that, silence means stop.
+        self.avoidance = StopWatchdog(mission_cfg.avoidance_timeout_s)
+        self.avoidance_holding = False
+        # Latched on the tick the stop engages. Holding (self.east, self.north)
+        # every tick would follow the vehicle's own drift instead of correcting
+        # it; one fixed point is what makes "stopped" measurable. It is the
+        # vehicle position, not the setpoint: the setpoint can be a metre ahead
+        # during cruise, and freezing it would let the vehicle fly to it.
+        self.avoidance_hold: tuple[float, float] | None = None
 
         # PX4 publishes /fmu/out/* as best-effort (SensorDataQoS). A default
         # reliable subscription would never match and the node would sit there
@@ -145,6 +159,7 @@ class OffboardNode(Node):
         )
         self.create_subscription(VehicleStatus, "/fmu/out/vehicle_status", self.on_status, px4_qos)
         self.create_subscription(TargetArray, "/detections", self.on_detections, 10)
+        self.create_subscription(Bool, "/avoidance/stop", self.on_avoidance_stop, 10)
 
         self.offboard_pub = self.create_publisher(
             OffboardControlMode, "/fmu/in/offboard_control_mode", 10
@@ -175,6 +190,10 @@ class OffboardNode(Node):
     def on_detections(self, msg: TargetArray) -> None:
         self.latest_detections = msg
         self.latest_detection_s = self.get_clock().now().nanoseconds / 1e9
+
+    def on_avoidance_stop(self, msg: Bool) -> None:
+        now_s = self.get_clock().now().nanoseconds / 1e9
+        self.avoidance.update(bool(msg.data), now_s)
 
     # ------------------------------------------------------------- perception
     def _project_best_detection(self) -> tuple[float, float] | None:
@@ -308,6 +327,28 @@ class OffboardNode(Node):
                     f"patrol: waypoint {self.patrol.index} of {len(self.patrol.waypoints)}"
                 )
 
+        # The gate overrides horizontal cruise only. Takeoff, hover and landing
+        # keep their commands: refusing to climb or refusing to land because a
+        # wall is in front would turn an obstacle into a different incident.
+        holding = decision.command == "goto" and self.avoidance.active(now_s)
+        if holding and not self.avoidance_holding:
+            self.avoidance_hold = (self.east, self.north)
+            self.get_logger().warn(
+                "obstacle within stop threshold: holding position instead of advancing"
+            )
+        elif not holding and self.avoidance_holding:
+            self.avoidance_hold = None
+            if decision.command == "goto":
+                self.get_logger().info("obstacle clear: resuming the approach")
+            else:
+                # The mission timed out or was told to land. The gate did not
+                # clear; the state change released it. Saying "resuming" here
+                # would misreport why the vehicle started moving again.
+                self.get_logger().info(
+                    f"stop gate released by {decision.state.value}, not by a clear reading"
+                )
+        self.avoidance_holding = holding
+
         if decision.state is State.LAND and self._previous_state is not State.LAND:
             row = self.recorder.finish_trial((self.east, self.north), notes=decision.note)
             self.get_logger().info(
@@ -318,12 +359,13 @@ class OffboardNode(Node):
             self.recorder.start_trial()
 
         # One row per state change: when a trial goes wrong this is the only
-        # record of which state it was in and why it moved.
+        # record of which state it was in and why it moved. A held approach is
+        # a change of reason, not of state, so it replaces the empty GOTO note.
         if self.trace is not None:
             self.trace.write(
                 now_s,
                 decision.state.value,
-                decision.note,
+                "avoidance stop" if holding else decision.note,
                 position=(self.east, self.north),
                 altitude_m=self.altitude,
             )
@@ -335,7 +377,12 @@ class OffboardNode(Node):
         elif decision.command == "takeoff":
             self._move_towards(self.east, self.north, self.cfg.takeoff_altitude_m)
         elif decision.command == "goto" and target is not None:
-            self._move_towards(target[0], target[1], self.cfg.takeoff_altitude_m)
+            if holding:
+                assert self.avoidance_hold is not None
+                hold_east, hold_north = self.avoidance_hold
+                self._move_towards(hold_east, hold_north, self.cfg.takeoff_altitude_m)
+            else:
+                self._move_towards(target[0], target[1], self.cfg.takeoff_altitude_m)
         elif decision.command == "hover":
             # Hold where the vehicle actually is. Leaving the setpoint where GOTO
             # left it makes the vehicle finish closing a lag of up to a metre
@@ -415,11 +462,13 @@ class OffboardNode(Node):
             float(self.setpoint_east),  # NED y
             float(-self.setpoint_alt),  # NED z (down positive)
         ]
-        # Heading is commanded to north (0) rather than left as NaN on purpose:
-        # a fixed heading keeps the camera's image-up direction constant between
-        # trials, which is what makes image_up_is_forward comparable. Send NaN
-        # instead if the vehicle should keep whatever heading it already has.
-        setpoint.yaw = 0.0
+        # Heading is commanded rather than left as NaN on purpose: a fixed
+        # heading keeps the camera's image-up direction constant between trials,
+        # which is what makes image_up_is_forward comparable. The avoidance
+        # mission sets 90 deg (east) so its forward depth camera faces the wall.
+        # NaN would let PX4 keep whatever heading it had, which is not something
+        # a camera-based decision can rely on.
+        setpoint.yaw = math.radians(self.cfg.heading_yaw_deg)
         setpoint.timestamp = timestamp
         self.setpoint_pub.publish(setpoint)
 
@@ -500,6 +549,8 @@ def main() -> int:
         max_mission_s=mission_raw.get("max_mission_s", 0.0),
         geofence_radius_m=mission_raw.get("geofence_radius_m", 30.0),
         confirm_frames=int(mission_raw.get("confirm_frames", 3)),
+        heading_yaw_deg=float(mission_raw.get("heading_yaw_deg", 0.0)),
+        avoidance_timeout_s=mission_raw.get("avoidance_timeout_s", 1.0),
         patrol_waypoints=tuple(
             (float(pair[0]), float(pair[1])) for pair in mission_raw.get("patrol_waypoints", ())
         ),

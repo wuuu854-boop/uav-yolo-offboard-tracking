@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "uav-tracking"
-version = "0.8.0"
+version = "0.9.0"
 description = "PX4 + Gazebo + ROS 2 closed-loop UAV vision pipeline"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -53,7 +53,7 @@ addopts = "-q"
 # The two ROS nodes need rclpy and a running middleware; they are exercised by
 # the `ROS build` workflow instead, so they are excluded from the unit-coverage
 # gate rather than dragging it to zero.
-omit = ["*/detector_node.py", "*/offboard_node.py"]
+omit = ["*/detector_node.py", "*/offboard_node.py", "*/depth_node.py"]
 source = ["uav_tracking"]
 
 [tool.coverage.report]

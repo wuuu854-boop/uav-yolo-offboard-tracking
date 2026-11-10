@@ -18,6 +18,13 @@ README and in the resume, so they are written by scripts, never by hand.
 | `v05_yolo_real.csv` | six YOLO trials after fine-tuning on auto-labelled real frames | 1.265 / 0.822 / 0.386 / 1.066 / 1.321 / 1.235 m — 6/6 within tolerance, median 1.15 m |
 | `v06_patrol.csv` | one two-waypoint patrol run | visited both waypoints, landed 0.438 m from the second target |
 | `v07_moving_target.txt` | tracker replay over a moving-target flight | cube moved 3 m at 0.5 m/s; 88 detections, one id, with and without the motion model |
+| `avoidance_run.csv` | `scripts/record_avoidance.py` during `make avoid` | 547 rows at 10 Hz: pose, nearest depth in the ROI, stop flag, contact count |
+| `avoidance_landing.csv` | `offboard_node` recorder on the same run | one row: stopped 3.70 m from `target_0`, landed at the 40 s timeout — expected, not a tracking success |
+| `avoidance_trace.csv` | `src/uav_tracking/control/trace.py` | `GOTO,avoidance stop` held 25.1 s, then `LAND,mission timeout` |
+| `avoidance_summary.json` | `scripts/avoidance_report.py` | PASS: min clearance 2.204 m, settled drift 0.124 m, 0 contacts, 822 depth frames |
+| `avoidance_run.png` | `scripts/avoidance_report.py` | flight path with the wall, and the depth gate against its thresholds |
+| `avoidance_depth_frame.png` / `.npy` | `scripts/record_avoidance.py` | the frame that stopped the vehicle, nearest 2.45 m; PNG for humans, float32 array for re-analysis |
+| `contact_sensor_check.txt` | manual positive test of the wall contact sensor | a 0.5 kg box on the wall produced 4632 messages |
 | `detections.geojson` | `scripts/export_geojson.py` on the moving-target capture | 88 Point features with track id, timestamp and ENU offsets — the GIS-ready deliverable an inspection operator asks for |
 | `qa_moving.json` | `scripts/qa_report.py` on the moving-target capture | the asset was 3 m from its declared position, and the report says so (association 7.1 m, FAIL) |
 | `qa_north.json` | the same report with the asset position passed in | median association drops from 4.95 m to 0.62 m when the asset is where it actually was |

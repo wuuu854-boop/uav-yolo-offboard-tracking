@@ -66,8 +66,10 @@ jobs:
           export PYTHONPATH="$PWD/src:$PYTHONPATH"
           python3 -c "
           import uav_tracking.perception.detector_node as detector
+          import uav_tracking.perception.depth_node as depth
           import uav_tracking.control.offboard_node as offboard
           print('detector:', detector.DetectorNode.__name__)
+          print('depth:', depth.DepthNode.__name__)
           print('offboard:', offboard.OffboardNode.__name__)
           print('imports ok')
           "

@@ -1,0 +1,15 @@
+# The obstacle the avoidance flight is aimed at.
+#
+# Duplicated from sim/worlds/target_tracking_obstacle.sdf on purpose: the
+# clearance metric in results/avoidance_summary.json is computed from these
+# numbers, so check_world_targets.py compares them with the SDF and fails if the
+# wall moves in only one place.
+model: obstacle_wall
+pose_enu: [-0.8, 0.0, 3.0]   # world ENU centre, metres
+size_m: [0.2, 3.0, 6.0]      # thickness, width, height
+
+# Acceptance threshold for "stopped, did not collide". The X500 is ~0.35 m
+# across, so 1.0 m of centre-to-wall clearance is not a graze. The measured
+# value is reported separately; this is the line a run has to stay on the safe
+# side of, not a prediction.
+min_clearance_m: 1.0

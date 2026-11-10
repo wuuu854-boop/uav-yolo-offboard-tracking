@@ -1,0 +1,35 @@
+# Forward depth camera + obstacle gate.
+#
+# The sensor itself is defined in sim/models/x500_mono_cam_down/model.sdf:
+# 640x480, R_FLOAT32, HFOV 1.2 rad, pitched 30 deg down, clip 0.2-20 m.
+# scripts/gz_depth_bridge.py republishes it on /camera/depth/image_raw and
+# src/uav_tracking/perception/depth_node.py turns it into /avoidance/stop.
+#
+# DISTANCES ARE Z-DEPTH, NOT EUCLIDEAN RANGE
+# Gazebo's depth image contains the distance along the camera's optical axis.
+# With the 30 deg down-tilt the same wall reads about 0.87 x its horizontal
+# distance at the frame centre. The values below are z-depth; changing the tilt
+# changes what they mean, so the model and this file must move together.
+stop_distance_m: 2.5
+clear_distance_m: 3.2
+
+# The region allowed to command a stop, as a fraction of the image. Width 60%
+# keeps the 3 m wall inside the window from 6.7 m down to the stop point; height
+# 50% excludes the near ground in the bottom rows and the sky.
+roi_width_fraction: 0.6
+roi_height_fraction: 0.5
+roi_center_x: 0.5
+roi_center_y: 0.5
+
+# 0 and inf are "no return", not obstacles. 0.25 filters the near clip; 12 m
+# drops the distant ground so a wall at 6 m is the nearest usable surface.
+min_valid_m: 0.25
+max_valid_m: 12.0
+
+# When depth frames stop arriving the node publishes stop (fail safe) after
+# this long. The controller has its own, longer watchdog (mission
+# `avoidance_timeout_s`) that catches the node dying altogether.
+stale_timeout_s: 0.5
+fail_safe_on_stale: true
+
+publish_rate_hz: 10.0
