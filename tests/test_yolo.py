@@ -144,7 +144,12 @@ def test_a_channel_first_export_decodes_to_boxes_not_channels():
 
 
 def test_a_single_box_channel_first_export_decodes():
-    output = np.array([[[100.0]], [[120.0]], [[40.0]], [[40.0]], [[0.8]]], dtype=np.float32)
+    output = np.array([1, 5, 1], dtype=np.float32).reshape(1, 5, 1)
+    output[:, 0, 0] = 100.0
+    output[:, 1, 0] = 120.0
+    output[:, 2, 0] = 40.0
+    output[:, 3, 0] = 40.0
+    output[:, 4, 0] = 0.8
 
     detections = decode(output, scale=1.0, classes=(0,), conf_threshold=0.5)
 
