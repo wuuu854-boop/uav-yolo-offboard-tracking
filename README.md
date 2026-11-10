@@ -123,7 +123,8 @@ Gazebo rendered headless through WSL2.
 | YOLO backend in the same loop | ✅ **verified** | 6/6 trials within tolerance, median 1.15 m; [`results/v05_yolo_real.csv`](results/v05_yolo_real.csv) |
 | Detector throughput | ✅ measured on CPU | 119 FPS at 320 px / 4 threads, 37 FPS at 640 px; [`docs/deployment.md`](docs/deployment.md) |
 | Was it deployed on a Jetson | ❌ **not yet** | no board; TensorRT and INT8 are the honest gaps, [`docs/market.md`](docs/market.md) |
-| Moving targets | ✅ **one recorded flight** | target moved 3 m at 0.5 m/s; the tracker held **one id across 88 detections** (`results/v07_moving_target.txt`). The motion model was not required at that speed — its unit tests define when it is |
+| Multi-target patrol | ✅ **verified** | two waypoints 20 m apart, landed 0.438 m from the second; [`results/v06_patrol.csv`](results/v06_patrol.csv) |
+| Moving targets | ✅ **one recorded flight** | cube moved 3 m at 0.5 m/s; the tracker held one id across 88 detections. Plain IoU was enough at that speed — the motion model's unit tests define when it is not; [`results/v07_moving_target.txt`](results/v07_moving_target.txt) |
 | PX4 change needed for those trials | ✅ documented and patchable | [`patches/px4-v1.15-gz-magnetometer.patch`](patches/px4-v1.15-gz-magnetometer.patch) + `make patch-px4`; unpatched PX4 will not arm |
 
 The last row is the only claim this repository does not yet support, and it is

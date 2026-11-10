@@ -89,6 +89,9 @@ stateDiagram-v2
   GOTO --> LAND: mission timeout
   HOVER --> LAND: mission timeout
   SEARCH --> LAND: mission timeout
+  HOVER --> GOTO: patrol has another waypoint
+  GOTO --> LAND: patrol complete
+  HOVER --> LAND: patrol complete
 ```
 
 The four `mission timeout` edges land a mission that never converges
@@ -96,6 +99,12 @@ The four `mission timeout` edges land a mission that never converges
 the battery decides. Separately from the state machine, every horizontal setpoint
 is clamped to `geofence_radius_m` around the spawn point before it is published:
 a bad estimate becomes a boundary command, not a flight away.
+
+The two patrol edges only exist when `patrol_waypoints` is non-empty. A patrol
+leg is waypoint-driven: the detection of the target just visited must not pull
+the vehicle back, which is the bug the first patrol flight found. When the queue
+is exhausted the node calls `request_land`, so the mission ends from wherever it
+is instead of re-targeting an estimate.
 
 The three `disarmed` edges exist because PX4 can disarm in flight (failsafe,
 battery, a manual kill). Without them the node would keep commanding a climb or

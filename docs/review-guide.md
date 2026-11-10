@@ -19,9 +19,9 @@ is enforced in `make check`; nothing is aspirational.
 |---|---|---|
 | `perception/projection.py` | pixel → ground ENU under a nadir camera, with or without attitude; the mount offset is applied | `tests/test_projection.py` (18) + `tests/test_projection_attitude.py` (7) |
 | `perception/yolo.py` | letterbox → blob → decode round-trips; class filter precedes NMS | `tests/test_yolo.py`, `tests/test_detector.py` (19) |
-| `perception/tracking.py` | the same object keeps its id across frames; a gap shorter than `max_age_s` does not create a new one | `tests/test_tracking.py` (12) |
+| `perception/tracking.py` | the same object keeps its id across frames; a gap shorter than `max_age_s` does not create a new one; a target moving faster than IoU can follow keeps it too | `tests/test_tracking.py` (12) + `tests/test_tracking_motion.py` (7) |
 | `control/frames.py` | NED → ENU including the 90° heading convention, and roll/pitch out of a quaternion | `tests/test_frames.py` (9) + `tests/test_frames_attitude.py` (6) |
-| `control/state_machine.py` | a lost target hovers then searches, never lands; an in-flight disarm stops the mission | `tests/test_state_machine.py` (12) |
+| `control/state_machine.py` | a lost target hovers then searches, never lands; an in-flight disarm stops the mission; a pending waypoint turns the arrival hover into the next leg | `tests/test_state_machine.py` (22) |
 | `control/search.py` | lanes stay inside the area, never exceed the spacing, and the walker advances only on arrival | `tests/test_search.py` (9) |
 | `control/limiter.py` | the speed bound holds in every direction, including diagonal | `tests/test_limiter.py` (7) |
 | `control/selection.py` | the default ignores a more confident edge detection; `tracked` holds one id and falls back when it disappears | `tests/test_selection.py` (12) |
@@ -29,7 +29,8 @@ is enforced in `make check`; nothing is aspirational.
 | `control/recorder.py` | append-only; raw latency samples are kept for pooling | `tests/test_recorder.py` (6) |
 | `control/trace.py` | one row per state change, and a second run appends | `tests/test_trace.py` (6) |
 | `control/geofence.py` | a target outside the circle is pulled onto it, direction preserved | `tests/test_geofence.py` (7) |
-| `control/state_machine.py` (safety) | a mission that never converges lands; a target is believed only after `confirm_frames` frames | `tests/test_state_machine.py` (18) |
+| `control/state_machine.py` (safety) | a mission that never converges lands; a target is believed only after `confirm_frames` frames | `tests/test_state_machine.py` (22) |
+| `control/patrol.py` | waypoints are visited in order, advancing past the end is harmless, a malformed pair is rejected | `tests/test_patrol.py` (6) |
 | `control/offline_sim.py` | the whole loop terminates and converges with a fixed seed | `tests/test_offline_sim.py` (8) |
 
 ## What is not unit-tested, and where it is covered instead

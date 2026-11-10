@@ -7,6 +7,8 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-10
+
 ### Added
 
 - **Motion model in the tracker.** `Track` carries a smoothed velocity and a
