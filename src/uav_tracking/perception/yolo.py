@@ -70,11 +70,13 @@ def decode(
         prediction = np.squeeze(output, axis=0)
         if prediction.shape[0] <= 4 + 128:
             prediction = prediction.T
-    else:
+    elif output.ndim == 2:
         prediction = output
         minimum_columns = int(class_indices.max()) + 5
         if prediction.shape[1] < minimum_columns <= prediction.shape[0]:
             prediction = prediction.T
+    else:
+        raise ValueError(f"expected a 1xNxM or NxM prediction, got shape {output.shape}")
 
     if prediction.ndim != 2:
         raise ValueError(f"expected a 2D prediction, got shape {output.shape}")
