@@ -287,6 +287,9 @@ def test_after_a_requested_landing_the_machine_keeps_descending():
     _arm_and_take_off(sm)
     sm.request_land("patrol complete")
 
-    decision = sm.step(Observation(4.0, 0.1, armed=True))
-
-    assert decision.command == "land"
+    # still in the air: keep commanding the descent
+    assert sm.step(Observation(4.0, 3.0, armed=True)).command == "land"
+    # on the ground: the mission is over
+    decision = sm.step(Observation(5.0, 0.1, armed=True))
+    assert decision.command == "disarm"
+    assert sm.state is State.IDLE
