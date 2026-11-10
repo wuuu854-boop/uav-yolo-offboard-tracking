@@ -51,8 +51,15 @@ Ordered by (market weight × what is feasible without hardware we do not have):
    ordered route and lands after the last waypoint (one SITL run, 0.44 m from the
    second target). The tracker also gained a constant-velocity model plus a
    nearest-centre bootstrap pass, so a moving target keeps its id across frames
-   where the box moves faster than IoU can follow — unit-tested only: no moving
-   target has been flown yet, and the README says so.
+   where the box moves faster than IoU can follow.
+
+   **The moving-target flight was attempted and did not produce evidence.**
+   `scripts/move_target.py` drives a target with `gz service set_pose` and does
+   move it (verified: pose `(0, 0, 0.25)` → `(0, 1.4, 0.05)`), but the flight
+   that was supposed to record it captured 120 ground-level frames of a flat
+   grey image — the recorder attached before the camera and odometry were live.
+   The replay over those frames found zero detections, so it validated nothing.
+   The tracker therefore stays **unit-tested only**, and the README says so.
 2. **TensorRT / INT8 path** — the most repeated phrase in the postings. Blocked
    on a Jetson or an NVIDIA GPU; the honest interim is the CPU benchmark we now
    have, plus an export path that is ready for it. *Needs hardware.*
