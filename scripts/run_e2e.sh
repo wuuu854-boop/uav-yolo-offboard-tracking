@@ -18,6 +18,9 @@ if [[ -f .venv/bin/activate ]]; then source .venv/bin/activate; fi
 MODE="run"
 DURATION_S=180
 RESULTS="results/landing_error.csv"
+# Same file by default; override to measure a different detector config (for
+# example a YOLO backend that only exists on machines with the model).
+DETECTOR_CONFIG="${DETECTOR_CONFIG:-config/detector.yaml}"
 
 usage() {
   cat <<'EOF'
@@ -62,8 +65,7 @@ preflight() {
 
   echo "== python =="
   if python3 -c "import rclpy" >/dev/null 2>&1; then
-    echo "  ok   rclpy (a ROS environment is sourced)"
-  else
+    echo "  ok   rclpy (a ROS environment is sourced)"  else
     echo "  MISS rclpy: source /opt/ros/humble/setup.bash"
     failed=1
   fi
@@ -97,7 +99,7 @@ if [[ "$MODE" == "dry" ]]; then
 == dry run: nothing was started ==
 
 would run:
-  python3 src/uav_tracking/perception/detector_node.py --config config/detector.yaml
+  python3 src/uav_tracking/perception/detector_node.py --config "$DETECTOR_CONFIG"
   python3 src/uav_tracking/control/offboard_node.py
 and wait up to ${DURATION_S}s for a new row in ${RESULTS}.
 EOF
@@ -138,7 +140,7 @@ ROWS_BEFORE=$(($(wc -l < "$RESULTS") - 1))
 if ((ROWS_BEFORE < 0)); then ROWS_BEFORE=0; fi
 
 echo "== starting nodes (logs in log/) =="
-python3 src/uav_tracking/perception/detector_node.py --config config/detector.yaml \
+python3 src/uav_tracking/perception/detector_node.py --config "$DETECTOR_CONFIG" \
   > log/detector.log 2>&1 &
 DETECTOR_PID=$!
 python3 src/uav_tracking/control/offboard_node.py > log/offboard.log 2>&1 &
