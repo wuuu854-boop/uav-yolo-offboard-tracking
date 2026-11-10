@@ -58,8 +58,11 @@ class ArmingSequencer:
         if not due:
             return ArmingStep(attempts=self._attempts)
 
-        request_mode = not self._mode_sent
-        self._mode_sent = True
+        # Ask for the mode again with every attempt. PX4 ignores a duplicate
+        # request, and the first one is routinely dropped while uXRCE-DDS is
+        # still connecting - which leaves the vehicle armed but not in OFFBOARD,
+        # where the position setpoints are simply ignored.
+        request_mode = True
         self._last_attempt_s = now_s
         self._attempts += 1
 

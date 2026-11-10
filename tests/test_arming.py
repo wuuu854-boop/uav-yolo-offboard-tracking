@@ -23,7 +23,7 @@ def test_after_the_retry_only_arming_is_resent():
     sequencer = ArmingSequencer(retry_s=2.0)
     sequencer.step(now_s=0.0, armed=False)
     step = sequencer.step(now_s=2.1, armed=False)
-    assert (step.request_mode, step.request_arm, step.attempts) == (False, True, 2)
+    assert (step.request_mode, step.request_arm, step.attempts) == (True, True, 2)
 
 
 def test_a_single_warning_after_the_grace_period():
