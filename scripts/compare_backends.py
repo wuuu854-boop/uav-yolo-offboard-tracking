@@ -46,6 +46,8 @@ def _project(box: dict, pose: dict, camera: dict) -> tuple[float, float]:
         yaw=pose["yaw"],
         image_up_is_forward=bool(camera.get("image_up_is_forward", True)),
         offset_body=camera.get("mount_offset_xyz", (0.0, 0.0, 0.0)),
+        roll=pose.get("roll", 0.0),
+        pitch=pose.get("pitch", 0.0),
     )
     return east, north
 

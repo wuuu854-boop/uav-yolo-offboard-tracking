@@ -50,3 +50,18 @@ def ned_position_to_enu(position_ned: Sequence[float]) -> tuple[float, float, fl
         raise ValueError("position_ned needs three components")
     north, east, down = (float(v) for v in position_ned[:3])
     return east, north, -down
+
+
+def quaternion_to_roll_pitch(quaternion: Sequence[float]) -> tuple[float, float]:
+    """Roll and pitch (rad) from a Hamilton quaternion ``(w, x, y, z)``.
+
+    Both are in PX4's body frame (FRD), which is what ``projection.py`` expects:
+    positive roll is right side down, positive pitch is nose up.
+    """
+    q = np.asarray(quaternion, dtype=float)
+    if q.shape != (4,):
+        raise ValueError(f"quaternion must have 4 components, got shape {q.shape}")
+    w, x, y, z = q
+    roll = math.atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y))
+    pitch = math.asin(max(-1.0, min(1.0, 2.0 * (w * y - z * x))))
+    return roll, pitch

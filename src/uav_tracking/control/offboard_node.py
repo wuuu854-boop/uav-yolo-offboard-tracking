@@ -47,6 +47,7 @@ from uav_tracking.control.frames import (  # noqa: E402
     heading_ned_to_yaw_enu,
     ned_position_to_enu,
     quaternion_to_heading_ned,
+    quaternion_to_roll_pitch,
 )
 from uav_tracking.control.geofence import clamp_to_fence  # noqa: E402
 from uav_tracking.control.limiter import limited_step  # noqa: E402
@@ -110,6 +111,10 @@ class OffboardNode(Node):
         self.north = 0.0
         self.altitude = 0.0
         self.yaw = 0.0
+        # Attitude, because a projection that assumes a level camera loses about
+        # a metre per 10 deg of pitch (docs/model.md).
+        self.roll = 0.0
+        self.pitch = 0.0
         self.armed = False
 
         # Setpoint held in ENU + altitude, converted to NED when published.
@@ -156,6 +161,7 @@ class OffboardNode(Node):
         # PX4 odometry is NED: convert once, here, and stay in ENU everywhere else.
         self.east, self.north, self.altitude = ned_position_to_enu(msg.position)
         self.yaw = heading_ned_to_yaw_enu(quaternion_to_heading_ned(msg.q))
+        self.roll, self.pitch = quaternion_to_roll_pitch(msg.q)
         self.update_count += 1
 
     def on_status(self, msg: VehicleStatus) -> None:
@@ -211,6 +217,8 @@ class OffboardNode(Node):
             yaw=self.yaw,
             image_up_is_forward=self.image_up_is_forward,
             offset_body=self.mount_offset,
+            roll=self.roll,
+            pitch=self.pitch,
         )
         return self.target_filter.update((east, north))
 

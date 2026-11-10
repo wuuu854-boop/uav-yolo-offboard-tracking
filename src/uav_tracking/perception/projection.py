@@ -11,9 +11,10 @@ Frame conventions (keep in sync with ``docs/architecture.md``):
       image right (+u) -> body +y (right)
       image down  (+v) -> body -x (backward)
 
-The projection assumes flat ground and a level vehicle. Roll and pitch are not
-compensated here; the impact of that assumption is measured and discussed in
-``docs/architecture.md``.
+The projection assumes flat ground. It used to assume a level vehicle as well;
+that is now optional, because a vehicle accelerating at 1 m/s pitches, and 10 deg
+of pitch at 5 m moves the ground point by ``5*tan(10 deg) ~= 0.88 m`` - the same
+order as the landing error it caused (see ``docs/model.md``).
 
 Everything in this module is a pure function so it can be unit-tested without
 ROS, a simulator, or a model file.
@@ -25,6 +26,29 @@ import math
 from collections.abc import Sequence
 
 import numpy as np
+
+
+def _dcm_enu_from_body(roll: float, pitch: float, yaw: float) -> np.ndarray:
+    """Rotation from body FRD to world ENU.
+
+    ``roll`` and ``pitch`` are the vehicle's PX4 (FRD) angles in radians, and
+    ``yaw`` is the ENU yaw (REP-103, 0 = east). The conversion is the standard
+    aerospace DCM composed with the NED->ENU axis swap, which is the only place
+    that swap appears.
+    """
+    yaw_ned = math.pi / 2.0 - yaw
+    cy, sy = math.cos(yaw_ned), math.sin(yaw_ned)
+    cp, sp = math.cos(pitch), math.sin(pitch)
+    cr, sr = math.cos(roll), math.sin(roll)
+
+    about_z = np.array([[cy, -sy, 0.0], [sy, cy, 0.0], [0.0, 0.0, 1.0]])
+    about_y = np.array([[cp, 0.0, sp], [0.0, 1.0, 0.0], [-sp, 0.0, cp]])
+    about_x = np.array([[1.0, 0.0, 0.0], [0.0, cr, -sr], [0.0, sr, cr]])
+    ned_from_body = about_z @ about_y @ about_x
+
+    # v_enu = (north, east, -down) for a v_ned = (n, e, d)
+    flip = np.array([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, -1.0]])
+    return flip @ ned_from_body
 
 
 def _as_intrinsics(K: Sequence[Sequence[float]]) -> np.ndarray:
@@ -46,6 +70,8 @@ def pixel_to_ground(
     K: Sequence[Sequence[float]],
     yaw: float = 0.0,
     image_up_is_forward: bool = True,
+    roll: float = 0.0,
+    pitch: float = 0.0,
 ) -> tuple[float, float]:
     """Project a pixel to the ground plane.
 
@@ -57,37 +83,43 @@ def pixel_to_ground(
         yaw: Vehicle yaw in radians, ROS REP-103 (0 = east, pi/2 = north).
         image_up_is_forward: Camera mounting. ``True`` means the top of the
             image points to the vehicle's forward direction.
+        roll: Vehicle roll in radians, PX4 body frame (positive = right side down).
+        pitch: Vehicle pitch in radians, PX4 body frame (positive = nose up).
 
     Returns:
         ``(east, north)`` offset in metres, relative to the camera position.
 
     Raises:
-        ValueError: if the intrinsics or the height are invalid.
+        ValueError: if the intrinsics or the height are invalid, or if the ray
+            points at or above the horizon.
     """
     matrix = _as_intrinsics(K)
     if not math.isfinite(h) or h <= 0.0:
         raise ValueError(f"height must be a positive finite number, got {h!r}")
+    if not (math.isfinite(roll) and math.isfinite(pitch)):
+        raise ValueError("roll and pitch must be finite")
 
     fx, fy = matrix[0, 0], matrix[1, 1]
     cx, cy = matrix[0, 2], matrix[1, 2]
 
-    # Derivation: the ray through pixel u leaves the camera at an angle whose
-    # tangent is (u - cx) / fx. It hits the ground at distance h, so the ground
-    # offset is the tangent times the depth: (u - cx) * h / fx metres. Same for v
-    # with fy. No rotation matrix is needed while the vehicle is level, which is
-    # exactly the assumption this MVP makes.
-    right = (float(u) - cx) * h / fx
-    down = (float(v) - cy) * h / fy
+    # Direction of the pixel's ray in body FRD: down is +z, the optical axis is
+    # +z, and the pixel offsets are tangents against it.
+    right = (float(u) - cx) / fx
+    down_offset = (float(v) - cy) / fy
+    forward = -down_offset if image_up_is_forward else down_offset
+    ray_body = np.array([forward, right, 1.0])
 
-    if image_up_is_forward:
-        forward = -down
-    else:
-        forward = down
+    ray_enu = _dcm_enu_from_body(roll, pitch, yaw) @ ray_body
+    if ray_enu[2] >= -1e-9:
+        raise ValueError(
+            "the pixel's ray does not hit the ground with this attitude "
+            f"(direction z = {ray_enu[2]:.3f})"
+        )
 
-    cos_yaw, sin_yaw = math.cos(yaw), math.sin(yaw)
-    east = forward * cos_yaw + right * sin_yaw
-    north = forward * sin_yaw - right * cos_yaw
-    return float(east), float(north)
+    # The camera is h above the ground, so the ray needs h / (-dz) metres to
+    # reach it.
+    scale = h / -ray_enu[2]
+    return float(ray_enu[0] * scale), float(ray_enu[1] * scale)
 
 
 def camera_offset_enu(offset_body: Sequence[float], yaw: float) -> tuple[float, float, float]:
@@ -115,11 +147,18 @@ def estimate_target_enu(
     yaw: float = 0.0,
     image_up_is_forward: bool = True,
     offset_body: Sequence[float] = (0.0, 0.0, 0.0),
+    roll: float = 0.0,
+    pitch: float = 0.0,
 ) -> tuple[float, float, float]:
     """Absolute target position in the world ENU frame (z = 0, flat ground).
 
     ``offset_body`` is the camera position relative to the vehicle origin in
     body FLU metres; ``h`` is the vehicle altitude, not the camera altitude.
+
+    ``roll``/``pitch`` are the vehicle's PX4 body angles. Leaving them at zero
+    keeps the level-flight behaviour this function had before they existed; a
+    caller that has attitude should pass it, because 10 deg of pitch at 5 m is
+    almost a metre of ground error.
     """
     if len(drone_enu) < 2:
         raise ValueError("drone_enu needs at least (east, north)")
@@ -130,7 +169,14 @@ def estimate_target_enu(
         raise ValueError(f"camera height must be positive, got {camera_height!r}")
 
     east, north = pixel_to_ground(
-        u, v, camera_height, K, yaw=yaw, image_up_is_forward=image_up_is_forward
+        u,
+        v,
+        camera_height,
+        K,
+        yaw=yaw,
+        image_up_is_forward=image_up_is_forward,
+        roll=roll,
+        pitch=pitch,
     )
     return float(drone_enu[0]) + offset_east + east, float(drone_enu[1]) + offset_north + north, 0.0
 

@@ -32,6 +32,7 @@ from uav_tracking.control.frames import (  # noqa: E402
     heading_ned_to_yaw_enu,
     ned_position_to_enu,
     quaternion_to_heading_ned,
+    quaternion_to_roll_pitch,
 )
 
 
@@ -56,7 +57,8 @@ class PoseFrameRecorder(Node):
     def on_odometry(self, msg: VehicleOdometry) -> None:
         east, north, up = ned_position_to_enu(msg.position[:3])
         heading = quaternion_to_heading_ned(msg.q)
-        self.pose = (east, north, up, heading_ned_to_yaw_enu(heading))
+        roll, pitch = quaternion_to_roll_pitch(msg.q)
+        self.pose = (east, north, up, heading_ned_to_yaw_enu(heading), roll, pitch)
 
     def on_image(self, msg: Image) -> None:
         self.seen += 1
@@ -65,7 +67,7 @@ class PoseFrameRecorder(Node):
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
         name = f"frame_{self.saved:04d}.jpg"
         cv2.imwrite(str(self.out_dir / name), frame, [cv2.IMWRITE_JPEG_QUALITY, 92])
-        east, north, up, yaw = self.pose
+        east, north, up, yaw, roll, pitch = self.pose
         self.pose_file.write(
             json.dumps(
                 {
@@ -74,6 +76,8 @@ class PoseFrameRecorder(Node):
                     "north": north,
                     "altitude": up,
                     "yaw": yaw,
+                    "roll": roll,
+                    "pitch": pitch,
                     "wall_time": time.time(),
                 }
             )
