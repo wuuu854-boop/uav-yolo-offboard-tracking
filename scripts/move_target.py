@@ -48,7 +48,7 @@ def main() -> int:
     parser.add_argument("--start", default="0,0", help="world ENU start x,y")
     parser.add_argument("--end", default="0,3", help="world ENU end x,y")
     parser.add_argument("--speed", type=float, default=0.4, help="metres per second")
-    parser.add_argument("--height", type=float, default=0.05, help="model z")
+    parser.add_argument("--height", type=float, default=0.25, help="model z (cube centre at rest)")
     parser.add_argument("--duration", type=float, default=120.0, help="seconds to keep moving")
     parser.add_argument("--rate", type=float, default=10.0, help="updates per second")
     args = parser.parse_args()
