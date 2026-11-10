@@ -36,7 +36,7 @@ from std_msgs.msg import Bool  # noqa: E402
 
 from uav_tracking.control.offboard_node import OffboardNode  # noqa: E402
 from uav_tracking.control.recorder import MissionRecorder  # noqa: E402
-from uav_tracking.control.state_machine import MissionConfig  # noqa: E402
+from uav_tracking.control.state_machine import MissionConfig, State  # noqa: E402
 from uav_tracking.control.trace import StateTrace  # noqa: E402
 
 CAMERA = {
@@ -239,6 +239,11 @@ def test_no_detection_means_no_target_pose(rig):
 
 def test_an_avoidance_stop_holds_the_setpoint_instead_of_advancing(rig):
     rig.state.armed = True
+    # Earlier tests in this module leave the machine in HOVER(arrived), which
+    # does not resume GOTO for a new detection. Put it back in the state this
+    # test is about; the point is the stop modifier, not the hover wording.
+    rig.node.state_machine.state = State.GOTO
+    rig.node.state_machine._hover_reason = ""
     # 316 px right of centre at 5.1 m is ~3 m east, so the vehicle is in GOTO
     # with room to move.
     detection = (CAMERA["cx"] + 316.0, CAMERA["cy"])

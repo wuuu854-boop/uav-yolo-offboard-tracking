@@ -98,7 +98,18 @@ def test_a_close_surface_publishes_stop_and_its_distance(rig):
         predicate=lambda message: bool(message.data),
     ), "no stop was published for a 1.0 m surface"
 
-    assert distances, "no nearest distance was published"
+    # The stop and the distance are published in the same timer callback as two
+    # messages; one spin can deliver the stop before the distance. Keep spinning
+    # until the distance arrives instead of assuming their order.
+    assert _pump_until(
+        executor,
+        publisher,
+        _depth_image(1.0),
+        distances,
+        predicate=lambda message: math.isfinite(float(message.data)),
+        timeout_s=3.0,
+    ), "no nearest distance was published"
+
     assert distances[-1].data == pytest.approx(1.0, abs=0.05)
 
 
@@ -115,4 +126,11 @@ def test_a_clear_frame_releases_the_stop(rig):
         predicate=lambda message: not bool(message.data),
     ), "the gate did not release at 10 m"
 
-    assert math.isfinite(distances[-1].data)
+    assert _pump_until(
+        executor,
+        publisher,
+        _depth_image(None),
+        distances,
+        predicate=lambda message: math.isfinite(float(message.data)) and message.data > 5.0,
+        timeout_s=3.0,
+    ), "the released gate did not publish the far distance"
