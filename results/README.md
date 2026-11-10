@@ -18,6 +18,7 @@ README and in the resume, so they are written by scripts, never by hand.
 | `v05_yolo_real.csv` | six YOLO trials after fine-tuning on auto-labelled real frames | 1.265 / 0.822 / 0.386 / 1.066 / 1.321 / 1.235 m — 6/6 within tolerance, median 1.15 m |
 | `v06_patrol.csv` | one two-waypoint patrol run | visited both waypoints, landed 0.438 m from the second target |
 | `v07_moving_target.txt` | tracker replay over a moving-target flight | cube moved 3 m at 0.5 m/s; 88 detections, one id, with and without the motion model |
+| `detections.geojson` | `scripts/export_geojson.py` on the moving-target capture | 88 Point features with track id, timestamp and ENU offsets — the GIS-ready deliverable an inspection operator asks for |
 | `latency.csv` | `scripts/benchmark.py` (via `make bench`) | aggregate error/latency statistics for the README table |
 | `projection_error.csv` | W2 static test | pixel-to-ground error against the three known target coordinates |
 | `detection_bench.csv` | `scripts/verify_model.py` + manual runs | detection rate and latency per backend |

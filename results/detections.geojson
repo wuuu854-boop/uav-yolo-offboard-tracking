@@ -1,0 +1,1765 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.40000045,
+     52.52002742
+    ]
+   },
+   "properties": {
+    "frame": "frame_0032.jpg",
+    "t_s": 9.055,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": 0.031,
+    "north_m": 3.053,
+    "drone_alt_m": 3.386
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.40000032,
+     52.52002751
+    ]
+   },
+   "properties": {
+    "frame": "frame_0033.jpg",
+    "t_s": 9.31,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": 0.022,
+    "north_m": 3.063,
+    "drone_alt_m": 3.425
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39999958,
+     52.5200278
+    ]
+   },
+   "properties": {
+    "frame": "frame_0034.jpg",
+    "t_s": 9.575,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.028,
+    "north_m": 3.095,
+    "drone_alt_m": 3.486
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39999888,
+     52.52002806
+    ]
+   },
+   "properties": {
+    "frame": "frame_0035.jpg",
+    "t_s": 9.843,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.076,
+    "north_m": 3.123,
+    "drone_alt_m": 3.542
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.3999989,
+     52.52002818
+    ]
+   },
+   "properties": {
+    "frame": "frame_0036.jpg",
+    "t_s": 10.198,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.075,
+    "north_m": 3.137,
+    "drone_alt_m": 3.586
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39999822,
+     52.52002813
+    ]
+   },
+   "properties": {
+    "frame": "frame_0037.jpg",
+    "t_s": 10.464,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.12,
+    "north_m": 3.132,
+    "drone_alt_m": 3.596
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39999751,
+     52.52002849
+    ]
+   },
+   "properties": {
+    "frame": "frame_0038.jpg",
+    "t_s": 10.73,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.169,
+    "north_m": 3.172,
+    "drone_alt_m": 3.664
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.3999968,
+     52.52002863
+    ]
+   },
+   "properties": {
+    "frame": "frame_0039.jpg",
+    "t_s": 10.994,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.216,
+    "north_m": 3.188,
+    "drone_alt_m": 3.7
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39999681,
+     52.52002877
+    ]
+   },
+   "properties": {
+    "frame": "frame_0040.jpg",
+    "t_s": 11.342,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.216,
+    "north_m": 3.203,
+    "drone_alt_m": 3.735
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39999613,
+     52.5200288
+    ]
+   },
+   "properties": {
+    "frame": "frame_0041.jpg",
+    "t_s": 11.614,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.262,
+    "north_m": 3.206,
+    "drone_alt_m": 3.752
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39999536,
+     52.52002906
+    ]
+   },
+   "properties": {
+    "frame": "frame_0042.jpg",
+    "t_s": 11.877,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.315,
+    "north_m": 3.235,
+    "drone_alt_m": 3.804
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39999464,
+     52.52002912
+    ]
+   },
+   "properties": {
+    "frame": "frame_0043.jpg",
+    "t_s": 12.14,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.363,
+    "north_m": 3.242,
+    "drone_alt_m": 3.826
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39999461,
+     52.52002926
+    ]
+   },
+   "properties": {
+    "frame": "frame_0044.jpg",
+    "t_s": 12.482,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.365,
+    "north_m": 3.257,
+    "drone_alt_m": 3.86
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39999391,
+     52.52002931
+    ]
+   },
+   "properties": {
+    "frame": "frame_0045.jpg",
+    "t_s": 12.742,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.413,
+    "north_m": 3.262,
+    "drone_alt_m": 3.879
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39999321,
+     52.52002944
+    ]
+   },
+   "properties": {
+    "frame": "frame_0046.jpg",
+    "t_s": 13.007,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.46,
+    "north_m": 3.277,
+    "drone_alt_m": 3.908
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.3999925,
+     52.52002958
+    ]
+   },
+   "properties": {
+    "frame": "frame_0047.jpg",
+    "t_s": 13.253,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.508,
+    "north_m": 3.293,
+    "drone_alt_m": 3.936
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39999256,
+     52.52002953
+    ]
+   },
+   "properties": {
+    "frame": "frame_0048.jpg",
+    "t_s": 13.505,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.504,
+    "north_m": 3.288,
+    "drone_alt_m": 3.942
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39999185,
+     52.5200297
+    ]
+   },
+   "properties": {
+    "frame": "frame_0049.jpg",
+    "t_s": 13.761,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.552,
+    "north_m": 3.306,
+    "drone_alt_m": 3.973
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39999117,
+     52.52002978
+    ]
+   },
+   "properties": {
+    "frame": "frame_0050.jpg",
+    "t_s": 14.008,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.598,
+    "north_m": 3.315,
+    "drone_alt_m": 3.993
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.3999912,
+     52.52002983
+    ]
+   },
+   "properties": {
+    "frame": "frame_0051.jpg",
+    "t_s": 14.377,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.596,
+    "north_m": 3.32,
+    "drone_alt_m": 4.012
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.3999905,
+     52.52002991
+    ]
+   },
+   "properties": {
+    "frame": "frame_0052.jpg",
+    "t_s": 14.641,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.643,
+    "north_m": 3.329,
+    "drone_alt_m": 4.031
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39998978,
+     52.52003005
+    ]
+   },
+   "properties": {
+    "frame": "frame_0053.jpg",
+    "t_s": 14.904,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.692,
+    "north_m": 3.345,
+    "drone_alt_m": 4.059
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.3999891,
+     52.52003012
+    ]
+   },
+   "properties": {
+    "frame": "frame_0054.jpg",
+    "t_s": 15.157,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.739,
+    "north_m": 3.352,
+    "drone_alt_m": 4.077
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.3999891,
+     52.52003014
+    ]
+   },
+   "properties": {
+    "frame": "frame_0055.jpg",
+    "t_s": 15.516,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.738,
+    "north_m": 3.356,
+    "drone_alt_m": 4.09
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39998839,
+     52.52003023
+    ]
+   },
+   "properties": {
+    "frame": "frame_0056.jpg",
+    "t_s": 15.776,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.786,
+    "north_m": 3.365,
+    "drone_alt_m": 4.109
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39998768,
+     52.52003033
+    ]
+   },
+   "properties": {
+    "frame": "frame_0057.jpg",
+    "t_s": 16.041,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.834,
+    "north_m": 3.377,
+    "drone_alt_m": 4.13
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39998697,
+     52.52003048
+    ]
+   },
+   "properties": {
+    "frame": "frame_0058.jpg",
+    "t_s": 16.3,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.883,
+    "north_m": 3.394,
+    "drone_alt_m": 4.156
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39998695,
+     52.52003061
+    ]
+   },
+   "properties": {
+    "frame": "frame_0059.jpg",
+    "t_s": 16.653,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.884,
+    "north_m": 3.407,
+    "drone_alt_m": 4.18
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39998627,
+     52.52003063
+    ]
+   },
+   "properties": {
+    "frame": "frame_0060.jpg",
+    "t_s": 16.909,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.93,
+    "north_m": 3.409,
+    "drone_alt_m": 4.19
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39998555,
+     52.52003077
+    ]
+   },
+   "properties": {
+    "frame": "frame_0061.jpg",
+    "t_s": 17.174,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -0.979,
+    "north_m": 3.425,
+    "drone_alt_m": 4.214
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39998483,
+     52.52003087
+    ]
+   },
+   "properties": {
+    "frame": "frame_0062.jpg",
+    "t_s": 17.436,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.027,
+    "north_m": 3.436,
+    "drone_alt_m": 4.233
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39998486,
+     52.52003092
+    ]
+   },
+   "properties": {
+    "frame": "frame_0063.jpg",
+    "t_s": 17.791,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.026,
+    "north_m": 3.442,
+    "drone_alt_m": 4.251
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39998416,
+     52.52003103
+    ]
+   },
+   "properties": {
+    "frame": "frame_0064.jpg",
+    "t_s": 18.033,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.073,
+    "north_m": 3.454,
+    "drone_alt_m": 4.271
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39998345,
+     52.5200311
+    ]
+   },
+   "properties": {
+    "frame": "frame_0065.jpg",
+    "t_s": 18.278,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.121,
+    "north_m": 3.463,
+    "drone_alt_m": 4.285
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39998274,
+     52.5200312
+    ]
+   },
+   "properties": {
+    "frame": "frame_0066.jpg",
+    "t_s": 18.551,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.169,
+    "north_m": 3.473,
+    "drone_alt_m": 4.303
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39998278,
+     52.5200312
+    ]
+   },
+   "properties": {
+    "frame": "frame_0067.jpg",
+    "t_s": 18.811,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.167,
+    "north_m": 3.474,
+    "drone_alt_m": 4.309
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39998203,
+     52.52003132
+    ]
+   },
+   "properties": {
+    "frame": "frame_0068.jpg",
+    "t_s": 19.074,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.217,
+    "north_m": 3.486,
+    "drone_alt_m": 4.33
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39998131,
+     52.52003137
+    ]
+   },
+   "properties": {
+    "frame": "frame_0069.jpg",
+    "t_s": 19.322,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.266,
+    "north_m": 3.493,
+    "drone_alt_m": 4.343
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39998131,
+     52.5200314
+    ]
+   },
+   "properties": {
+    "frame": "frame_0070.jpg",
+    "t_s": 19.561,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.266,
+    "north_m": 3.495,
+    "drone_alt_m": 4.353
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39998055,
+     52.5200315
+    ]
+   },
+   "properties": {
+    "frame": "frame_0071.jpg",
+    "t_s": 19.81,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.318,
+    "north_m": 3.507,
+    "drone_alt_m": 4.372
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997983,
+     52.52003157
+    ]
+   },
+   "properties": {
+    "frame": "frame_0072.jpg",
+    "t_s": 20.058,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.366,
+    "north_m": 3.514,
+    "drone_alt_m": 4.384
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997983,
+     52.52003158
+    ]
+   },
+   "properties": {
+    "frame": "frame_0073.jpg",
+    "t_s": 20.308,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.366,
+    "north_m": 3.515,
+    "drone_alt_m": 4.392
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997908,
+     52.52003165
+    ]
+   },
+   "properties": {
+    "frame": "frame_0074.jpg",
+    "t_s": 20.566,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.417,
+    "north_m": 3.523,
+    "drone_alt_m": 4.407
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997838,
+     52.52003167
+    ]
+   },
+   "properties": {
+    "frame": "frame_0075.jpg",
+    "t_s": 20.812,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.465,
+    "north_m": 3.525,
+    "drone_alt_m": 4.415
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997832,
+     52.5200317
+    ]
+   },
+   "properties": {
+    "frame": "frame_0076.jpg",
+    "t_s": 21.055,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.468,
+    "north_m": 3.528,
+    "drone_alt_m": 4.428
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997759,
+     52.52003174
+    ]
+   },
+   "properties": {
+    "frame": "frame_0077.jpg",
+    "t_s": 21.299,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.518,
+    "north_m": 3.533,
+    "drone_alt_m": 4.438
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997687,
+     52.52003177
+    ]
+   },
+   "properties": {
+    "frame": "frame_0078.jpg",
+    "t_s": 21.569,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.567,
+    "north_m": 3.537,
+    "drone_alt_m": 4.448
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.3999769,
+     52.52003174
+    ]
+   },
+   "properties": {
+    "frame": "frame_0079.jpg",
+    "t_s": 21.836,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.565,
+    "north_m": 3.533,
+    "drone_alt_m": 4.453
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997611,
+     52.52003182
+    ]
+   },
+   "properties": {
+    "frame": "frame_0080.jpg",
+    "t_s": 22.1,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.618,
+    "north_m": 3.543,
+    "drone_alt_m": 4.467
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997543,
+     52.52003183
+    ]
+   },
+   "properties": {
+    "frame": "frame_0081.jpg",
+    "t_s": 22.357,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.665,
+    "north_m": 3.543,
+    "drone_alt_m": 4.473
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997541,
+     52.52003185
+    ]
+   },
+   "properties": {
+    "frame": "frame_0082.jpg",
+    "t_s": 22.697,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.666,
+    "north_m": 3.546,
+    "drone_alt_m": 4.484
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997466,
+     52.5200319
+    ]
+   },
+   "properties": {
+    "frame": "frame_0083.jpg",
+    "t_s": 22.945,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.716,
+    "north_m": 3.551,
+    "drone_alt_m": 4.494
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997391,
+     52.52003195
+    ]
+   },
+   "properties": {
+    "frame": "frame_0084.jpg",
+    "t_s": 23.195,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.767,
+    "north_m": 3.557,
+    "drone_alt_m": 4.507
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997319,
+     52.52003197
+    ]
+   },
+   "properties": {
+    "frame": "frame_0085.jpg",
+    "t_s": 23.445,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.816,
+    "north_m": 3.559,
+    "drone_alt_m": 4.515
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997318,
+     52.52003197
+    ]
+   },
+   "properties": {
+    "frame": "frame_0086.jpg",
+    "t_s": 23.719,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.817,
+    "north_m": 3.559,
+    "drone_alt_m": 4.524
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997247,
+     52.52003201
+    ]
+   },
+   "properties": {
+    "frame": "frame_0087.jpg",
+    "t_s": 23.991,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.864,
+    "north_m": 3.563,
+    "drone_alt_m": 4.531
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997176,
+     52.52003206
+    ]
+   },
+   "properties": {
+    "frame": "frame_0088.jpg",
+    "t_s": 24.255,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.913,
+    "north_m": 3.568,
+    "drone_alt_m": 4.538
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997175,
+     52.52003209
+    ]
+   },
+   "properties": {
+    "frame": "frame_0089.jpg",
+    "t_s": 24.594,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.913,
+    "north_m": 3.572,
+    "drone_alt_m": 4.546
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997107,
+     52.5200321
+    ]
+   },
+   "properties": {
+    "frame": "frame_0090.jpg",
+    "t_s": 24.851,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -1.959,
+    "north_m": 3.573,
+    "drone_alt_m": 4.55
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39997034,
+     52.52003215
+    ]
+   },
+   "properties": {
+    "frame": "frame_0091.jpg",
+    "t_s": 25.117,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.009,
+    "north_m": 3.579,
+    "drone_alt_m": 4.56
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996961,
+     52.52003219
+    ]
+   },
+   "properties": {
+    "frame": "frame_0092.jpg",
+    "t_s": 25.385,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.059,
+    "north_m": 3.583,
+    "drone_alt_m": 4.57
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996961,
+     52.52003217
+    ]
+   },
+   "properties": {
+    "frame": "frame_0093.jpg",
+    "t_s": 25.738,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.058,
+    "north_m": 3.581,
+    "drone_alt_m": 4.577
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996891,
+     52.52003218
+    ]
+   },
+   "properties": {
+    "frame": "frame_0094.jpg",
+    "t_s": 25.995,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.106,
+    "north_m": 3.582,
+    "drone_alt_m": 4.583
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996817,
+     52.52003221
+    ]
+   },
+   "properties": {
+    "frame": "frame_0095.jpg",
+    "t_s": 26.265,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.156,
+    "north_m": 3.585,
+    "drone_alt_m": 4.595
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996745,
+     52.52003222
+    ]
+   },
+   "properties": {
+    "frame": "frame_0096.jpg",
+    "t_s": 26.534,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.205,
+    "north_m": 3.587,
+    "drone_alt_m": 4.602
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996743,
+     52.5200322
+    ]
+   },
+   "properties": {
+    "frame": "frame_0097.jpg",
+    "t_s": 26.895,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.206,
+    "north_m": 3.584,
+    "drone_alt_m": 4.612
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996673,
+     52.52003222
+    ]
+   },
+   "properties": {
+    "frame": "frame_0098.jpg",
+    "t_s": 27.155,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.254,
+    "north_m": 3.587,
+    "drone_alt_m": 4.614
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996593,
+     52.52003226
+    ]
+   },
+   "properties": {
+    "frame": "frame_0099.jpg",
+    "t_s": 27.429,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.308,
+    "north_m": 3.591,
+    "drone_alt_m": 4.625
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996517,
+     52.5200323
+    ]
+   },
+   "properties": {
+    "frame": "frame_0100.jpg",
+    "t_s": 27.682,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.359,
+    "north_m": 3.595,
+    "drone_alt_m": 4.632
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996514,
+     52.5200323
+    ]
+   },
+   "properties": {
+    "frame": "frame_0101.jpg",
+    "t_s": 28.029,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.362,
+    "north_m": 3.595,
+    "drone_alt_m": 4.642
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996444,
+     52.52003232
+    ]
+   },
+   "properties": {
+    "frame": "frame_0102.jpg",
+    "t_s": 28.294,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.408,
+    "north_m": 3.598,
+    "drone_alt_m": 4.646
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996369,
+     52.52003237
+    ]
+   },
+   "properties": {
+    "frame": "frame_0103.jpg",
+    "t_s": 28.566,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.459,
+    "north_m": 3.603,
+    "drone_alt_m": 4.655
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996295,
+     52.52003242
+    ]
+   },
+   "properties": {
+    "frame": "frame_0104.jpg",
+    "t_s": 28.839,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.509,
+    "north_m": 3.609,
+    "drone_alt_m": 4.665
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996297,
+     52.5200324
+    ]
+   },
+   "properties": {
+    "frame": "frame_0105.jpg",
+    "t_s": 29.181,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.508,
+    "north_m": 3.607,
+    "drone_alt_m": 4.67
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996225,
+     52.52003242
+    ]
+   },
+   "properties": {
+    "frame": "frame_0106.jpg",
+    "t_s": 29.442,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.557,
+    "north_m": 3.608,
+    "drone_alt_m": 4.674
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996149,
+     52.52003243
+    ]
+   },
+   "properties": {
+    "frame": "frame_0107.jpg",
+    "t_s": 29.696,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.609,
+    "north_m": 3.611,
+    "drone_alt_m": 4.681
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996075,
+     52.52003246
+    ]
+   },
+   "properties": {
+    "frame": "frame_0108.jpg",
+    "t_s": 29.943,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.659,
+    "north_m": 3.613,
+    "drone_alt_m": 4.686
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996072,
+     52.52003245
+    ]
+   },
+   "properties": {
+    "frame": "frame_0109.jpg",
+    "t_s": 30.191,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.661,
+    "north_m": 3.612,
+    "drone_alt_m": 4.689
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39995996,
+     52.52003248
+    ]
+   },
+   "properties": {
+    "frame": "frame_0110.jpg",
+    "t_s": 30.44,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.712,
+    "north_m": 3.616,
+    "drone_alt_m": 4.694
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39995992,
+     52.52003249
+    ]
+   },
+   "properties": {
+    "frame": "frame_0111.jpg",
+    "t_s": 30.694,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.715,
+    "north_m": 3.616,
+    "drone_alt_m": 4.701
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39995995,
+     52.52003246
+    ]
+   },
+   "properties": {
+    "frame": "frame_0112.jpg",
+    "t_s": 30.96,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.713,
+    "north_m": 3.614,
+    "drone_alt_m": 4.702
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996074,
+     52.52003226
+    ]
+   },
+   "properties": {
+    "frame": "frame_0113.jpg",
+    "t_s": 31.229,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.659,
+    "north_m": 3.591,
+    "drone_alt_m": 4.712
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.3999621,
+     52.52003152
+    ]
+   },
+   "properties": {
+    "frame": "frame_0114.jpg",
+    "t_s": 31.495,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.567,
+    "north_m": 3.509,
+    "drone_alt_m": 4.717
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996252,
+     52.52003114
+    ]
+   },
+   "properties": {
+    "frame": "frame_0115.jpg",
+    "t_s": 31.833,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.539,
+    "north_m": 3.466,
+    "drone_alt_m": 4.721
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996342,
+     52.52003093
+    ]
+   },
+   "properties": {
+    "frame": "frame_0116.jpg",
+    "t_s": 32.099,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.478,
+    "north_m": 3.444,
+    "drone_alt_m": 4.724
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996574,
+     52.52002902
+    ]
+   },
+   "properties": {
+    "frame": "frame_0117.jpg",
+    "t_s": 32.594,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.32,
+    "north_m": 3.23,
+    "drone_alt_m": 4.733
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996728,
+     52.52002766
+    ]
+   },
+   "properties": {
+    "frame": "frame_0118.jpg",
+    "t_s": 32.976,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.216,
+    "north_m": 3.079,
+    "drone_alt_m": 4.739
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     13.39996979,
+     52.52002538
+    ]
+   },
+   "properties": {
+    "frame": "frame_0119.jpg",
+    "t_s": 33.355,
+    "track_id": 1,
+    "confidence": 1.0,
+    "detector": "colour_baseline",
+    "east_m": -2.047,
+    "north_m": 2.825,
+    "drone_alt_m": 4.747
+   }
+  }
+ ]
+}

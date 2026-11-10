@@ -7,6 +7,18 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `scripts/export_geojson.py`: a recorded flight becomes a GeoJSON feature
+  layer — every detection projected with the recorded pose, with track id,
+  timestamp, confidence and the local ENU offsets kept in the properties. Five
+  tests pin the ENU-to-WGS84 conversion.
+- `docs/enterprise-needs.md`: a drone service provider's five data-quality
+  failures and four utilities describing their next requirement, read against
+  this repository.
+- `docs/model-card.md`: the governance document — intended use, data provenance,
+  metrics, failure modes, and what it does not certify.
+
 ## [0.5.0] - 2026-11-10
 
 ### Added
