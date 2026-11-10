@@ -49,8 +49,10 @@ Ordered by (market weight × what is feasible without hardware we do not have):
 
 1. **Multi-target mission** — *partly delivered*: `patrol_waypoints` now flies an
    ordered route and lands after the last waypoint (one SITL run, 0.44 m from the
-   second target). What is still missing is tracking several *moving* objects at
-   once; the patrol is waypoint-driven, not association-driven. *Next slice.*
+   second target). The tracker also gained a constant-velocity model plus a
+   nearest-centre bootstrap pass, so a moving target keeps its id across frames
+   where the box moves faster than IoU can follow — unit-tested only: no moving
+   target has been flown yet, and the README says so.
 2. **TensorRT / INT8 path** — the most repeated phrase in the postings. Blocked
    on a Jetson or an NVIDIA GPU; the honest interim is the CPU benchmark we now
    have, plus an export path that is ready for it. *Needs hardware.*

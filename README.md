@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/v/release/wuuu854-boop/uav-yolo-offboard-tracking?include_prereleases&sort=semver)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-233-brightgreen)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-240-brightgreen)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ci.yml)
 
 **UAV vision in the loop, measured.** Detection → pixel-to-ground projection → PX4 Offboard approach in Gazebo SITL, with a trial harness that turns every run into a CSV row and an environment doctor that diagnoses this stack's setup failures.
 
@@ -114,7 +114,7 @@ Gazebo rendered headless through WSL2.
 
 | Layer | Status | Evidence |
 |---|---|---|
-| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (233 tests) + `make demo` |
+| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (240 tests) + `make demo` |
 | YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
 | Cross-frame identity (`track_id`) | ✅ verified | `tests/test_tracking.py` (12 tests) + a ROS test that the id survives two frames |
 | ROS 2 packages build, both nodes run | ✅ verified in CI | `ROS build` workflow on `ros:humble`: detector against synthetic images, controller against fake PX4 traffic |
@@ -123,6 +123,7 @@ Gazebo rendered headless through WSL2.
 | YOLO backend in the same loop | ✅ **verified** | 6/6 trials within tolerance, median 1.15 m; [`results/v05_yolo_real.csv`](results/v05_yolo_real.csv) |
 | Detector throughput | ✅ measured on CPU | 119 FPS at 320 px / 4 threads, 37 FPS at 640 px; [`docs/deployment.md`](docs/deployment.md) |
 | Was it deployed on a Jetson | ❌ **not yet** | no board; TensorRT and INT8 are the honest gaps, [`docs/market.md`](docs/market.md) |
+| Moving targets | ⚠️ **unit-tested only** | the tracker has a constant-velocity model and a bootstrap pass (`tests/test_tracking_motion.py`), but no moving target has been flown yet |
 | PX4 change needed for those trials | ✅ documented and patchable | [`patches/px4-v1.15-gz-magnetometer.patch`](patches/px4-v1.15-gz-magnetometer.patch) + `make patch-px4`; unpatched PX4 will not arm |
 
 The last row is the only claim this repository does not yet support, and it is
