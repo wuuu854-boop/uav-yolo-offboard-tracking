@@ -27,6 +27,23 @@ search, which is what `confirm_frames` now prevents.
 
 ## [Unreleased]
 
+### Fixed
+
+- `perception/yolo.py` decoded a channel-first export `(1, 4 + C, N)` as if the
+  five channels were five boxes: every detection carried coordinates from the
+  wrong axis and a "confidence" above 1. The YOLO backend could never have flown
+  before this fix. Two tests cover channel-first tensors, including a single-box
+  export.
+- `scripts/detect_images.py` no longer imports the ROS node module (it needed
+  `rclpy` to evaluate images), accepts `--imgsz`, and allows `--out` outside the
+  repository.
+- `scripts/run_e2e.sh` preflight had a broken `else` that made every run report
+  "MISS rclpy" and exit before starting the nodes.
+
+### Added
+
+- `scripts/make_synthetic_dataset.py` and `scripts/run_trials.sh`.
+
 ### Added
 
 - `patches/px4-v1.15-gz-magnetometer.patch` and `make patch-px4`: the PX4 change
