@@ -8,6 +8,20 @@ Notable changes to this project. The format follows
 
 ### Added
 
+- `patches/px4-v1.15-gz-magnetometer.patch` and `make patch-px4`: the PX4 change
+  the SITL trials need (a magnetometer callback for the gz bridge, plus the
+  airframe that spawns the nadir camera) is now a reviewed patch with a version
+  guard and an already-applied check, instead of edits that only existed on one
+  machine.
+- `requirements.lock.txt`: the exact versions the nine trials ran on.
+- `SECURITY.md`: scope and a private reporting path.
+- The tests badge in the README is checked by `check_doc_claims.py`, so it cannot
+  go stale the way the prose count used to.
+
+### Fixed
+
+- The two nodes and the camera bridge now exit cleanly on SIGINT/SIGTERM instead
+  of printing an `rclpy` traceback every time a trial ends.
 - `run_e2e.sh --dry-run` (also `make preflight`): checks configuration files,
   `rclpy`, the package import and writable directories without a simulator, and
   the ROS workflow runs it, so the trial script itself is exercised in CI.

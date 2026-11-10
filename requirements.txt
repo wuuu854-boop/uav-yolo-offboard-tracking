@@ -1,6 +1,9 @@
 # Runtime dependencies (top-level, deliberately loose).
 # For an exact, reproducible environment run `make lock` on the target machine
-# and commit the generated requirements.lock.txt (CI installs the lock file).
+# and commit the generated requirements.lock.txt; that file is what the SITL
+# bring-up in docs/setup-log.md produced (numpy 1.26.4, opencv 4.10.0.84).
+# CI installs requirements-dev.txt, not the lock, so a dependency change shows up
+# there as well.
 #
 # numpy is pinned below 2.0 on purpose: ROS 2 Humble's cv_bridge and the system
 # OpenCV are built against the numpy 1.x ABI. With numpy 2 the import fails with

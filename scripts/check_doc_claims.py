@@ -21,6 +21,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 README = REPO_ROOT / "README.md"
 TEST_DEF = re.compile(r"^def test_", re.MULTILINE)
 README_CLAIM = re.compile(r"\((\d+) tests\)")
+README_BADGE = re.compile(r"badge/tests-(\d+)-")
 
 
 def count_tests(root: Path = REPO_ROOT / "tests") -> int:
@@ -44,8 +45,20 @@ def claimed_tests(readme: Path = README) -> int | None:
     return int(match.group(1)) if match else None
 
 
+def claimed_badge(readme: Path = README) -> int | None:
+    """The tests badge is a second place the same number can go stale."""
+    match = README_BADGE.search(readme.read_text(encoding="utf-8"))
+    return int(match.group(1)) if match else None
+
+
 def main() -> int:
     actual = count_tests()
+
+    badge = claimed_badge()
+    if badge is not None and badge != actual:
+        print(f"README badge claims {badge} tests, the suite defines {actual}")
+        return 1
+
     claimed = claimed_tests()
     if claimed is None:
         print("README does not state a test count; nothing to check")
