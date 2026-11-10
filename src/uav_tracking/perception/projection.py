@@ -181,6 +181,52 @@ def estimate_target_enu(
     return float(drone_enu[0]) + offset_east + east, float(drone_enu[1]) + offset_north + north, 0.0
 
 
+def ground_point_to_pixel(
+    point_enu: Sequence[float],
+    drone_enu: Sequence[float],
+    h: float,
+    K: Sequence[Sequence[float]],
+    yaw: float = 0.0,
+    roll: float = 0.0,
+    pitch: float = 0.0,
+    image_up_is_forward: bool = True,
+    offset_body: Sequence[float] = (0.0, 0.0, 0.0),
+) -> tuple[float, float]:
+    """Project a world point onto the image; the inverse of estimate_target_enu.
+
+    Used to label real frames: take the target's known ground position, project
+    the cube's corners, and the bounding box is the label.
+
+    Raises:
+        ValueError: if the point is at or behind the camera plane.
+    """
+    matrix = _as_intrinsics(K)
+    if len(point_enu) < 2 or len(drone_enu) < 2:
+        raise ValueError("point_enu and drone_enu need at least (east, north)")
+
+    offset_east, offset_north, offset_up = camera_offset_enu(offset_body, yaw)
+    camera = np.array(
+        [
+            float(drone_enu[0]) + offset_east,
+            float(drone_enu[1]) + offset_north,
+            float(h) + offset_up,
+        ]
+    )
+    point = np.array([float(point_enu[0]), float(point_enu[1]), 0.0])
+    # body = M^T @ world, with M the same body->ENU rotation the projection uses
+    delta_body = _dcm_enu_from_body(roll, pitch, yaw).T @ (point - camera)
+
+    forward, right, down = delta_body
+    if down <= 1e-6:
+        raise ValueError(f"point is at or behind the camera plane (down = {down:.3f})")
+
+    fx, fy = matrix[0, 0], matrix[1, 1]
+    cx, cy = matrix[0, 2], matrix[1, 2]
+    u = cx + fx * (right / down)
+    v = cy - fy * (forward / down) if image_up_is_forward else cy + fy * (forward / down)
+    return float(u), float(v)
+
+
 def ground_sample_distance(h: float, K: Sequence[Sequence[float]]) -> float:
     """Ground sampling distance in metres per pixel (useful for range budgeting)."""
     matrix = _as_intrinsics(K)
