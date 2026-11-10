@@ -13,8 +13,9 @@ from __future__ import annotations
 
 import re
 import sys
-import tomllib
 from pathlib import Path
+
+import tomllib
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PYPROJECT = REPO_ROOT / "pyproject.toml"
@@ -51,7 +52,9 @@ def from_requirements(path: Path = REQUIREMENTS) -> dict[str, str]:
 
 def _clean(mapping: dict[str, str]) -> dict[str, str]:
     """Normalise names and specifiers so the two sources can be compared."""
-    return {name.lower().replace("_", "-"): value.replace(" ", "") for name, value in mapping.items()}
+    return {
+        name.lower().replace("_", "-"): value.replace(" ", "") for name, value in mapping.items()
+    }
 
 
 def differences(
