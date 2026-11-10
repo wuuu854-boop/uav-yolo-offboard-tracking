@@ -7,6 +7,8 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-10
+
 ### Added
 
 - `scripts/qa_report.py` takes the asset position as an input (`--asset`) and
