@@ -259,14 +259,11 @@ class OffboardNode(Node):
         """
         now_s = self.get_clock().now().nanoseconds / 1e9
         estimate = None if self._target_is_stale() else self._project_best_detection()
-        # The goal can come from a detection or, on a patrol leg, from the
-        # waypoint. They are not the same thing: only the detection carries an
-        # image stamp, so the latency measurement below hangs off ``estimate``.
-        target = estimate
-        if target is None and (waypoint := self.patrol.current()) is not None:
-            # A patrol leg with no detection: fly the waypoint. When the target
-            # comes back in view, the detection refines the same leg.
-            target = waypoint
+        # Patrol legs are waypoint-driven on purpose. The first version let a
+        # detection override the goal, and the vehicle kept turning back to the
+        # target it had just visited, because that target was still in view. The
+        # single-target mission keeps following detections.
+        target = estimate if self.patrol.done() else self.patrol.current()
         if estimate is None:
             # A lost target releases the identity lock: the next sighting may be
             # a different object, and holding the id would make the mission
