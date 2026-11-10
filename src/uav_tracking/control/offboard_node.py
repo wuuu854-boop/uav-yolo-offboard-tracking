@@ -51,6 +51,7 @@ from uav_tracking.control.frames import (  # noqa: E402
 )
 from uav_tracking.control.geofence import clamp_to_fence  # noqa: E402
 from uav_tracking.control.limiter import limited_step  # noqa: E402
+from uav_tracking.control.patrol import PatrolPlan  # noqa: E402
 from uav_tracking.control.recorder import MissionRecorder, localise_targets  # noqa: E402
 from uav_tracking.control.search import SearchPattern, lawnmower  # noqa: E402
 from uav_tracking.control.selection import STRATEGIES, select_target  # noqa: E402
@@ -127,6 +128,9 @@ class OffboardNode(Node):
         self.last_pixel: tuple[float, float] | None = None
         self.locked_track_id: int | None = None
         self.search: SearchPattern | None = None
+        # Empty unless the mission config lists waypoints: the single-target
+        # mission never touches it.
+        self.patrol = PatrolPlan.from_config(mission_cfg.patrol_waypoints)
         self.update_count = 0
 
         self.arming = ArmingSequencer()
@@ -255,6 +259,10 @@ class OffboardNode(Node):
         """
         now_s = self.get_clock().now().nanoseconds / 1e9
         target = None if self._target_is_stale() else self._project_best_detection()
+        if target is None and (waypoint := self.patrol.current()) is not None:
+            # A patrol leg with no detection: fly the waypoint. When the target
+            # comes back in view, the detection refines the same leg.
+            target = waypoint
         if target is None:
             # A lost target releases the identity lock: the next sighting may be
             # a different object, and holding the id would make the mission
@@ -285,8 +293,15 @@ class OffboardNode(Node):
                 altitude_m=self.altitude,
                 armed=self.armed,
                 distance_to_target_m=distance,
+                goal_pending=not self.patrol.done(),
             )
         )
+
+        if decision.note == "next waypoint":
+            self.patrol.advance()
+            self.get_logger().info(
+                f"patrol: waypoint {self.patrol.index} of {len(self.patrol.waypoints)}"
+            )
 
         if decision.state is State.LAND and self._previous_state is not State.LAND:
             row = self.recorder.finish_trial((self.east, self.north), notes=decision.note)
@@ -480,6 +495,9 @@ def main() -> int:
         max_mission_s=mission_raw.get("max_mission_s", 0.0),
         geofence_radius_m=mission_raw.get("geofence_radius_m", 30.0),
         confirm_frames=int(mission_raw.get("confirm_frames", 3)),
+        patrol_waypoints=tuple(
+            (float(pair[0]), float(pair[1])) for pair in mission_raw.get("patrol_waypoints", ())
+        ),
     )
 
     rclpy.init()

@@ -238,3 +238,32 @@ def test_reacquiring_after_a_loss_needs_the_same_confirmation():
     sm.step(Observation(7.0, 5.0, armed=True, distance_to_target_m=4.0))
     assert sm.state is State.HOVER  # one frame does not reacquire
     assert sm.step(Observation(7.2, 5.0, armed=True, distance_to_target_m=4.0)).state is State.GOTO
+
+
+def test_a_pending_goal_turns_the_arrival_hover_into_the_next_leg():
+    sm = MissionStateMachine(MissionConfig(hover_duration_s=1.0))
+    _arm_and_take_off(sm)
+    sm.step(Observation(3.0, 5.0, armed=True))
+    sm.step(Observation(4.0, 5.0, armed=True, distance_to_target_m=0.5))
+    assert sm.state is State.HOVER
+
+    decision = sm.step(
+        Observation(5.6, 5.0, armed=True, distance_to_target_m=0.5, goal_pending=True)
+    )
+
+    assert decision.state is State.GOTO
+    assert decision.note == "next waypoint"
+
+
+def test_without_a_pending_goal_the_same_hover_lands():
+    sm = MissionStateMachine(MissionConfig(hover_duration_s=1.0))
+    _arm_and_take_off(sm)
+    sm.step(Observation(3.0, 5.0, armed=True))
+    sm.step(Observation(4.0, 5.0, armed=True, distance_to_target_m=0.5))
+
+    decision = sm.step(
+        Observation(5.6, 5.0, armed=True, distance_to_target_m=0.5, goal_pending=False)
+    )
+
+    assert decision.state is State.LAND
+    assert decision.note == "hover complete"

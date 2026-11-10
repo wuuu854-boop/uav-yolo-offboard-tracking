@@ -29,6 +29,19 @@ geofence_radius_m: 30.0
 
 control_rate_hz: 50
 
+# Multi-target patrol. Empty means the single-target mission: detect one target,
+# approach, land. With entries, the mission flies each (east, north) waypoint in
+# order, hovers at each, and lands after the last one. Local ENU, relative to the
+# spawn point:
+#
+#   patrol_waypoints:
+#     - [3.5, 0.0]     # target_0, 3.5 m east of a spawn at (-3.5, 0)
+#     - [23.5, 0.0]    # target_1, 20 m further east
+#
+# The detector still refines each leg when it sees a target; the waypoint is what
+# keeps the mission moving when it does not.
+patrol_waypoints: []
+
 # Which detection to follow when more than one is in the frame:
 #   nearest_centre    - closest to the image centre (default; the vehicle is
 #                       usually already pointed at what it should approach)

@@ -56,6 +56,10 @@ class MissionConfig:
     # search produced a 5.6 m landing error, so the shipped config uses 3.
     confirm_frames: int = 1
 
+    # Empty unless the mission is a patrol: local ENU (east, north) waypoints
+    # visited in order, with a hover at each and a landing after the last.
+    patrol_waypoints: tuple[tuple[float, float], ...] = ()
+
 
 @dataclass(frozen=True)
 class Observation:
@@ -64,6 +68,9 @@ class Observation:
     now_s: float
     altitude_m: float
     armed: bool
+    # True while a patrol has another waypoint after the current one, so the
+    # arrival hover resumes instead of ending the mission.
+    goal_pending: bool = False
     distance_to_target_m: float | None = None
 
 
@@ -173,6 +180,12 @@ class MissionStateMachine:
                     return Decision(self.state, "search", "target lost, searching")
             if self._hover_reason == "arrived" and self.cfg.land_after_hover:
                 if obs.now_s - self._hover_started_s >= self.cfg.hover_duration_s:
+                    if obs.goal_pending:
+                        # A patrol has more to visit: the hover was a pause, not
+                        # the end of the mission.
+                        self.state = State.GOTO
+                        self._confirm_count = 0
+                        return Decision(self.state, "goto", "next waypoint")
                     self.state = State.LAND
                     return Decision(self.state, "land", "hover complete")
             return Decision(self.state, "hover", self._hover_reason)
