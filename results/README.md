@@ -9,6 +9,7 @@ README and in the resume, so they are written by scripts, never by hand.
 | `latency_raw.csv` | same recorder, same run | every latency sample, so the run's p95 is computed by pooling rather than by averaging per-trial percentiles |
 | `state_trace.csv` | `src/uav_tracking/control/trace.py` during `make e2e` | one row per state change: when the mission armed, hovered, searched, landed, and why |
 | `v02_validation.csv` | three runs with the v0.2.0 safety constraints | 0.94 / 1.01 / 1.49 m, all within tolerance; the nine-row table above stays the v0.1.0 measurement |
+| `v03_yolo_trials.csv` | three runs with the YOLO backend and hard negatives | 2.21 / 2.36 / 2.28 m — they land, but outside tolerance; kept as evidence for the systematic offset described in `docs/model.md` |
 | `latency.csv` | `scripts/benchmark.py` (via `make bench`) | aggregate error/latency statistics for the README table |
 | `projection_error.csv` | W2 static test | pixel-to-ground error against the three known target coordinates |
 | `detection_bench.csv` | `scripts/verify_model.py` + manual runs | detection rate and latency per backend |

@@ -56,13 +56,14 @@ makes the table trustworthy:
 - What is left (0.50–1.28 m) is detection latency and the 1.0 m reach tolerance,
   not a systematic offset — the p95 is 1.14 m.
 
-The YOLO row is deliberately absent: no ONNX model has flown the loop **yet**.
-A model was trained for this scene ([`docs/model.md`](docs/model.md): 0.96 mAP@50
-on held-out synthetic data, 100/100 detections in the batch tool) and the backend
-decodes it correctly after a channel-order bug was found and fixed, but three
-SITL trials with it did not converge — it also calls the vehicle's own shadow a
-target. The measured loop therefore stays on the colour baseline until that is
-fixed, and the table does not pretend otherwise.
+The YOLO row is deliberately absent: no ONNX model has matched the baseline
+**yet**. A model was trained for this scene ([`docs/model.md`](docs/model.md):
+0.98 mAP@50 on held-out synthetic data, 100/100 detections in the batch tool),
+and a channel-order decoding bug that made it unusable was found and fixed. The
+first three trials with it wandered off; after hard negatives harvested from real
+Gazebo frames the next three land, but at 2.21/2.36/2.28 m — a systematic offset,
+not noise, and `results/v03_yolo_trials.csv` holds those rows. The measured loop
+therefore stays on the colour baseline until that offset is explained.
 
 **Version provenance.** The table is the nine-trial set measured with **v0.1.0**.
 v0.2.0 changes safety behaviour only — a geofence, a mission timeout and a

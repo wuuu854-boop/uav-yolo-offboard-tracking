@@ -97,10 +97,40 @@ squares, so the model is free to call the vehicle's own shadow — a dark
 quadrilateral in every frame — a target. The baseline cannot make that mistake
 because it matches a specific hue.
 
-**The measured closed loop therefore remains the colour baseline.** The YOLO
-row stays out of the results table until it can fly, and the next step is
-concrete: harvest false positives from Gazebo frames and add them as hard
-negatives, then repeat the three trials.
+## Round two: hard negatives
+
+`scripts/harvest_negatives.py` takes the 123 frames of the committed demo GIF —
+real Gazebo renders — keeps the 45 where the colour baseline finds nothing (the
+target is out of view, the vehicle's shadow is not) and writes them as
+background examples with empty labels. Training data goes from 500 to 545
+images, same schedule.
+
+| Metric (held-out synthetic) | Round one | Round two |
+|---|---|---|
+| Precision | 0.974 | **0.984** |
+| Recall | 0.951 | 0.937 |
+| mAP@50 | 0.962 | **0.981** |
+| mAP@50-95 | 0.665 | 0.671 |
+
+The false positives are gone: three SITL trials now **land** instead of
+wandering (`results/v03_yolo_trials.csv`).
+
+| Trial | Landing error | End-to-end p50 |
+|---|---|---|
+| 1 | 2.208 m | 166 ms |
+| 2 | 2.362 m | 171 ms |
+| 3 | 2.278 m | 160 ms |
+
+All three miss the 1.5 m tolerance in the same direction by about the same
+amount, which is the signature of a systematic offset rather than noise: the
+YOLO estimate is consistently ~2.2 m from where the baseline's estimate puts the
+same cube. That is a solvable bug, not a modelling gap — the next step is to
+record one hover at a known pose, run both backends on the same frames, and
+compare their projected ground points.
+
+**The measured closed loop therefore remains the colour baseline.** The YOLO row
+stays out of the results table until it can match it, and `results/v03_yolo_trials.csv`
+is committed so the claim can be checked rather than trusted.
 
 ## Reproduce
 
