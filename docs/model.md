@@ -112,17 +112,17 @@ images, same schedule.
 | mAP@50 | 0.962 | **0.981** |
 | mAP@50-95 | 0.665 | 0.671 |
 
-The false positives are gone: three SITL trials now **land** instead of
-wandering (`results/v03_yolo_trials.csv`).
+The false positives are gone: the trials now **land** instead of wandering
+(`results/v03_yolo_trials.csv`). They do not land consistently:
 
-| Trial | Landing error | End-to-end p50 |
+| Attempt | Landing error | Within 1.5 m |
 |---|---|---|
-| 1 | 2.208 m | 166 ms |
-| 2 | 2.362 m | 171 ms |
-| 3 | 2.278 m | 160 ms |
+| 1 | 2.208 m | no |
+| 2 | 2.362 m | no |
+| 3 | 2.278 m | no |
+| 4 | 0.515 m | **yes** |
 
-All three miss the 1.5 m tolerance in the same direction by about the same
-amount, which is the signature of a systematic offset rather than noise.
+One in four, against nine of nine for the baseline.
 
 ## The controlled comparison
 
@@ -132,24 +132,27 @@ the odometry together during one trial (`CAPTURE_DIR=... bash
 scripts/run_trials.sh`), and `scripts/compare_backends.py` runs both backends on
 each recorded frame and projects their boxes with the recorded pose.
 
-30 frames had a detection from both (`results/backend_comparison.txt`):
+30 frames had a detection from both (`results/backend_comparison.txt`), recorded
+during a baseline trial; a second capture during a YOLO trial reproduced it over
+30 further frames (`results/yolo_close_range.txt`):
 
-| Quantity | Value |
-|---|---|
-| Mean delta, YOLO − baseline | **(+0.49, +0.35) m** |
-| Std of that delta | (0.11, 0.20) m |
-| Per-frame baseline error | 0.3–4.8 m, tracking the approach |
+| Quantity | Baseline trial | YOLO trial |
+|---|---|---|
+| Mean delta, YOLO − baseline | (+0.49, +0.35) m | (+0.52, +0.39) m |
+| Std of that delta | (0.11, 0.20) m | (0.14, 0.17) m |
 
 So the per-frame projection differs by about 0.6 m, consistently, in one
 direction — the YOLO box centre sits slightly off the cube's centre, which is
-what a box that also covers part of the shadow looks like.
+what a box that also covers part of the shadow looks like. It is stable across
+both backends' flights, including the one that landed at 0.515 m.
 
-That is **not** the 2.2 m the trials land with. The per-frame bias is real but too
-small: the trial error must come from the closed loop, most likely the last
-metres of the approach, where the cube is large or partly out of frame and the
-only box left is not the cube. The next experiment is therefore narrow: record
-the final ten frames of a YOLO trial and look at what is detected in them, rather
-than retraining again.
+That is **not** the 2.2 m the failing trials land with. The detector is not the
+source of the variance: the same frames give the same 0.6 m. What varies is where
+the closed loop settles, most likely the last metres of the approach, where a
+0.6 m biased estimate interacting with `confirm_frames` decides whether the
+hover point ends near the cube or 2 m past it. The next experiment is therefore
+narrow: replay the final ten frames of a failing YOLO trial and check which box
+the arrival is confirmed on.
 
 **The measured closed loop therefore remains the colour baseline.** The YOLO row
 stays out of the results table until it can match it, and `results/v03_yolo_trials.csv`
