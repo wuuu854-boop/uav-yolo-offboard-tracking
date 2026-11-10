@@ -49,7 +49,7 @@ customer or an aircraft: a **structured, georeferenced deliverable**, and a
 | QA over the data, not just the flight | **done**: `scripts/qa_report.py` — coverage, longest gap, track continuity, association error, exit code for CI | small |
 | Model governance | **done**: [`model-card.md`](model-card.md) | small |
 | Association accuracy | **done**: `association_confidence()` multiplies a Gaussian on the distance by track support, so a detection says both "how close" and "how well supported" | small |
-| Resolution/metadata standards | partially in `config/camera.yaml`; a "shot sheet" concept does not exist | large |
+| Resolution/metadata standards | **done**: a shot sheet (`config/shot_sheet.yaml`) and a checker — views, GSD threshold, framing margin, minimum frames | small |
 
 ## The QA report's runs
 

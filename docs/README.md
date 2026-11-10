@@ -15,6 +15,7 @@
 | [prior-art](prior-art.md) | The existing projects, what they lack, and the gap |
 | [market](market.md) | Job requirements mapped to files in this repository |
 | [enterprise-needs](enterprise-needs.md) | What utility-inspection companies actually complain about, and which of it this project can address |
+| [shot-sheet](shot-sheet.md) | The written standard for a usable capture: views, resolution, framing |
 | [model-card](model-card.md) | Model governance: intended use, data provenance, metrics, failure modes |
 | [px4-notes](px4-notes.md) | PX4 specifics: uORB chain, versions, timestamps, ULog |
 | [ai-usage](ai-usage.md) | What was delegated to an LLM and what was verified by hand |

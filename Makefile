@@ -11,7 +11,7 @@ PX4_MODEL ?= gz_x500_mono_cam_down
 # Per-target poses are listed in docs/experiment-protocol.md.
 POSE     ?= -3.5,0,0.05
 
-.PHONY: help setup doctor demo trials qa patch-px4 install-world sim detect e2e preflight test lint fmt lock bench check clean
+.PHONY: help setup doctor demo trials qa shots patch-px4 install-world sim detect e2e preflight test lint fmt lock bench check clean
 
 help: ## show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-8s\033[0m %s\n", $$1, $$2}'
@@ -70,6 +70,10 @@ trials: ## run N closed-loop trials (N=3 default), restarting the sim each time
 qa: ## data-quality report: make qa CAPTURE=<dir> [ASSET=east,north]
 	@test -n "$(CAPTURE)" || (echo "set CAPTURE=<capture dir>; ASSET=<east,north> is optional" && exit 2)
 	python3 scripts/qa_report.py --capture "$(CAPTURE)" $(if $(ASSET),--asset $(ASSET),)
+
+shots: ## shot-sheet check: make shots CAPTURE=<dir> [ASSET=east,north]
+	@test -n "$(CAPTURE)" || (echo "set CAPTURE=<capture dir>; ASSET=<east,north> is optional" && exit 2)
+	python3 scripts/shot_sheet_check.py --capture "$(CAPTURE)" $(if $(ASSET),--asset $(ASSET),)
 
 preflight: ## check the trial environment without a simulator
 	bash scripts/run_e2e.sh --dry-run

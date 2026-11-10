@@ -9,6 +9,12 @@ Notable changes to this project. The format follows
 
 ### Added
 
+- **A shot sheet and a checker.** `config/shot_sheet.yaml` states what a usable
+  capture of this structure type requires — mounting, ground sample distance,
+  framing margin, minimum frames — and `scripts/shot_sheet_check.py` enforces it
+  on a recording, naming the reason every rejected frame was rejected. On the
+  north-cube flight: `nadir 26/3` frames, with 50 frames rejected for clipping.
+  `control/shot_sheet.py` carries the arithmetic and ten tests.
 - `control/qa.py:association_confidence()` and the report's confidence columns:
   a per-detection score that multiplies a Gaussian on the distance to the asset
   by how much support the track has. On the north-cube run with the true asset
