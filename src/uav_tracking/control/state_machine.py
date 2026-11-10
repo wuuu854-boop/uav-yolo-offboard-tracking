@@ -149,7 +149,9 @@ class MissionStateMachine:
             self._lost_since_s = None
             if not self._confirmed(obs):
                 return Decision(
-                    self.state, "goto", f"confirming {self._confirm_count}/{self.cfg.confirm_frames}"
+                    self.state,
+                    "goto",
+                    f"confirming {self._confirm_count}/{self.cfg.confirm_frames}",
                 )
             if obs.distance_to_target_m <= self.cfg.reach_tolerance_m:
                 return self._enter_hover(obs, "arrived")
