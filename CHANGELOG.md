@@ -7,6 +7,27 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-10
+
+### Added
+
+- **A YOLO backend that flies.** `scripts/label_real_frames.py` produces
+  real-domain labels from geometry: the colour baseline finds the cube, its pixel
+  is projected to the ground with the recorded pose, and the cube's known 0.3 m
+  corners are projected back into the image with `ground_point_to_pixel` (the
+  inverse of the projection, round-trip tested). Fine-tuning the synthetic
+  checkpoint on 59 such frames took the predicted boxes from 436–490 px for a
+  54 px cube to 32–45 px, with centres within 3 px of the baseline's.
+- Six closed-loop trials with that model: 1.265, 0.822, 0.386, 1.066, 1.321 and
+  1.235 m — **6/6 within the 1.5 m tolerance**, median 1.15 m
+  (`results/v05_yolo_real.csv`). The README table has the YOLO row it had been
+  carrying an empty slot for, with the narrow domain written next to it.
+
+### Changed
+
+- README results split into the baseline column and the YOLO column, both with
+  their trial counts.
+
 ## [0.3.0] - 2026-11-10
 
 ### Added
