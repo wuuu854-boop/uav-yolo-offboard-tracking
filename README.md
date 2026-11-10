@@ -10,8 +10,11 @@
 
 > **Why this exists.** The most-starred project in this niche ([406★](https://github.com/monemati/PX4-ROS2-Gazebo-YOLOv8)) stops at *detect + fly by keyboard*: no closed loop, no metrics. Searching GitHub for `px4 offboard target tracking` returns **0 repositories**. So this is not a second detection demo — it is the closed loop plus the measurement layer. Star counts, issue links and the comparison: [`docs/prior-art.md`](docs/prior-art.md).
 
-<!-- TODO(v0.1.0): 用 assets/01-demo.gif 替换下面这行，规格见 assets/README.md -->
-> 🎬 Demo GIF 待补（`assets/01-demo.gif`，1280×720，≤20 s，≤8 MB）。
+![Closed loop in SITL: the nadir camera picks up the red target and the vehicle closes on it](assets/01-demo.gif)
+
+*One of the nine trials, seen by the vehicle's own camera: the target cube and
+its shadow, then the vehicle's shadow entering frame as it settles overhead.
+Recorded with `scripts/record_frames.py` during `make e2e`.*
 
 ## Results
 
