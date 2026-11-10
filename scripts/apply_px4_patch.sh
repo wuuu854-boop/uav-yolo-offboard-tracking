@@ -35,4 +35,4 @@ fi
 
 echo "rebuilding px4_sitl_default (incremental)"
 make -C "$PX4_DIR" px4_sitl_default -j"$(nproc)" 2>&1 | tail -n 3
-echo "done: $(ls -l "$PX4_DIR/build/px4_sitl_default/bin/px4" 2>/dev/null | awk '{print $5}') bytes"
+echo "done: $(stat -c %s "$PX4_DIR/build/px4_sitl_default/bin/px4" 2>/dev/null || echo '?') bytes"
