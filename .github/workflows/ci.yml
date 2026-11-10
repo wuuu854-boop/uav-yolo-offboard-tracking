@@ -48,6 +48,9 @@ jobs:
       - name: World and ground truth agree
         run: python scripts/check_world_targets.py
 
+      - name: Dependencies agree
+        run: python scripts/check_dependencies.py
+
       - name: Documentation links
         run: python scripts/check_links.py
 
