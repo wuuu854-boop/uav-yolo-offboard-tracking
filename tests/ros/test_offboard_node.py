@@ -16,6 +16,8 @@ from types import SimpleNamespace
 import pytest
 
 rclpy = pytest.importorskip("rclpy")
+# Built by the ROS workflow; without it these tests cannot be collected at all.
+pytest.importorskip("uav_interfaces")
 
 from geometry_msgs.msg import PoseStamped  # noqa: E402
 from px4_msgs.msg import (  # noqa: E402

@@ -19,6 +19,8 @@ import numpy as np
 import pytest
 
 rclpy = pytest.importorskip("rclpy")
+# Built by the ROS workflow; without it these tests cannot be collected at all.
+pytest.importorskip("uav_interfaces")
 
 from rclpy.executors import SingleThreadedExecutor  # noqa: E402
 from rclpy.node import Node  # noqa: E402
