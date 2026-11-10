@@ -1,4 +1,4 @@
-﻿# uav-yolo-offboard-tracking 鈥?one-command workflows
+# uav-yolo-offboard-tracking 鈥?one-command workflows
 # Recipes use tabs (GNU make requirement). Do not reformat with spaces.
 
 SHELL    := /bin/bash
@@ -35,6 +35,7 @@ check: ## everything CI runs, locally
 	$(PY) scripts/check_world_targets.py
 	$(PY) scripts/check_links.py
 	$(PY) scripts/check_doc_claims.py
+	$(PY) scripts/check_dependencies.py
 	$(PY) -m pytest -q --cov=uav_tracking --cov-report=term-missing
 
 patch-px4: ## apply the PX4 v1.15 magnetometer patch and rebuild

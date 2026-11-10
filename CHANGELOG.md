@@ -17,11 +17,29 @@ Notable changes to this project. The format follows
 - `SECURITY.md`: scope and a private reporting path.
 - The tests badge in the README is checked by `check_doc_claims.py`, so it cannot
   go stale the way the prose count used to.
+- `scripts/check_dependencies.py` (in CI and `make check`): `pyproject.toml` and
+  `requirements.txt` are two lists of the same thing, and they drifted — the
+  packaging list put the GUI OpenCV back into the container and broke it on
+  libGL. They now have to agree.
+- The `docker` CI job builds the image and runs the unit tests inside it, so the
+  container is verified on every push instead of advertised.
+- `.github/dependabot.yml` watches pip and the actions, with ignores for the
+  numpy and OpenCV ceilings that exist for the cv_bridge ABI.
+
+### Changed
+
+- Runtime dependency is `opencv-python-headless`: the GUI wheel links `libGL`,
+  which CI containers and headless SITL machines do not ship.
+- The Docker image installs only `python3-pip` (it had been pulling git, cmake
+  and a compiler for a pure-Python test run) and asserts at build time that it
+  can collect the tests.
 
 ### Fixed
 
 - The two nodes and the camera bridge now exit cleanly on SIGINT/SIGTERM instead
   of printing an `rclpy` traceback every time a trial ends.
+- `tests/ros/*` skip when `uav_interfaces` has not been generated, instead of
+  aborting collection and failing every job that runs pytest without colcon.
 - `run_e2e.sh --dry-run` (also `make preflight`): checks configuration files,
   `rclpy`, the package import and writable directories without a simulator, and
   the ROS workflow runs it, so the trial script itself is exercised in CI.

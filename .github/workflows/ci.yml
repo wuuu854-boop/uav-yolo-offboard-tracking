@@ -19,7 +19,7 @@ jobs:
         run: docker build -t uav-tracking:ci .
 
       - name: Unit tests inside the image
-        run: docker run --rm uav-tracking:ci python3 -m pytest -q
+        run: docker run --rm uav-tracking:ci python3 -m pytest tests -o addopts="" -q
 
   test:
     runs-on: ubuntu-22.04
@@ -47,6 +47,9 @@ jobs:
 
       - name: World and ground truth agree
         run: python scripts/check_world_targets.py
+
+      - name: Dependencies agree
+        run: python scripts/check_dependencies.py
 
       - name: Documentation links
         run: python scripts/check_links.py
