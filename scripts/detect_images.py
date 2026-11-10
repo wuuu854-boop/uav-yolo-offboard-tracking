@@ -100,6 +100,9 @@ def main() -> int:
     parser.add_argument("--images", required=True, help="folder to scan recursively")
     parser.add_argument("--backend", choices=("baseline", "yolo"), default="baseline")
     parser.add_argument("--model", default="models/yolo11n.onnx")
+    parser.add_argument(
+        "--imgsz", type=int, default=640, help="ONNX input size; must match the export"
+    )
     parser.add_argument("--out", default="results/detect_images.csv")
     parser.add_argument("--limit", type=int, default=0, help="0 means every image")
     args = parser.parse_args()
@@ -119,7 +122,7 @@ def main() -> int:
     if args.backend == "baseline":
         detect = _baseline_detector()
     else:
-        detect = _yolo_detector(Path(args.model))
+        detect = _yolo_detector(Path(args.model), args.imgsz)
 
     rows = evaluate(images, detect)
     out = REPO_ROOT / args.out
@@ -131,8 +134,25 @@ def main() -> int:
 
 
 def _baseline_detector() -> Callable[[np.ndarray], list[dict]]:
+    """The same colour thresholds the node uses, read from the config.
+
+    It used to hardcode a green range, which silently disagreed with
+    config/detector.yaml once the world gained red and blue targets: the batch
+    tool measured a different detector from the one that flew.
+    """
+    import yaml  # noqa: PLC0415 - only needed for the baseline backend
+
+    config = yaml.safe_load((REPO_ROOT / "config" / "detector.yaml").read_text(encoding="utf-8"))
+    ranges = config.get("baseline_hsv_ranges")
+    if ranges:
+        lower = [tuple(item[0]) for item in ranges]
+        upper = [tuple(item[1]) for item in ranges]
+    else:
+        lower, upper = (35, 80, 80), (85, 255, 255)
+    min_area = int(config.get("baseline_min_area_px", 150))
+
     def detect(frame: np.ndarray) -> list[dict]:
-        found = detect_color_centroid(frame, (35, 80, 80), (85, 255, 255), 150)
+        found = detect_color_centroid(frame, lower, upper, min_area)
         if found is None:
             return []
         u, v, _area, width, height = found
@@ -141,10 +161,13 @@ def _baseline_detector() -> Callable[[np.ndarray], list[dict]]:
     return detect
 
 
-def _yolo_detector(model_path: Path) -> Callable[[np.ndarray], list[dict]]:
+def _yolo_detector(model_path: Path, imgsz: int = 640) -> Callable[[np.ndarray], list[dict]]:
     from uav_tracking.perception.detector_node import YoloOnnxDetector  # noqa: PLC0415 - optional dependency
 
-    detector = YoloOnnxDetector(model_path if model_path.is_absolute() else REPO_ROOT / model_path)
+    detector = YoloOnnxDetector(
+        model_path if model_path.is_absolute() else REPO_ROOT / model_path,
+        input_size=imgsz,
+    )
     return detector.infer
 
 

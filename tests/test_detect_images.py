@@ -7,7 +7,13 @@ import pytest
 
 cv2 = pytest.importorskip("cv2")
 
-from scripts.detect_images import evaluate, list_images, summarise, write_csv  # noqa: E402
+from scripts.detect_images import (  # noqa: E402
+    _baseline_detector,
+    evaluate,
+    list_images,
+    summarise,
+    write_csv,
+)
 
 
 def _write_image(path, green_square: bool) -> None:
@@ -80,3 +86,13 @@ def test_write_csv_round_trip(tmp_path):
 def test_write_csv_rejects_an_empty_run(tmp_path):
     with pytest.raises(ValueError):
         write_csv(tmp_path / "x.csv", [])
+
+
+def test_the_batch_baseline_uses_the_node_config():
+    """It used to hardcode green, which disagreed with config/detector.yaml."""
+    frame = np.zeros((240, 320, 3), dtype=np.uint8)
+    cv2.rectangle(frame, (100, 80), (179, 159), (20, 20, 210), thickness=-1)  # red, hue ~1
+
+    found = _baseline_detector()(frame)
+
+    assert found, "a red target should be detected by the configured ranges"
