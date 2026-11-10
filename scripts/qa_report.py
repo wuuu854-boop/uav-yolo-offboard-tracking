@@ -113,7 +113,13 @@ def analyse_capture(
             index, distance = nearest_target(east, north, targets)
             associations.append(index)
             association_errors.append(distance)
-            confidences.append(association_confidence(distance, hits.get(detection["track_id"], 1)))
+            confidences.append(
+                association_confidence(
+                    distance,
+                    hits.get(detection["track_id"], 1),
+                    sigma_m=DEFAULT_THRESHOLDS["confidence_sigma_m"],
+                )
+            )
 
     total_s = poses[-1]["wall_time"] - started
     phases = summarise_phases(samples)

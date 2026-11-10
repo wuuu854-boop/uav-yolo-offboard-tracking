@@ -15,6 +15,9 @@ DEFAULT_THRESHOLDS = {
     "detection_rate_min": 0.6,
     "max_gap_s": 2.0,
     "association_p95_m": 1.5,
+    # Half the acceptance distance: a detection sitting exactly at the tolerance
+    # scores ~0.14, one at the measured median landing error (~0.7 m) scores ~0.6.
+    "confidence_sigma_m": 0.75,
 }
 
 GROUND_ALTITUDE_M = 0.5
