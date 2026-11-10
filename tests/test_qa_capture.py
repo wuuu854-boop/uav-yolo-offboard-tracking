@@ -82,7 +82,8 @@ def test_a_clean_capture_passes_and_lands_on_the_asset(tmp_path):
 def test_the_same_capture_fails_when_the_asset_is_declared_elsewhere(tmp_path):
     _write_capture(tmp_path / "capture")
 
-    report = analyse_capture(tmp_path / "capture", CAMERA, DETECTOR, [(2.5, 0.0)])
+    # 2 m from where the detections land, so the declared asset is wrong.
+    report = analyse_capture(tmp_path / "capture", CAMERA, DETECTOR, [(3.0, 0.0)])
 
     assert not report["passed"]
     assert any("association" in reason for reason in report["failures"])
