@@ -10,7 +10,7 @@ jobs:
   docker:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # The image exists for people who would rather not install ROS by hand, so
       # it is built and the unit tests are run inside it on every push. An
@@ -24,7 +24,7 @@ jobs:
   test:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-python@v7
         with:
