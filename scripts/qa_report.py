@@ -42,48 +42,26 @@ from uav_tracking.perception.projection import estimate_target_enu  # noqa: E402
 from uav_tracking.perception.tracking import IouTracker  # noqa: E402
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--capture", required=True)
-    parser.add_argument("--config", default="config")
-    parser.add_argument(
-        "--asset",
-        action="append",
-        default=[],
-        metavar="EAST,NORTH",
-        help="asset position in the local frame, repeatable; defaults to targets.yaml",
-    )
-    parser.add_argument("--out", default="")
-    args = parser.parse_args()
+def analyse_capture(
+    capture: pathlib.Path,
+    camera: dict,
+    detector: dict,
+    targets: list[tuple[float, float]],
+) -> dict:
+    """Run the four checks over a capture and return the report body.
 
-    capture = pathlib.Path(args.capture)
+    Kept free of argparse so the CI regression test can call it on a generated
+    capture: the metrics are worth protecting, not just the pure helpers.
+    """
     poses = [
         json.loads(line)
         for line in (capture / "poses.jsonl").read_text(encoding="utf-8").splitlines()
         if line
     ]
     if not poses:
-        print("empty capture")
-        return 2
-
-    config_dir = pathlib.Path(args.config)
-    camera = yaml.safe_load((config_dir / "camera.yaml").read_text(encoding="utf-8"))
-    detector = yaml.safe_load((config_dir / "detector.yaml").read_text(encoding="utf-8"))
-
-    if args.asset:
-        targets = [tuple(float(value) for value in asset.split(",")) for asset in args.asset]
-    else:
-        mission = yaml.safe_load((config_dir / "mission.yaml").read_text(encoding="utf-8"))
-        targets_raw = yaml.safe_load((config_dir / "targets.yaml").read_text(encoding="utf-8"))[
-            "targets"
-        ]
-        spawn = mission.get("spawn_offset_enu", (0.0, 0.0))
-        targets = [
-            (float(t["x"]) - float(spawn[0]), float(t["y"]) - float(spawn[1])) for t in targets_raw
-        ]
-    if any(len(target) != 2 for target in targets):
-        print("each --asset needs two values: east,north")
-        return 2
+        raise ValueError("empty capture")
+    if not targets:
+        raise ValueError("at least one asset position is required")
 
     ranges = detector.get("baseline_hsv_ranges") or [
         [detector["baseline_hsv_lower"], detector["baseline_hsv_upper"]]
@@ -149,7 +127,6 @@ def main() -> int:
         "association_m": association_summary,
     }
     passed, reasons = verdict(checked, DEFAULT_THRESHOLDS)
-
     metrics = {
         "frames": len(poses),
         "detections": len(ids),
@@ -165,7 +142,7 @@ def main() -> int:
             for phase, entry in phases.items()
         },
     }
-    report = {
+    return {
         "capture": str(capture),
         "assets": targets,
         "thresholds": DEFAULT_THRESHOLDS,
@@ -174,23 +151,65 @@ def main() -> int:
         "failures": reasons,
     }
 
+
+def _assets_from_args(assets: list[str], config_dir: pathlib.Path) -> list[tuple[float, float]]:
+    if assets:
+        return [tuple(float(value) for value in asset.split(",")) for asset in assets]
+    mission = yaml.safe_load((config_dir / "mission.yaml").read_text(encoding="utf-8"))
+    raw = yaml.safe_load((config_dir / "targets.yaml").read_text(encoding="utf-8"))["targets"]
+    spawn = mission.get("spawn_offset_enu", (0.0, 0.0))
+    return [(float(t["x"]) - float(spawn[0]), float(t["y"]) - float(spawn[1])) for t in raw]
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--capture", required=True)
+    parser.add_argument("--config", default="config")
+    parser.add_argument(
+        "--asset",
+        action="append",
+        default=[],
+        metavar="EAST,NORTH",
+        help="asset position in the local frame, repeatable; defaults to targets.yaml",
+    )
+    parser.add_argument("--out", default="")
+    args = parser.parse_args()
+
+    config_dir = pathlib.Path(args.config)
+    camera = yaml.safe_load((config_dir / "camera.yaml").read_text(encoding="utf-8"))
+    detector = yaml.safe_load((config_dir / "detector.yaml").read_text(encoding="utf-8"))
+    targets = _assets_from_args(args.asset, config_dir)
+    if any(len(target) != 2 for target in targets):
+        print("each --asset needs two values: east,north")
+        return 2
+
+    try:
+        report = analyse_capture(pathlib.Path(args.capture), camera, detector, targets)
+    except ValueError as error:
+        print(error)
+        return 2
+
     if args.out:
         pathlib.Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         pathlib.Path(args.out).write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
+    metrics = report["metrics"]
     print(f"frames            {metrics['frames']} ({metrics['detections']} detections)")
     for phase, entry in sorted(metrics["phases"].items()):
         print(
             f"  {phase:<8}        {entry['frames']:>4} frames, {entry['detection_rate']:.0%} detected"
         )
-    print(f"level gap         {metrics['longest_gap_s']:.2f} s of {total_s:.1f} s")
+    print(f"level gap         {metrics['longest_gap_s']:.2f} s")
     print(f"track ids         {metrics['track_ids']} (longest run {metrics['longest_track_run']})")
     print(
         f"association       median {metrics['association_m']['median']:.2f} m, "
         f"p95 {metrics['association_m']['p95']:.2f} m"
     )
-    print(f"verdict           {'PASS' if passed else 'FAIL: ' + '; '.join(reasons)}")
-    return 0 if passed else 1
+    print(
+        "verdict           "
+        + ("PASS" if report["passed"] else "FAIL: " + "; ".join(report["failures"]))
+    )
+    return 0 if report["passed"] else 1
 
 
 if __name__ == "__main__":
