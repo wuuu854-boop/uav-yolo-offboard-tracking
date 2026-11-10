@@ -1,0 +1,4 @@
+trial,target_id,error_m,latency_p50_ms,latency_p95_ms,success,notes
+10,0,0.944,142.6,272.8,True,hover complete
+11,1,1.009,144.8,272.6,True,hover complete
+12,2,1.491,146.8,275.8,True,hover complete

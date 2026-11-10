@@ -19,6 +19,12 @@ Notable changes to this project. The format follows
 - `scripts/run_trials.sh` / `make trials N=3`: the nine-trial procedure as a
   script — restart the simulation between runs, one row per trial.
 
+Verified with three runs on the same targets: 0.94 m, 1.01 m and 1.49 m, all
+inside the 1.5 m tolerance (`results/v02_validation.csv`). The nine-row table in
+the README remains the v0.1.0 measurement; this release changes safety behaviour
+only. One validation run missed by 5.6 m by believing a single frame during the
+search, which is what `confirm_frames` now prevents.
+
 ## [Unreleased]
 
 ### Added

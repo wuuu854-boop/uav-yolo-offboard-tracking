@@ -60,6 +60,15 @@ The YOLO row is deliberately absent: no ONNX model has been run in the loop, and
 COCO YOLO detects these synthetic cubes zero-shot never. That column would be
 empty for a reason, and an empty column is more honest than a guessed one.
 
+**Version provenance.** The table is the nine-trial set measured with **v0.1.0**.
+v0.2.0 changes safety behaviour only — a geofence, a mission timeout and a
+requirement that a target be seen for consecutive frames before the mission acts
+on it. Three further runs with that code measured 0.94 m, 1.01 m and 1.49 m, all
+within tolerance ([`results/v02_validation.csv`](results/v02_validation.csv)).
+One run during that validation missed by 5.6 m because a single frame during the
+search was believed; that is what `confirm_frames` exists for, and why the three
+rows above are a verification rather than a replacement of the nine.
+
 Hardware: Intel i7-14650HX (24 threads), 32 GB RAM, no discrete GPU in the VM —
 Gazebo rendered headless through WSL2.
 
