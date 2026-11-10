@@ -48,6 +48,7 @@ from uav_tracking.control.frames import (  # noqa: E402
     ned_position_to_enu,
     quaternion_to_heading_ned,
 )
+from uav_tracking.control.geofence import clamp_to_fence  # noqa: E402
 from uav_tracking.control.limiter import limited_step  # noqa: E402
 from uav_tracking.control.recorder import MissionRecorder, localise_targets  # noqa: E402
 from uav_tracking.control.search import SearchPattern, lawnmower  # noqa: E402
@@ -350,10 +351,14 @@ class OffboardNode(Node):
     def _move_towards(self, east: float, north: float, altitude: float) -> None:
         """Rate-limited setpoint move, honouring ``max_speed_mps`` in any direction.
 
+        Every horizontal command goes through here, so the fence is enforced in
+        one place: a bad estimate becomes a boundary setpoint, not a flight away.
+
         Landing passes ``altitude - 0.3`` each tick; the rate limiter turns that
         into a constant descent instead of a step, so the vehicle does not chase
         a target that is always 0.3 m below it.
         """
+        east, north = clamp_to_fence((east, north), (0.0, 0.0), self.cfg.geofence_radius_m)
         step = self.cfg.max_speed_mps * self.dt
         self.setpoint_east, self.setpoint_north = limited_step(
             (self.setpoint_east, self.setpoint_north), (east, north), step
@@ -464,6 +469,8 @@ def main() -> int:
         search_after_s=mission_raw.get("search_after_s", 8.0),
         search_area_m=mission_raw.get("search_area_m", 20.0),
         search_spacing_m=mission_raw.get("search_spacing_m", 8.9),
+        max_mission_s=mission_raw.get("max_mission_s", 0.0),
+        geofence_radius_m=mission_raw.get("geofence_radius_m", 30.0),
     )
 
     rclpy.init()

@@ -43,6 +43,14 @@ class MissionConfig:
     search_area_m: float = 20.0
     search_spacing_m: float = 8.9
 
+    # 0 disables. A mission that never converges would otherwise hover until the
+    # battery decides for it.
+    max_mission_s: float = 0.0
+
+    # 0 disables. PX4 has its own fence; this one catches a bad estimate before
+    # it becomes a setpoint.
+    geofence_radius_m: float = 30.0
+
 
 @dataclass(frozen=True)
 class Observation:
@@ -78,12 +86,14 @@ class MissionStateMachine:
         self._hover_reason = ""
         self._hover_started_s = 0.0
         self._lost_since_s: float | None = None
+        self._airborne_since_s: float | None = None
 
     def step(self, obs: Observation) -> Decision:
         if self.state is State.IDLE:
             if not obs.armed:
                 return Decision(self.state, "arm", "waiting for arming")
             self.state = State.TAKEOFF
+            self._airborne_since_s = obs.now_s
             return Decision(self.state, "takeoff", f"climb to {self.cfg.takeoff_altitude_m:.1f} m")
 
         if not obs.armed:
@@ -94,7 +104,18 @@ class MissionStateMachine:
             self.state = State.IDLE
             self._hover_reason = ""
             self._lost_since_s = None
+            self._airborne_since_s = None
             return Decision(self.state, "disarm", "vehicle disarmed in flight")
+
+        if (
+            self.cfg.max_mission_s > 0.0
+            and self._airborne_since_s is not None
+            and self.state is not State.LAND
+            and obs.now_s - self._airborne_since_s >= self.cfg.max_mission_s
+        ):
+            self.state = State.LAND
+            self._hover_reason = ""
+            return Decision(self.state, "land", "mission timeout")
 
         if self.state is State.TAKEOFF:
             if obs.altitude_m >= self.cfg.takeoff_altitude_m - 0.3:

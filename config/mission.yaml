@@ -15,6 +15,13 @@ hover_duration_s: 3.0
 target_loss_hover_s: 2.0      # no /target_pose for this long -> hover in place
 setpoint_jump_limit_m: 3.0    # reject targets that jump more than this between frames
 land_after_hover: true
+# 0 disables. Land if the mission has not converged after this many seconds, so a
+# broken detector cannot hover until the battery runs out.
+max_mission_s: 0.0
+# Clamp every horizontal setpoint to this radius around the spawn point. PX4 has
+# its own fence; this one catches a bad estimate before it becomes a command.
+# 0 disables.
+geofence_radius_m: 30.0
 
 control_rate_hz: 50
 

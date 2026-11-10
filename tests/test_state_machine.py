@@ -158,3 +158,40 @@ def test_finding_the_target_during_the_search_resumes_the_approach():
     decision = sm.step(Observation(9.0, 5.0, armed=True, distance_to_target_m=3.0))
     assert decision.state is State.GOTO
     assert decision.note == "target reacquired during search"
+
+
+def test_a_mission_that_never_converges_lands_on_timeout():
+    sm = MissionStateMachine(MissionConfig(max_mission_s=30.0))
+    _arm_and_take_off(sm)
+    sm.step(Observation(3.0, 5.0, armed=True))
+
+    # airborne since t=1; the target is never reached
+    sm.step(Observation(20.0, 5.0, armed=True, distance_to_target_m=8.0))
+    assert sm.state is State.GOTO
+
+    decision = sm.step(Observation(31.1, 5.0, armed=True, distance_to_target_m=8.0))
+    assert decision.state is State.LAND
+    assert decision.note == "mission timeout"
+
+
+def test_a_timeout_of_zero_never_triggers():
+    sm = MissionStateMachine(MissionConfig(max_mission_s=0.0))
+    _arm_and_take_off(sm)
+    sm.step(Observation(3.0, 5.0, armed=True))
+    for t in range(10, 400, 10):
+        sm.step(Observation(float(t), 5.0, armed=True, distance_to_target_m=8.0))
+    assert sm.state is State.GOTO
+
+
+def test_the_timeout_budget_restarts_after_a_disarm():
+    sm = MissionStateMachine(MissionConfig(max_mission_s=10.0))
+    _arm_and_take_off(sm)
+    sm.step(Observation(3.0, 5.0, armed=True))
+    sm.step(Observation(9.0, 5.0, armed=True, distance_to_target_m=8.0))
+
+    sm.step(Observation(10.0, 5.0, armed=False))
+    assert sm.state is State.IDLE
+
+    sm.step(Observation(11.0, 5.0, armed=True))  # new mission, budget restarts
+    sm.step(Observation(15.0, 5.0, armed=True, distance_to_target_m=8.0))
+    assert sm.state is State.GOTO
