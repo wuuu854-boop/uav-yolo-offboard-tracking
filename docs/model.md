@@ -147,12 +147,44 @@ what a box that also covers part of the shadow looks like. It is stable across
 both backends' flights, including the one that landed at 0.515 m.
 
 That is **not** the 2.2 m the failing trials land with. The detector is not the
-source of the variance: the same frames give the same 0.6 m. What varies is where
-the closed loop settles, most likely the last metres of the approach, where a
-0.6 m biased estimate interacting with `confirm_frames` decides whether the
-hover point ends near the cube or 2 m past it. The next experiment is therefore
-narrow: replay the final ten frames of a failing YOLO trial and check which box
-the arrival is confirmed on.
+source of the variance: the same frames give the same 0.6 m.
+
+## Replaying a failing trial
+
+Three further trials were run with the recorder on (`CAPTURE_DIR`), which produced
+one success (0.64 m) and two failures (2.18 m, 1.65 m). Replaying the failures'
+frames (`results/yolo_failure_trial2.txt`, `..._trial3.txt`) shows where the
+2.2 m comes from, and it is not the detector:
+
+```
+trial 2, last frames
+frame    alt  drone e  drone n  base err  yolo err  delta e  delta n
+0066    4.93     3.20     1.58      1.86      2.62     0.79     0.29
+0067    4.92     3.95     1.67      0.27      1.43     0.98     0.65
+0068    4.94     4.57     1.69      1.40      0.20     1.18     0.73
+0069    4.96     5.06     1.66      2.29      1.35     0.96     0.93
+```
+
+- The vehicle is at `north ≈ 1.66` while the target is at `north = 0`: it flew
+  past the target and settled a metre and a half to the side.
+- **Both** backends' errors swing by a metre from one frame to the next
+  (`base err` 0.27 → 1.40 → 2.29), while their difference stays at 0.5–1.2 m.
+
+A projection that assumes a level, nadir camera cannot hold still while the
+vehicle pitches to accelerate at 1 m/s: 10° of pitch at 5 m moves the ground
+point by `5·tan(10°) ≈ 0.88 m`. That is the same order as the swing, and it
+affects both backends equally — which is exactly the pattern above.
+
+So the remaining YOLO variance is a **projection** limitation shared with the
+baseline, amplified for YOLO because its estimate starts 0.6 m off and the
+arrival check has less margin. Fixing it means feeding roll/pitch into
+`estimate_target_enu` (or hoving briefly before confirming), not retraining the
+model. The baseline's nine trials pass because its 0.6 m head start is absent,
+not because its projection is better.
+
+The measured closed loop therefore remains the colour baseline, and the honest
+summary of the YOLO backend is: **it flies, four times out of seven, and the
+reason it misses is now measured rather than guessed.**
 
 **The measured closed loop therefore remains the colour baseline.** The YOLO row
 stays out of the results table until it can match it, and `results/v03_yolo_trials.csv`
