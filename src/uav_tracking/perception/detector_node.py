@@ -30,6 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import rclpy  # noqa: E402
 from cv_bridge import CvBridge  # noqa: E402
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node  # noqa: E402
 from rclpy.qos import qos_profile_sensor_data  # noqa: E402
 from sensor_msgs.msg import Image  # noqa: E402
@@ -188,11 +189,13 @@ def main() -> int:
     node = DetectorNode(config)
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
+        # SIGINT/SIGTERM already tore the context down; shutting it down again
+        # raises RCLError and prints a traceback on every normal exit.
         pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        rclpy.try_shutdown()
     return 0
 
 

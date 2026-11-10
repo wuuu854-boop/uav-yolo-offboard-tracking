@@ -37,6 +37,7 @@ from px4_msgs.msg import (  # noqa: E402
     VehicleOdometry,
     VehicleStatus,
 )
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node  # noqa: E402
 from rclpy.qos import qos_profile_sensor_data  # noqa: E402
 
@@ -469,11 +470,11 @@ def main() -> int:
     node = OffboardNode(mission_cfg, camera_raw, recorder, StateTrace(args.trace))
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        rclpy.try_shutdown()
     return 0
 
 

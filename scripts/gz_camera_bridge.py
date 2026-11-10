@@ -21,6 +21,7 @@ import gz.transport13 as gz_transport
 import numpy as np
 import rclpy
 from cv_bridge import CvBridge
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image
@@ -85,7 +86,7 @@ def main() -> int:
     node = GzCameraBridge(args.gz_topic, args.ros_topic)
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
         node.destroy_node()
