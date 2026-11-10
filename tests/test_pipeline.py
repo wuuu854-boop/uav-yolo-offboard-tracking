@@ -50,7 +50,7 @@ def _capture(root, frames: int = 6) -> None:
     poses = []
     for index in range(frames):
         frame = np.full((120, 160, 3), 200, dtype=np.uint8)
-        cv2.rectangle(frame, (int(u) - 8, int(v) - 8), (int(u) + 8, int(v) + 8), (20, 20, 210), -1)
+        cv2.rectangle(frame, (int(u) - 4, int(v) - 4), (int(u) + 4, int(v) + 4), (20, 20, 210), -1)
         name = f"frame_{index:02d}.jpg"
         cv2.imwrite(str(root / name), frame)
         poses.append(
@@ -104,7 +104,7 @@ def test_the_shot_sheet_rejects_a_capture_that_never_leaves_the_ground(tmp_path)
     capture = tmp_path / "low"
     capture.mkdir()
     frame = np.full((120, 160, 3), 200, dtype=np.uint8)
-    cv2.rectangle(frame, (72, 4), (88, 20), (20, 20, 210), -1)
+    cv2.rectangle(frame, (2, 50), (18, 66), (20, 20, 210), -1)  # clipped by the left edge
     poses = []
     for index in range(4):
         name = f"frame_{index:02d}.jpg"
