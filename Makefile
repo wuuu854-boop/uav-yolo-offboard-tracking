@@ -1,4 +1,4 @@
-# uav-yolo-offboard-tracking — one-command workflows
+﻿# uav-yolo-offboard-tracking 鈥?one-command workflows
 # Recipes use tabs (GNU make requirement). Do not reformat with spaces.
 
 SHELL    := /bin/bash
@@ -11,7 +11,7 @@ PX4_MODEL ?= gz_x500_mono_cam_down
 # Per-target poses are listed in docs/experiment-protocol.md.
 POSE     ?= -3.5,0,0.05
 
-.PHONY: help setup doctor demo install-world sim detect e2e preflight test lint fmt lock bench check clean
+.PHONY: help setup doctor demo patch-px4 install-world sim detect e2e preflight test lint fmt lock bench check clean
 
 help: ## show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-8s\033[0m %s\n", $$1, $$2}'
@@ -36,6 +36,9 @@ check: ## everything CI runs, locally
 	$(PY) scripts/check_links.py
 	$(PY) scripts/check_doc_claims.py
 	$(PY) -m pytest -q --cov=uav_tracking --cov-report=term-missing
+
+patch-px4: ## apply the PX4 v1.15 magnetometer patch and rebuild
+	bash scripts/apply_px4_patch.sh
 
 install-world: ## copy the world and the nadir camera model where PX4 looks
 	@test -d "$(PX4_DIR)/Tools/simulation/gz/worlds" || { echo "PX4 gazebo tree not found at $(PX4_DIR); see sim/README.md"; exit 1; }
