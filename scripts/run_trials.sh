@@ -18,7 +18,6 @@ POSE="${POSE:--3.5,0,0.05}"
 SPAWN="${SPAWN:--3.5,0}"
 COUNT=1
 DURATION=180
-HEADLESS=1
 
 usage() {
   cat <<'EOF'

@@ -15,7 +15,7 @@
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$REPO_ROOT"
+cd "$REPO_ROOT" || exit 1
 
 PX4_DIR="${PX4_DIR:-$HOME/PX4-Autopilot}"
 PX4_BUILD="$PX4_DIR/build/px4_sitl_default"
