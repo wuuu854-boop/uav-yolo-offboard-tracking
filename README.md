@@ -56,17 +56,32 @@ makes the table trustworthy:
 - What is left (0.50–1.28 m) is detection latency and the 1.0 m reach tolerance,
   not a systematic offset — the p95 is 1.14 m.
 
-The YOLO row is deliberately absent. A model was trained for this scene
-([`docs/model.md`](docs/model.md): 0.98 mAP@50 held out, tight boxes on the
-synthetic set and on the demo GIF), a channel-order decoding bug that made it
-unusable was found and fixed, and hard negatives harvested from real Gazebo
-frames fixed the wandering. The projection now compensates roll and pitch, which
-removed a metre-scale error both backends shared. But printing the raw boxes on
-live frames settled the question: the model predicts boxes **half the frame wide**
-for a 54 px cube — it detects the region, not the object. The centre is close
-enough that the loop still lands (0.64/1.57/1.49 m in three trials), and that is
-exactly why the row stays out: the loop works for a reason the detector does not
-deserve. The measured loop is the colour baseline.
+### The YOLO backend
+
+The same loop with an ONNX YOLO11n fine-tuned for this scene instead of the colour
+threshold, flown six times on the same target:
+
+| Metric | Colour baseline (9 trials) | YOLO11n (6 trials) |
+|---|---|---|
+| Success (landing error ≤ 1.5 m) | **9/9** | **6/6** |
+| Landing error, median | **0.73 m** | 1.15 m |
+| Landing error, worst | 1.28 m | 1.32 m |
+| End-to-end latency, p50 | 143 ms | 169 ms |
+
+Source: [`results/v05_yolo_real.csv`](results/v05_yolo_real.csv) for the YOLO
+rows; the baseline column is the nine-trial set above.
+
+The model is narrow on purpose: 59 auto-labelled frames from two captured
+flights. The labels themselves are geometry — the colour baseline finds the cube,
+its pixel is projected to the ground with the recorded pose, and the cube's known
+0.3 m corners are projected back into the image (`scripts/label_real_frames.py`).
+Fine-tuning the synthetic checkpoint on those frames took the predicted boxes from
+**436–490 px** for a 54 px cube to **32–45 px**.
+
+How it got there is the useful part: a channel-order decoding bug that made every
+detection nonsense, boxes that were half the frame, a projection that ignored
+pitch, and finally domain shift. [`docs/model.md`](docs/model.md) walks through
+all four with the measurements that separated them.
 
 **Version provenance.** The table is the nine-trial set measured with **v0.1.0**.
 v0.2.0 changes safety behaviour only — a geofence, a mission timeout and a

