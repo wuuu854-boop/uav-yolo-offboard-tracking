@@ -65,13 +65,22 @@ sits at local `(3.5, 0)`, and the cube had been driven 3 m north, so every
 detection is legitimately several metres from the declared asset. A QA pass that
 did **not** flag that would be worthless.
 
-The first row is honest but unresolved: 40% coverage over 70 frames and a 4.7 m
-median association do not match what that flight was expected to be. Either the
-capture covers phases where the target is out of frame (takeoff, the hover after
-arrival, landing) or its spawn does not match `mission.yaml`. Both are exactly
-the kind of question this report exists to raise, and neither is answered here —
-the sample reports are in `results/qa_static.json` and `results/qa_moving.json`
-so someone can check.
+The first row is honest but unresolved, and looking at the frames moved the
+question one step closer. The capture records 70 frames; the first 35 are ground
+level or climb-out with no detection at all, which explains the coverage and the
+gap. The frames that do detect show a **real red cube at the top edge of the
+image** — not a false positive — while the recorded pose says the vehicle was at
+`(east -0.2, north -0.4, yaw 90°)` and the cube sits 3.5 m *east* of the spawn.
+
+A cube that is east of the vehicle cannot appear at the image's top edge when
+`image_up_is_forward` is true and yaw is 90°; it would be at the right edge. So
+one of three things is true: the recorded yaw is 90° off, the camera mounting is
+rotated about its optical axis, or the asset is not where `targets.yaml` says.
+The closed-loop trials land within a metre using the same projection, which
+argues against a mounting error — but that is reasoning, not a measurement, and
+it is the next thing to measure rather than the last thing to publish.
+
+Sample reports: `results/qa_static.json`, `results/qa_moving.json`.
 
 The first three are the ones that fit the project's own rule — every claim
 measurable — and they are what an enterprise reviewer would look for before
