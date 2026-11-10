@@ -1,0 +1,12 @@
+# A shot sheet: what a usable capture of this structure type looks like.
+#
+# This is the smallest honest version of the standard the utility-inspection
+# industry keeps asking for. The checker in scripts/shot_sheet_check.py enforces
+# it against a recorded flight; docs/shot-sheet.md explains each field.
+structure_type: cube
+views:
+  - name: nadir
+    camera: down
+    max_gsd_cm: 1.3      # ground sample distance: altitude / focal length
+    min_frames: 3
+    margin_px: 24        # the target box must not touch the frame edge
