@@ -17,9 +17,12 @@ RUN python3 -m pip install --no-cache-dir --upgrade pip \
 
 COPY . .
 
+# `-e .` so the package imports the same way it does on a workstation.
+RUN python3 -m pip install --no-cache-dir -e .
+
 # Unit tests are the only thing this image is expected to run: CI builds it and
 # runs pytest inside it on every push (the `docker` job), so the image cannot rot
 # silently. SITL itself needs the PX4 patch and a GPU-capable Gazebo, which is a
 # different problem - see docs/setup-log.md rather than expecting this image to
 # fly.
-CMD ["python3", "-m", "pytest", "-q"]
+CMD ["python3", "-m", "pytest", "tests", "-q"]
