@@ -91,8 +91,8 @@ def test_a_moved_asset_fails_qa_but_still_produces_features(tmp_path):
     capture = tmp_path / "capture"
     _capture(capture)
 
-    qa = analyse_capture(capture, CAMERA, DETECTOR, [(2.5, 0.0)])
-    features = build_features(capture, CAMERA, DETECTOR, [(2.5, 0.0)], 52.52, 13.40)
+    qa = analyse_capture(capture, CAMERA, DETECTOR, [(3.0, 0.0)])
+    features = build_features(capture, CAMERA, DETECTOR, [(3.0, 0.0)], 52.52, 13.40)
 
     assert not qa["passed"]
     # The deliverable is still produced; the verdict is what says not to trust it.
