@@ -9,13 +9,23 @@ Notable changes to this project. The format follows
 
 ### Added
 
-- `scripts/bench_detector.py` and `YoloOnnxDetector(intra_op_threads=...)`:
-  detector latency per input size and thread count, measured on 60 recorded
-  frames. 320 px at 4 threads is 8.1 ms / 119 FPS; 640 px at 4 threads is
-  26.1 ms / 37 FPS; 8 threads buys nothing. Recorded in `docs/deployment.md`,
-  with what it does not measure (no Jetson, no TensorRT, no INT8).
-- `docs/market.md`: five current UAV-autonomy postings read against this
-  repository, a coverage table, and the resulting build order.
+- **Multi-target patrol.** `patrol_waypoints` in `config/mission.yaml` turns the
+  mission into an ordered route: fly each local ENU waypoint, hover, land after
+  the last. One SITL run with two waypoints 20 m apart visited both and landed
+  0.44 m from the second target (`results/v06_patrol.csv`).
+- `control/patrol.py`: the queue as a pure module with six tests;
+  `MissionConfig.patrol_waypoints` and `Observation.goal_pending` wire it in.
+- `scripts/run_e2e.sh` accepts `MISSION_CONFIG`, so a patrol route can be a
+  generated file instead of an edit to the shipped config.
+
+### Fixed
+
+- A patrol leg used to be overridden by the detection of the target it had just
+  left, and the last waypoint sent the vehicle back toward the first target. The
+  legs are now waypoint-driven and the mission ends with an explicit
+  `request_land`.
+- A waypoint goal has no image stamp; the latency measurement dereferences the
+  detection message only when there is one.
 
 ## [0.4.0] - 2026-11-10
 

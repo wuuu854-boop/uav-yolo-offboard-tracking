@@ -47,9 +47,10 @@ frequencies.
 
 Ordered by (market weight × what is feasible without hardware we do not have):
 
-1. **Multi-target tracking with per-target identity** — the gap between "follow
-   one cube" and "track everything in frame" is exactly what counter-drone and
-   inspection work asks for, and it is testable in SITL. *Feasible now.*
+1. **Multi-target mission** — *partly delivered*: `patrol_waypoints` now flies an
+   ordered route and lands after the last waypoint (one SITL run, 0.44 m from the
+   second target). What is still missing is tracking several *moving* objects at
+   once; the patrol is waypoint-driven, not association-driven. *Next slice.*
 2. **TensorRT / INT8 path** — the most repeated phrase in the postings. Blocked
    on a Jetson or an NVIDIA GPU; the honest interim is the CPU benchmark we now
    have, plus an export path that is ready for it. *Needs hardware.*
