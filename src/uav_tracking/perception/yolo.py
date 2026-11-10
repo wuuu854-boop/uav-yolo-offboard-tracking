@@ -62,11 +62,13 @@ def decode(
         raise ValueError("classes must not be empty")
 
     if output.ndim == 3:
-        # ONNX exports are channel-first: (1, 4 + C, N) with C small and N large.
-        # A 2D tensor from a test or a different exporter keeps the old
-        # row/column heuristic.
+        # ONNX exports are channel-first: (1, 4 + C, N). The first dimension
+        # after the batch is the channel count, which is small; treat it as such
+        # rather than guessing from the sizes, because a one-class export is
+        # (5, N) and reading those five channels as five boxes decodes to
+        # nonsense coordinates and confidences above 1.
         prediction = np.squeeze(output, axis=0)
-        if prediction.shape[0] <= 4 + 128 and prediction.shape[0] < prediction.shape[1]:
+        if prediction.shape[0] <= 4 + 128:
             prediction = prediction.T
     else:
         prediction = output
