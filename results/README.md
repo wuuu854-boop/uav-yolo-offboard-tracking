@@ -19,6 +19,8 @@ README and in the resume, so they are written by scripts, never by hand.
 | `v06_patrol.csv` | one two-waypoint patrol run | visited both waypoints, landed 0.438 m from the second target |
 | `v07_moving_target.txt` | tracker replay over a moving-target flight | cube moved 3 m at 0.5 m/s; 88 detections, one id, with and without the motion model |
 | `detections.geojson` | `scripts/export_geojson.py` on the moving-target capture | 88 Point features with track id, timestamp and ENU offsets — the GIS-ready deliverable an inspection operator asks for |
+| `qa_moving.json` | `scripts/qa_report.py` on the moving-target capture | the asset was 3 m from its declared position, and the report says so (association 7.1 m, FAIL) |
+| `qa_north.json` | the same report with the asset position passed in | median association drops from 4.95 m to 0.62 m when the asset is where it actually was |
 | `latency.csv` | `scripts/benchmark.py` (via `make bench`) | aggregate error/latency statistics for the README table |
 | `projection_error.csv` | W2 static test | pixel-to-ground error against the three known target coordinates |
 | `detection_bench.csv` | `scripts/verify_model.py` + manual runs | detection rate and latency per backend |

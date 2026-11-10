@@ -51,46 +51,37 @@ customer or an aircraft: a **structured, georeferenced deliverable**, and a
 | Association accuracy | measured per detection now; per-detection confidence is not modelled | medium |
 | Resolution/metadata standards | partially in `config/camera.yaml`; a "shot sheet" concept does not exist | large |
 
-## The QA report's first two runs
+## The QA report's runs
+
+`scripts/qa_report.py` over existing captures. The asset position is now an
+input (`--asset east,north`) because the probe below proved that assuming
+`targets.yaml` is a trap.
+
+| Capture | Asset given | Level coverage | Longest gap | Track ids | Association median / p95 | Verdict |
+|---|---|---|---|---|---|---|
+| moving-target flight, 120 frames | as configured `(3.5, 0)` | 73% | 0.49 s | 1 | 6.09 / 7.14 m | FAIL: association |
+| north-cube flight, 105 frames | true `(0, 3.5)` | **88%** | 4.42 s | 2 | **0.62** / 5.36 m | FAIL: gap, p95 |
+| north-cube flight, same frames | as configured `(3.5, 0)` | 88% | 4.42 s | 2 | 4.95 / 5.14 m | FAIL: association |
+
+Reading the middle row: with the asset where the cube actually was, the median
+association drops from **4.95 m to 0.62 m**. That is the projection being right
+and the input having been wrong. The p95 of 5.36 m is one of the two track ids
+disagreeing — a second, spurious track — which is the track-count column doing
+its job.
+
+The first row is the report catching a real thing: the asset had been driven 3 m
+away from its declared position, and every detection is legitimately metres from
+it.
+
+The lesson from the fourth measurement stands and is now implemented: a QA metric
+is only meaningful against a known asset position. Coverage is also reported per
+phase (ground / climb / level / descent) and the verdict judges the survey phase,
+because takeoff and landing frames drag a whole-flight average down without
+telling anyone anything.
+
+Sample reports: `results/qa_moving.json`, `results/qa_north.json`.
 
 `scripts/qa_report.py` over two existing captures:
-
-| Capture | Coverage | Longest gap | Track ids | Association p95 | Verdict |
-|---|---|---|---|---|---|
-| static-target flight (70 frames) | 40% | 4.98 s | 10 | 4.82 m | FAIL: all three |
-| moving-target flight (120 frames) | 73% | 0.49 s | 1 | 7.14 m | FAIL: association |
-
-The second row is the report doing its job: the asset in `config/targets.yaml`
-sits at local `(3.5, 0)`, and the cube had been driven 3 m north, so every
-detection is legitimately several metres from the declared asset. A QA pass that
-did **not** flag that would be worthless.
-
-The first row is honest, and the question it raised is now closed by a fourth
-measurement. What was measured, in order:
-
-1. **The capture is not mis-recording the pose.** During a probe flight the node
-   logged `e=0.05 n=-0.48 yaw=89.5°` and the capture recorded `e=0.02 n=-0.49
-   yaw=90.3°` at the same moment, with a quaternion that was essentially identity.
-2. **An east-side cube appeared at the top edge** of a capture whose pose said the
-   vehicle faced north — which the model says should put it on the right edge.
-3. A second capture showed the same 90°-looking pattern.
-4. **The decider: the cube was moved 3.5 m due north and flown again.** The
-   detections then projected to `(east ≈ 0, north ≈ 3.5)` — where the cube
-   actually was — and the QA report put them **4.95 m** from the declared asset at
-   `(3.5, 0)`, exactly `hypot(3.5, 3.5)`.
-
-So the projection maps north to north correctly, and the QA number is the report
-doing its job: the asset was not where `targets.yaml` said. What the earlier
-east-side frames were showing is still unexplained, and the answer is almost
-certainly the boring one — the asset in that capture was not at `(3.5, 0)` either,
-which the capture's own pose cannot tell you.
-
-The lesson worth keeping: a QA metric is only meaningful against a known asset
-position, and this repository's `targets.yaml` is a static assumption that the
-mover script breaks. The report should take the asset position as an input
-instead of assuming the config is the truth.
-
-Sample reports: `results/qa_static.json`, `results/qa_moving.json`.
 
 The first three are the ones that fit the project's own rule — every claim
 measurable — and they are what an enterprise reviewer would look for before
