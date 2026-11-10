@@ -16,6 +16,9 @@ RUN python3 -m pip install --no-cache-dir --upgrade pip \
 
 COPY . .
 
-# Unit tests are the only thing this image is expected to run in CI.
-# The SITL smoke workflow runs scripts/run_e2e.sh explicitly.
+# Unit tests are the only thing this image is expected to run: CI builds it and
+# runs pytest inside it on every push (the `docker` job), so the image cannot rot
+# silently. SITL itself needs the PX4 patch and a GPU-capable Gazebo, which is a
+# different problem - see docs/setup-log.md rather than expecting this image to
+# fly.
 CMD ["make", "test"]

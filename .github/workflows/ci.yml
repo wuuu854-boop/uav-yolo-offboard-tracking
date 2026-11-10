@@ -7,6 +7,20 @@ on:
   workflow_dispatch:
 
 jobs:
+  docker:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # The image exists for people who would rather not install ROS by hand, so
+      # it is built and the unit tests are run inside it on every push. An
+      # untested Dockerfile is a promise nobody checked.
+      - name: Build the image
+        run: docker build -t uav-tracking:ci .
+
+      - name: Unit tests inside the image
+        run: docker run --rm uav-tracking:ci python3 -m pytest -q
+
   test:
     runs-on: ubuntu-22.04
     steps:
