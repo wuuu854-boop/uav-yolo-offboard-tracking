@@ -79,6 +79,29 @@ independent installers fighting over the dpkg lock, and a quarter was the
 camera. The camera fault was worth the time: it produced `skills/03` and
 corrected a rule this repository had documented backwards.
 
+## 2026-11-10 — safety constraints, and a 5.6 m lesson
+
+The second session began as cleanup and ended with three changes to the control
+loop.
+
+```
+09:00  docker CI job wired up -> pyproject.toml and requirements.txt had drifted
+       (opencv-python vs opencv-python-headless) -> scripts/check_dependencies.py
+10:30  three validation runs: 0.82 m, 5.57 m, 1.31 m
+11:00  the 5.57 m run reacquired a single frame during the search, flew to it,
+       and the trace called it "arrived"
+11:20  confirm_frames: arrival, reacquisition and end-of-loss-hover now need
+       three consecutive frames with a target
+11:40  re-runs with the fence and the confirmation: 0.94 / 1.01 / 1.49 m
+12:00  a loss + search + recovery exceeds a 120 s trial window -> default 180 s
+```
+
+What the 5.57 m run taught: the projection was fine; the mistake was believing
+one frame. The trace shows `HOVER(target_lost) → SEARCH → GOTO` at a point 3.7 m
+from the target, and nothing in the mission could tell that apart from a real
+arrival. That is now a state-machine property with a unit test, not a tuning
+parameter someone remembers.
+
 ## Adding a session
 
 Append one `## YYYY-MM-DD — title` section. Keep the failing command, the error
