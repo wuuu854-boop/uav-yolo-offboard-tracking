@@ -197,6 +197,9 @@ point into the box frame, so grid A*, inflation and line-of-sight work for a
 rotated wall. The report measures the exact rotated shape. See
 [`rotated.md`](rotated.md).
 
+Phase 12 exercises two rotated boxes at once (30° wall and 45° pillar) with two
+contact sensors. See [`rotated-multi.md`](rotated-multi.md).
+
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a
 single missed frame ends the mission.

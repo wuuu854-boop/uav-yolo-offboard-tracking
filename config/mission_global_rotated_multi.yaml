@@ -1,0 +1,42 @@
+# Two rotated obstacles (`make global-rotated-multi`): the 30-degree wall and a
+# 45-degree pillar. Both are hand-entered; the reactive stop is disabled.
+takeoff_altitude_m: 5.0
+spawn_offset_enu: [-7.5, 0.0]
+reach_tolerance_m: 0.1
+max_speed_mps: 0.6
+hover_duration_s: 3.0
+
+target_loss_hover_s: 2.0
+setpoint_jump_limit_m: 3.0
+land_after_hover: true
+max_mission_s: 60.0
+
+confirm_frames: 3
+geofence_radius_m: 30.0
+control_rate_hz: 50.0
+
+heading_yaw_deg: 90.0
+
+patrol_waypoints:
+  - [8.2, 0.0]
+
+target_selection: nearest_centre
+search_after_s: 8.0
+search_area_m: 20.0
+search_spacing_m: 8.9
+
+avoidance_timeout_s: 1.0
+avoidance_stop_enabled: false
+detour_enabled: false
+
+global_planning: true
+global_bounds: [-10.0, 10.0, -10.0, 10.0]
+global_obstacles:
+  # local ENU: wall at 30 deg, pillar at 45 deg
+  - [6.7, 0.0, 0.2, 3.0, 0.5236]
+  - [5.0, 2.0, 0.8, 0.8, 0.7854]
+global_resolution_m: 0.2
+global_inflation_m: 0.5
+global_waypoint_tolerance_m: 0.2
+global_pre_goal: [8.2, 0.0]
+global_min_clearance_m: 0.4

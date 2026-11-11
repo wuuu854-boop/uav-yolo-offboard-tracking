@@ -94,6 +94,11 @@ The rotated-wall variant uses `target_tracking_rotated.sdf`,
 `results/global_rotated_landing.csv` and is a success (0.391 m). The wall is
 rotated 30° about z and the report uses the exact rotated distance.
 
+The two-rotated-obstacle variant uses `target_tracking_rotated_multi.sdf`,
+`config/mission_global_rotated_multi.yaml` and `make global-rotated-multi`; its
+landing row is `results/global_rotated_multi_landing.csv` and is a success
+(0.439 m). The wall is 30° and the pillar 45°; both are hand-entered.
+
 Restart the simulation between targets; do not teleport a running vehicle.
 
 ## Trial procedure

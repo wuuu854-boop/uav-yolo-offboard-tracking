@@ -14,6 +14,7 @@
 | [global](global.md) | Known-map A* around the wall, the stand-off, and why the reactive stop is off |
 | [perception-planning](perception-planning.md) | One depth stop becomes one box, one replan; what that is not |
 | [rotated](rotated.md) | A fifth box field for yaw, exact rotated clearance, and the one-box limit |
+| [rotated-multi](rotated-multi.md) | Two rotated boxes, two contact sensors, one route |
 | [model](model.md) | The YOLO detector: dataset, training, the decoder bug it exposed, and how it was made to fly |
 | [deployment](deployment.md) | Detector throughput per input size and thread count, and what it does not measure |
 | [market](market.md) | What UAV-autonomy postings ask for, where this project stands, what to build next |

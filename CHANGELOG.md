@@ -7,6 +7,25 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.21.0] - 2026-11-11
+
+### Added
+
+- **Two rotated obstacles.** `target_tracking_rotated_multi.sdf` adds a
+  45-degree pillar with its own contact sensor to the rotated world;
+  `config/mission_global_rotated_multi.yaml` gives the planner both rotated
+  boxes and `make global-rotated-multi` runs it.
+- One run: **3 waypoints around 2 obstacles**, final target error **0.586 m**,
+  landing **0.439 m** `success=True`, exact wall clearance **0.698 m**, **0**
+  contacts on the wall or the pillar, 664 depth frames, 43.6 s.
+
+### Why
+
+The rotated-box support was only exercised on one obstacle. Two rotated boxes
+test the combined route and the second contact sensor without changing the
+planner again. Both boxes remain hand-entered and static; the reactive stop is
+disabled.
+
 ## [0.20.0] - 2026-11-11
 
 ### Added
