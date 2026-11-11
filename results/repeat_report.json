@@ -74,5 +74,24 @@
       "min": 0.281,
       "max": 0.54
     }
+  },
+  "gate-target1-margin": {
+    "runs": 10,
+    "passes": 10,
+    "target_error_m": {
+      "min": 0.133,
+      "max": 0.524,
+      "mean": 0.3073
+    },
+    "clearance_m": {
+      "min": 0.786,
+      "max": 0.943
+    },
+    "contacts_total": 0,
+    "landing_successes": 10,
+    "landing_error_m": {
+      "min": 0.045,
+      "max": 0.64
+    }
   }
 }

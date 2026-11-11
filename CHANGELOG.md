@@ -7,6 +7,25 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.28.0] - 2026-11-11
+
+### Fixed
+
+- **gate-target1 is now 10/10 with a real margin.** The 0.8 m inflation / 0.1 m
+  tolerance configuration reached only 9/10; one run still had a gate contact.
+  The retained mission uses **1.0 m inflation / 0.05 m waypoint tolerance** and
+  passes **10/10**, target 0.133/0.307/0.524 m, clearance 0.786/0.943 m, 0
+  contacts.
+- `make repeat-target1-10` (`scripts/repeat_target1.sh`) reproduces the ten-run
+  margin sample.
+
+### Why
+
+The 0.8/0.1 5/5 claim was too optimistic; n=10 found a contact at 0.704 m reported
+clearance. Increasing the inflation to 1.0 (effective gap 0.4 m) and cutting the
+waypoint tolerance to 0.05 gives 10/10. The original 0/3 and 0.8/0.1 9/10 samples
+are preserved, not overwritten. n=10 is still small and SITL-only.
+
 ## [0.27.2] - 2026-11-11
 
 ### Fixed
