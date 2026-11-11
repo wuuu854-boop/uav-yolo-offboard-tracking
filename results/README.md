@@ -67,6 +67,11 @@ README and in the resume, so they are written by scripts, never by hand.
 | `global_trace.csv` | `src/uav_tracking/control/trace.py` | takeoff, GOTO, hover, land |
 | `global_summary.json` | `scripts/avoidance_report.py --mode global` | PASS: 0.24 m target error, 0.554 m clearance, 0 contacts |
 | `global_run.png` | the same report | the path around the wall's north end |
+| `global_multi_run.csv` | `scripts/record_avoidance.py` during `make global-multi` | 463 rows: three-box path, 0 contacts |
+| `global_multi_landing.csv` | `offboard_node` recorder on the same run | one row: 1.001 m from the target, `success=True`, `patrol complete` |
+| `global_multi_trace.csv` | `src/uav_tracking/control/trace.py` | takeoff, GOTO, hover, land |
+| `global_multi_summary.json` | `scripts/avoidance_report.py --mode global` | PASS: 0.616 m target error, 0.959 m clearance, 0 contacts |
+| `global_multi_run.png` | the same report | the path around the wall and both pillars |
 | `detections.geojson` | `scripts/export_geojson.py` on the moving-target capture | 88 Point features with track id, timestamp and ENU offsets — the GIS-ready deliverable an inspection operator asks for |
 | `qa_moving.json` | `scripts/qa_report.py` on the moving-target capture | the asset was 3 m from its declared position, and the report says so (association 7.1 m, FAIL) |
 | `qa_north.json` | the same report with the asset position passed in | median association drops from 4.95 m to 0.62 m when the asset is where it actually was |

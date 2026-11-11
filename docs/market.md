@@ -79,9 +79,10 @@ Ordered by (market weight × what is feasible without hardware we do not have):
    measured 2.0 m back-off (0.618 m target error) and a side-step search
    recovery from a genuine both-blocked stop (0.669 m target error, zero
    contacts) and a known-map A* path around the wall (0.24 m target error, zero
-   contacts; reactive stop disabled, map hand-entered). Still missing:
+   contacts; reactive stop disabled, map hand-entered) plus a three-box
+   multi-obstacle A* run (0.616 m target error, zero contacts). Still missing:
    perception-driven planning, replanning/dynamic or 3-D obstacles, multiple
-   obstacles and a real sensor.
+   obstacle **perception**, and a real sensor.
 
 ## What we deliberately stop pretending
 

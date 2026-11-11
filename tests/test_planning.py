@@ -71,6 +71,24 @@ def test_inflation_is_honoured():
     assert max(abs(y) for _, y in path) > 2.0
 
 
+def test_multiple_boxes_are_routed_around():
+    boxes = [
+        Box(1.5, 0.0, 0.2, 3.0),
+        Box(1.0, -1.2, 0.8, 0.8),
+        Box(1.0, 1.2, 0.8, 0.8),
+    ]
+    path = plan_path(
+        (0.0, 0.0),
+        (3.0, 0.0),
+        boxes,
+        (-5.0, 5.0, -5.0, 5.0),
+        inflation_m=0.5,
+    )
+
+    assert path[-1] == pytest.approx((3.0, 0.0))
+    _outside(path, boxes, 0.5)
+
+
 def test_bad_arguments_are_rejected():
     with pytest.raises(ValueError, match="resolution"):
         plan_path((0.0, 0.0), (1.0, 0.0), [], (-2.0, 2.0, -2.0, 2.0), resolution_m=0.0)

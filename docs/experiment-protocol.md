@@ -79,6 +79,11 @@ The phase-9 known-map global run uses `target_tracking_obstacle.sdf`,
 `results/global_landing.csv` and is a success (0.216 m). The map is hand-entered
 and the reactive stop is disabled. Details: [`global.md`](global.md).
 
+The multi-obstacle variant uses `target_tracking_search.sdf`,
+`config/mission_global_multi.yaml` and `make global-multi`; its landing row is
+`results/global_multi_landing.csv` and is a success (1.001 m). The map has three
+hand-entered boxes and the reactive stop is disabled.
+
 Restart the simulation between targets; do not teleport a running vehicle.
 
 ## Trial procedure

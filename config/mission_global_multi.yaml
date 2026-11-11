@@ -1,0 +1,47 @@
+# Mission used by the multi-obstacle known-map demo (`make global-multi`).
+#
+# The map has three boxes: the wall and the two search pillars, all in local ENU.
+# The planner routes around the union; the reactive stop is disabled because this
+# run tests the known-map planner. The goal is the same 0.7 m east stand-off as
+# the single-wall global demo, so target_0's 0.24 m/0.7 m result is comparable.
+takeoff_altitude_m: 5.0
+spawn_offset_enu: [-7.5, 0.0]
+reach_tolerance_m: 0.1
+max_speed_mps: 0.6
+hover_duration_s: 3.0
+
+target_loss_hover_s: 2.0
+setpoint_jump_limit_m: 3.0
+land_after_hover: true
+max_mission_s: 60.0
+
+confirm_frames: 3
+geofence_radius_m: 30.0
+control_rate_hz: 50.0
+
+heading_yaw_deg: 90.0
+
+patrol_waypoints:
+  - [8.2, 0.0]
+
+target_selection: nearest_centre
+search_after_s: 8.0
+search_area_m: 20.0
+search_spacing_m: 8.9
+
+avoidance_timeout_s: 1.0
+avoidance_stop_enabled: false
+detour_enabled: false
+
+global_planning: true
+global_bounds: [-10.0, 10.0, -10.0, 10.0]
+global_obstacles:
+  # local ENU: world minus spawn (-7.5, 0)
+  - [6.7, 0.0, 0.2, 3.0]    # wall
+  - [6.0, -0.8, 0.8, 0.8]   # search_right
+  - [6.0, 1.8, 0.8, 0.8]    # search_left
+global_resolution_m: 0.2
+global_inflation_m: 0.9
+global_waypoint_tolerance_m: 0.2
+global_pre_goal: [8.2, 0.0]
+global_min_clearance_m: 0.4

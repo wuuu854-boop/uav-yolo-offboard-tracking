@@ -14,7 +14,7 @@ PX4_MODEL ?= gz_x500_mono_cam_down
 # Per-target poses are listed in docs/experiment-protocol.md.
 POSE     ?= -3.5,0,0.05
 
-.PHONY: help setup doctor demo trials qa shots pipeline patch-px4 install-world sim detect e2e avoid detour auto-detour blocked backoff backoff-sweep adaptive search global preflight test lint fmt lock bench check clean
+.PHONY: help setup doctor demo trials qa shots pipeline patch-px4 install-world sim detect e2e avoid detour auto-detour blocked backoff backoff-sweep adaptive search global global-multi preflight test lint fmt lock bench check clean
 
 help: ## show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-8s\033[0m %s\n", $$1, $$2}'
@@ -100,6 +100,9 @@ search: install-world ## depth camera: back off, then side-step toward the freer
 
 global: install-world ## known-map A* around the wall (planner demo, no reactive detour)
 	MISSION=config/mission_global.yaml WORLD=target_tracking_obstacle PREFIX=global MODE=global bash scripts/run_avoidance.sh
+
+global-multi: install-world ## known-map A* around the wall and two side pillars
+	MISSION=config/mission_global_multi.yaml WORLD=target_tracking_search PREFIX=global_multi MODE=global bash scripts/run_avoidance.sh
 
 trials: ## run N closed-loop trials (N=3 default), restarting the sim each time
 	bash scripts/run_trials.sh --count $(or $(N),3)

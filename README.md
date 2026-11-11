@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/v/release/wuuu854-boop/uav-yolo-offboard-tracking?include_prereleases&sort=semver)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-425-brightgreen)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-426-brightgreen)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ci.yml)
 
 **UAV vision in the loop, measured.** Detection → pixel-to-ground projection → PX4 Offboard approach in Gazebo SITL, plus a forward depth camera that stops the approach before a wall — with a trial harness that turns every run into a CSV row and an environment doctor that diagnoses this stack's setup failures.
 
@@ -283,6 +283,11 @@ Limits: hand-entered static axis-aligned boxes, one plan per goal, no perception
 in the planner, no replanning/dynamic or 3-D obstacles. See
 [`docs/global.md`](docs/global.md).
 
+`make global-multi` gives the same planner three boxes (wall + both search
+pillars). One run: **3 waypoints around 3 obstacles**, target **0.616 m**,
+landing 1.001 m `success=True`, minimum clearance **0.959 m**, **0** contacts,
+686 depth frames, 46.2 s.
+
 **Version provenance.** The table is the nine-trial set measured with **v0.1.0**.
 v0.2.0 changes safety behaviour only — a geofence, a mission timeout and a
 requirement that a target be seen for consecutive frames before the mission acts
@@ -299,7 +304,7 @@ Gazebo rendered headless through WSL2.
 
 | Layer | Status | Evidence |
 |---|---|---|
-| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (425 tests) + `make demo` || YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
+| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (426 tests) + `make demo` || YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
 | Cross-frame identity (`track_id`) | ✅ verified | `tests/test_tracking.py` (12 tests) + a ROS test that the id survives two frames |
 | ROS 2 packages build, both nodes run | ✅ verified in CI | `ROS build` workflow on `ros:humble`: detector against synthetic images, controller against fake PX4 traffic |
 | Version matrix, world structure, camera intrinsics | ✅ checked | `make doctor`, `check_world_targets.py` in CI |
@@ -319,6 +324,7 @@ Gazebo rendered headless through WSL2.
 | Both sides blocked → size the back-off from depth | ✅ **verified** | left 3.20 / right 2.32 m at the stop → computed 2.00 m step, target 0.618 m, 0 contacts; [`results/adaptive_summary.json`](results/adaptive_summary.json) |
 | Side-step search recovery after a blocked stop | ✅ **verified** | every stopped row `blocked` (L2.75/R1.91), `side-search left` → `search found a side`, target 0.669 m, landing 0.663 m, 0 contacts; [`results/search_summary.json`](results/search_summary.json) |
 | Known-map global path around the wall | ✅ **verified (known map)** | 3 waypoints, target 0.24 m, landing 0.216 m, clearance 0.554 m, 0 contacts; reactive stop disabled; [`results/global_summary.json`](results/global_summary.json) |
+| Multi-obstacle known-map path | ✅ **verified (known map)** | 3 waypoints around 3 boxes, target 0.616 m, landing 1.001 m, clearance 0.959 m, 0 contacts; [`results/global_multi_summary.json`](results/global_multi_summary.json) |
 | Contact sensor can report a contact | ✅ **checked positively** | a 0.5 kg box dropped on the wall produced 4632 messages; [`results/contact_sensor_check.txt`](results/contact_sensor_check.txt) |
 | Depth-sensor noise, holes, real hardware | ❌ **not verified** | Gazebo returns ideal float32 depth; there is no real depth camera, no multipath, no missing-return model |
 | Dynamic obstacles / global planning | ❌ **not implemented** | local stop + one detour + one hold; no obstacle track, no global planner |
@@ -405,6 +411,7 @@ make backoff-sweep             # 深度相机：一次后退不够 → 0.2 m 步
 make adaptive                  # 深度相机：按左右实测距离计算后退量，再选边绕行
 make search                    # 深度相机：停住后侧移 2 m 重看，找到空侧再绕行
 make global                    # 已知地图 A*：先规划绕墙路径，再飞（关闭反应式停障）
+make global-multi              # 已知地图 A*：墙 + 两根侧柱的多障碍路径
 ```
 
 > **Windows 用户**：PX4 SITL 只能跑在 Linux 上。用 WSL2 + Ubuntu 22.04（Windows 11

@@ -7,6 +7,25 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-11-11
+
+### Added
+
+- **Multi-obstacle known-map planning.** `config/mission_global_multi.yaml`
+  (`make global-multi`) gives the A* the wall and both search pillars as three
+  boxes; 0.9 m inflation closes the gap between the pillars, so the route goes
+  around the outside.
+- One run: **3 waypoints around 3 obstacles**, final target error **0.616 m**,
+  landing 1.001 m `success=True`, minimum wall clearance **0.959 m**, **0**
+  contacts, 686 depth frames, 46.2 s (463 rows).
+
+### Why
+
+The single-wall demo could be solved with one detour. Three boxes force the
+planner to route around a union, which is the next thing the local stack cannot
+do. The map is still hand-entered and the reactive stop is still disabled; this
+is a planner test, not perception.
+
 ## [0.17.0] - 2026-11-11
 
 ### Added

@@ -86,3 +86,16 @@ fires.
 - The final target error is to target_0, while the mission target is the 8.2 m
   stand-off; the vehicle drifted 0.4 m west during descent, which is why the
   reported error is smaller than the stand-off distance.
+
+## Multiple obstacles
+
+`make global-multi` uses `target_tracking_search.sdf` and gives the same planner
+three boxes: the wall `(6.7, 0, 0.2, 3.0)` and the two pillars
+`(6.0, -0.8, 0.8, 0.8)`, `(6.0, 1.8, 0.8, 0.8)`, all local ENU, with 0.9 m
+inflation. The union closes the gap between the pillars, so the route goes around
+the outside.
+
+One run: **3 waypoints around 3 obstacles**, final target error **0.616 m**,
+landing 1.001 m `success=True`, minimum wall clearance **0.959 m**, **0**
+contacts, 686 depth frames, 46.2 s (463 rows). The reactive stop is disabled for
+this mission as well; this is still a hand-entered static map.
