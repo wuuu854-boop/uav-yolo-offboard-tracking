@@ -7,6 +7,23 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.27.0] - 2026-11-11
+
+### Changed
+
+- **Expanded gate-target1 to ten repeats.** Five additional fixed-configuration
+  runs bring that scenario to n=10. The result is **9/10**, not 10/10: run 8 had
+  one gate contact with 0.704 m reported clearance. The configuration is improved
+  over the original 0/3 but is **not proven robust**.
+- gate remains **5/5** and gate-double **5/5** at n=5.
+
+### Why
+
+A 5/5 sample was not enough: the tenth target1 run found a contact. The honest
+status is "improved, still flaky", and the README/verification table is downgraded
+from ✅ to ⚠️ for that scenario. No tuning was applied in this release; the failure
+is documented before any further fix.
+
 ## [0.26.0] - 2026-11-11
 
 ### Added

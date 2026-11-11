@@ -102,8 +102,8 @@ README and in the resume, so they are written by scripts, never by hand.
 | `gate_double_trace.csv` | `src/uav_tracking/control/trace.py` | takeoff, GOTO, hover, land |
 | `gate_double_summary.json` | `scripts/avoidance_report.py --mode global --target-id 1` | PASS: 0.082 m target error, 0.45 m clearance, 0 contacts |
 | `gate_double_run.png` | the same report | the five-waypoint zigzag through two gates |
-| `repeat_report.md` / `.json` | `scripts/repeat_report.py` over `results/repeat/` | gate 5/5, gate-double 5/5, gate-target1 0/3 original and 5/5 fixed |
-| `repeat/<scenario>_<n>_summary.json` | per-run `avoidance_report.py` output | 18 repeat summaries (5 + 5 + 3 original + 5 fixed) |
+| `repeat_report.md` / `.json` | `scripts/repeat_report.py` over `results/repeat/` | gate 5/5, gate-double 5/5, gate-target1 0/3 original and 9/10 fixed |
+| `repeat/<scenario>_<n>_summary.json` | per-run `avoidance_report.py` output | 23 repeat summaries (5 + 5 + 3 original + 10 fixed) |
 | `repeat/<scenario>_<n>_landing.csv` | per-run `offboard_node` landing row | landing error and success per repeat |
 | `detections.geojson` | `scripts/export_geojson.py` on the moving-target capture | 88 Point features with track id, timestamp and ENU offsets — the GIS-ready deliverable an inspection operator asks for |
 | `qa_moving.json` | `scripts/qa_report.py` on the moving-target capture | the asset was 3 m from its declared position, and the report says so (association 7.1 m, FAIL) |

@@ -87,7 +87,7 @@ Ordered by (market weight × what is feasible without hardware we do not have):
    (0.49 m target error, zero contacts), an offset doorway before target_1
    (0.277 m target error, zero contacts) and two doorways before target_1
    (0.082 m target error, zero contacts); repeatability is gate 5/5,
-   gate-double 5/5, and gate-target1 5/5 only after fixing the inflation/tolerance
+   gate-double 5/5, and gate-target1 9/10 only after fixing the inflation/tolerance
    (the original single-run config was 0/3). Still missing: occupancy-map
    perception, replanning after the handoff, dynamic or 3-D obstacles, and a real
    sensor.

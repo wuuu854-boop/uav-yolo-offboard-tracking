@@ -212,8 +212,8 @@ Phase 15 chains two offset gates (north gap at x = 1.2, south gap at x = 12.2)
 before target_1. See [`gate-double.md`](gate-double.md).
 
 Phase 16 repeats the doorway missions and aggregates the evidence. The expanded
-sample is gate **5/5**, gate-double **5/5**, gate-target1 fixed **5/5**; the
-original gate-target1 configuration remains **0/3**. See
+sample is gate **5/5**, gate-double **5/5**, gate-target1 fixed **9/10** (one
+contact); the original gate-target1 configuration remains **0/3**. See
 [`repeatability.md`](repeatability.md).
 
 Two different ways into `HOVER` with two different exits — this is the part that

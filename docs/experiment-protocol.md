@@ -121,7 +121,7 @@ gate-target1 and gate-double five times each, fresh simulator per run, with
 per-run summaries under `results/repeat/` and the aggregate in
 `results/repeat_report.md`. It exposed the original gate-target1 configuration as
 0/3; the retained gate-target1 mission uses 0.8 m inflation and 0.1 m waypoint
-tolerance and is 5/5.
+tolerance and is **9/10**, not 10/10; one fixed run had a single gate contact.
 
 Restart the simulation between targets; do not teleport a running vehicle.
 
