@@ -7,6 +7,29 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-11-11
+
+### Added
+
+- **Known-map global planning.** `src/uav_tracking/planning/global_planner.py`
+  adds a 2-D grid A* around inflated axis-aligned boxes with line-of-sight
+  simplification. The offboard plans once per goal from `global_obstacles`,
+  follows the waypoints, and takes the final target.
+- `config/mission_global.yaml` (`make global`) uses the wall map at local
+  `(6.7, 0)`, 0.5 m inflation, a pre-goal at `(8.2, 0)` and
+  `avoidance_stop_enabled: false`.
+- One run: **3 planned waypoints**, final target error **0.24 m**, landing
+  0.216 m `success=True`, minimum clearance **0.554 m**, **0** contacts, 640
+  depth frames, 42.5 s.
+
+### Why
+
+The local stack had no path before the obstacle. A known map is the smallest
+honest way to add one: it proves the plan-and-follow interface without claiming
+perception. The stand-off and the disabled reactive stop are deliberate; target_0
+is too close to the wall for a clean landing, and this run tests the planner, not
+the local avoidance.
+
 ## [0.16.2] - 2026-11-11
 
 ### Fixed

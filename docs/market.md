@@ -39,7 +39,7 @@ frequencies.
 | Real-time performance | "real-time cognitive cycle" | 8.1 ms / 119 FPS at 320 px, 4 threads; end-to-end 143 ms | `docs/deployment.md` |
 | Simulation first, SITL → real | "simulation first (Gazebo, SITL and HITL), then real flight" | **Gazebo Harmonic SITL**, 9+6 closed-loop trials, reproducible patch | `docs/experiment-protocol.md` |
 | State estimation, EKF, VIO | "EKF tuning … GPS-denied navigation" | **PX4's EKF only**, no tuning, no VIO | — |
-| Obstacle avoidance, LiDAR/depth | "path planning and obstacle avoidance with ROS 2" | **Reactive stop + L detour + depth-based side choice + both-blocked hold/back-off + measured step + side-step search** (v0.9–v0.16); no global planner, no multi-obstacle reasoning, no dynamic obstacles, no verified simultaneous both-strip block, no 2-D search | `docs/avoidance.md`, `docs/detour.md`, `docs/side-selection.md`, `docs/blocked.md`, `docs/backoff.md`, `docs/backoff-sweep.md`, `docs/adaptive.md`, `docs/search.md` |
+| Obstacle avoidance, LiDAR/depth | "path planning and obstacle avoidance with ROS 2" | **Reactive stop + L detour + depth side choice + back-off/search + known-map A\*** (v0.9–v0.17); the global demo uses a hand-entered static map and disables the reactive stop; no perception-driven planner, no dynamics, no 3-D | `docs/avoidance.md`, `docs/detour.md`, `docs/side-selection.md`, `docs/blocked.md`, `docs/backoff.md`, `docs/backoff-sweep.md`, `docs/adaptive.md`, `docs/search.md`, `docs/global.md` |
 | Multi-target / counter-drone | "detection, tracking and classification of airborne targets" | Single target per run | `control/selection.py` |
 | Dataset + labelling pipeline | not named, but implied by "model deployment" | **Geometry-based auto-labelling** on real frames | `scripts/label_real_frames.py` |
 
@@ -78,8 +78,10 @@ Ordered by (market weight × what is feasible without hardware we do not have):
    zero contacts), a bounded 0.2 m back-off sweep (0.852 m target error), a
    measured 2.0 m back-off (0.618 m target error) and a side-step search
    recovery from a genuine both-blocked stop (0.669 m target error, zero
-   contacts). Still missing: alternating/2-D search, multiple obstacles, a
-   global planner and a real sensor.
+   contacts) and a known-map A* path around the wall (0.24 m target error, zero
+   contacts; reactive stop disabled, map hand-entered). Still missing:
+   perception-driven planning, replanning/dynamic or 3-D obstacles, multiple
+   obstacles and a real sensor.
 
 ## What we deliberately stop pretending
 

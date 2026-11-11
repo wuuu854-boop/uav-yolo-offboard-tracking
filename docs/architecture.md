@@ -180,6 +180,12 @@ Phase 8 adds a `SEARCH` phase: a blocked stop shifts `search_step_m` sideways
 toward the freer side, re-reads, and starts the lateral leg from there; bounded
 by `search_max_attempts`, then holds. See [`search.md`](search.md).
 
+Phase 9 adds a known-map planner outside the reactive stack:
+`uav_tracking.planning.global_planner.plan_path()` runs grid A* around inflated
+axis-aligned boxes and smooths the result; the offboard plans once per goal,
+follows the waypoints, and takes the final target. The mission supplies the map
+and may disable the reactive stop explicitly. See [`global.md`](global.md).
+
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a
 single missed frame ends the mission.

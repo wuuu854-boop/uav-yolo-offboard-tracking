@@ -544,3 +544,33 @@ v0.16.2 run is the clean both-blocked start.
 
 **Source** found during v0.16.1 bring-up; resolved in v0.16.2.
 
+---
+
+## 23. The global plan fails at the start or goal, or the path clips the wall
+
+**Symptom** `global plan failed: start/goal is inside an inflated obstacle; flying
+direct`, or the flight reaches the target with contacts and `min_clearance_m`
+below the check.
+
+**Cause** Three separate mistakes, all seen during bring-up:
+
+1. **World vs local coordinates.** The mission's `global_obstacles` are in local
+   ENU. The wall at world `-0.8` with spawn `-7.5` is `6.7`, not `-0.8`; using
+   the world value puts the start inside the inflated box.
+2. **Inflation larger than the goal clearance.** Target_0 is 0.7 m from the wall
+   face; inflation of 1–3 m makes the goal itself blocked. The retained mission
+   plans to a stand-off at `(8.2, 0)` and uses 0.5 m inflation.
+3. **Waypoint tolerance cuts the corner.** Following an inflated path with a
+   0.6 m arrival tolerance cut inside the wall (3 contacts). The retained run
+   uses a 0.2 m tolerance and a 0.1 m final arrival tolerance.
+
+**Also deliberate** The reactive stop is disabled for this mission
+(`avoidance_stop_enabled: false`), because the run tests the known-map planner,
+not the local avoidance. The red depth-gate segments in the plot are therefore
+not holds.
+
+**Detected by** the offboard error line, `contacts_total`, `min_clearance_m`, or
+the plan-failure log.
+
+**Source** found during v0.17.0 bring-up.
+

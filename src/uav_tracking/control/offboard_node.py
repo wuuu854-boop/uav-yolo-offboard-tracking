@@ -74,6 +74,7 @@ from uav_tracking.control.state_machine import (  # noqa: E402
 from uav_tracking.control.trace import StateTrace  # noqa: E402
 from uav_tracking.perception.depth import StopWatchdog  # noqa: E402
 from uav_tracking.perception.projection import estimate_target_enu  # noqa: E402
+from uav_tracking.planning.global_planner import Box, plan_path  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -178,6 +179,8 @@ class OffboardNode(Node):
         # The depth node also says which side looks freer. "unknown" means no
         # usable return on either side; the planner then uses detour_side.
         self.clear_side = "unknown"
+        self.global_path: list[tuple[float, float]] = []
+        self._global_goal: tuple[float, float] | None = None
         self.side_left_m = math.nan
         self.side_right_m = math.nan
         # Once a side has been blocked during a stop, hold for the rest of that
@@ -333,6 +336,42 @@ class OffboardNode(Node):
         # target it had just visited, because that target was still in view. The
         # single-target mission keeps following detections.
         target = estimate if self.patrol.done() else self.patrol.current()
+        move_target = target
+        if self.cfg.global_planning and target is not None:
+            goal = (float(target[0]), float(target[1]))
+            if self._global_goal != goal:
+                obstacles = [Box(*spec) for spec in self.cfg.global_obstacles]
+                plan_goal = self.cfg.global_pre_goal or goal
+                try:
+                    self.global_path = plan_path(
+                        (self.east, self.north),
+                        plan_goal,
+                        obstacles,
+                        self.cfg.global_bounds,
+                        resolution_m=self.cfg.global_resolution_m,
+                        inflation_m=self.cfg.global_inflation_m,
+                    )
+                    if plan_goal != goal:
+                        self.global_path.append(goal)
+                    self.get_logger().info(
+                        f"global path: {len(self.global_path)} waypoint(s) around "
+                        f"{len(obstacles)} obstacle(s)"
+                    )
+                except ValueError as error:
+                    self.get_logger().error(f"global plan failed: {error}; flying direct")
+                    self.global_path = []
+                self._global_goal = goal
+            while (
+                self.global_path
+                and math.hypot(
+                    self.global_path[0][0] - self.east,
+                    self.global_path[0][1] - self.north,
+                )
+                <= self.cfg.global_waypoint_tolerance_m
+            ):
+                self.global_path.pop(0)
+            if self.global_path:
+                move_target = self.global_path[0]
         if estimate is None:
             # A lost target releases the identity lock: the next sighting may be
             # a different object, and holding the id would make the mission
@@ -380,7 +419,7 @@ class OffboardNode(Node):
         # The gate overrides horizontal cruise only. Takeoff, hover and landing
         # keep their commands: refusing to climb or refusing to land because a
         # wall is in front would turn an obstacle into a different incident.
-        avoiding = self.avoidance.active(now_s)
+        avoiding = self.cfg.avoidance_stop_enabled and self.avoidance.active(now_s)
         if not avoiding:
             self._blocked_seen = False
         elif self.detour.phase is DetourPhase.INACTIVE and self.clear_side == "blocked":
@@ -502,7 +541,7 @@ class OffboardNode(Node):
                 hold_east, hold_north = self.avoidance_hold
                 self._move_towards(hold_east, hold_north, self.cfg.takeoff_altitude_m)
             else:
-                self._move_towards(target[0], target[1], self.cfg.takeoff_altitude_m)
+                self._move_towards(move_target[0], move_target[1], self.cfg.takeoff_altitude_m)
         elif decision.command == "hover":
             # Hold where the vehicle actually is. Leaving the setpoint where GOTO
             # left it makes the vehicle finish closing a lag of up to a metre
@@ -671,6 +710,7 @@ def main() -> int:
         confirm_frames=int(mission_raw.get("confirm_frames", 3)),
         heading_yaw_deg=float(mission_raw.get("heading_yaw_deg", 0.0)),
         avoidance_timeout_s=mission_raw.get("avoidance_timeout_s", 1.0),
+        avoidance_stop_enabled=bool(mission_raw.get("avoidance_stop_enabled", True)),
         detour_enabled=bool(mission_raw.get("detour_enabled", False)),
         detour_side=str(mission_raw.get("detour_side", "right")),
         detour_auto_side=bool(mission_raw.get("detour_auto_side", False)),
@@ -690,6 +730,21 @@ def main() -> int:
         detour_backoff_max_step_m=float(mission_raw.get("detour_backoff_max_step_m", 2.0)),
         detour_search_step_m=float(mission_raw.get("detour_search_step_m", 0.0)),
         detour_search_max_attempts=int(mission_raw.get("detour_search_max_attempts", 0)),
+        global_planning=bool(mission_raw.get("global_planning", False)),
+        global_bounds=tuple(
+            float(v) for v in mission_raw.get("global_bounds", (-10.0, 10.0, -10.0, 10.0))
+        ),
+        global_obstacles=tuple(
+            tuple(float(v) for v in spec) for spec in mission_raw.get("global_obstacles", ())
+        ),
+        global_resolution_m=float(mission_raw.get("global_resolution_m", 0.25)),
+        global_inflation_m=float(mission_raw.get("global_inflation_m", 0.8)),
+        global_waypoint_tolerance_m=float(mission_raw.get("global_waypoint_tolerance_m", 0.5)),
+        global_pre_goal=(
+            tuple(float(v) for v in mission_raw["global_pre_goal"])
+            if mission_raw.get("global_pre_goal")
+            else None
+        ),
         patrol_waypoints=tuple(
             (float(pair[0]), float(pair[1])) for pair in mission_raw.get("patrol_waypoints", ())
         ),

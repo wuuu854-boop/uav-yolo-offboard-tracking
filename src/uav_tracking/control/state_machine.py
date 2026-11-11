@@ -68,6 +68,9 @@ class MissionConfig:
     # it catches the node dying. The watchdog is inactive until the first
     # message, so missions without the avoidance node are unchanged.
     avoidance_timeout_s: float = 1.0
+    # The known-map global demo can turn the reactive stop off explicitly; the
+    # default keeps every tracking and local-avoidance mission unchanged.
+    avoidance_stop_enabled: bool = True
 
     # Reactive lateral detour (phase 2). Disabled by default: the tracking
     # missions must keep their exact behaviour, and the avoidance mission opts
@@ -93,6 +96,19 @@ class MissionConfig:
     detour_backoff_max_step_m: float = 2.0
     detour_search_step_m: float = 0.0
     detour_search_max_attempts: int = 0
+
+    # Known-map global planner (phase 9). Disabled by default: the tracking and
+    # local-avoidance missions must keep their exact behaviour.
+    global_planning: bool = False
+    global_bounds: tuple[float, float, float, float] = (-10.0, 10.0, -10.0, 10.0)
+    global_obstacles: tuple[tuple[float, float, float, float], ...] = ()
+    global_resolution_m: float = 0.25
+    global_inflation_m: float = 0.8
+    global_waypoint_tolerance_m: float = 0.5
+    # Plan to a clear point east of the goal first, then take the short final
+    # segment from that side. The target can sit too close to the wall for the
+    # inflated grid to accept it directly.
+    global_pre_goal: tuple[float, float] | None = None
 
     # Empty unless the mission is a patrol: local ENU (east, north) waypoints
     # visited in order, with a hover at each and a landing after the last.

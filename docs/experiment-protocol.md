@@ -74,6 +74,11 @@ pillars, `config/mission_search.yaml` and `make search`; its landing row is
 `blocked` (L 2.75 / R 1.91), so this is the genuine both-blocked start. Details:
 [`search.md`](search.md).
 
+The phase-9 known-map global run uses `target_tracking_obstacle.sdf`,
+`config/mission_global.yaml` and `make global`; its landing row is
+`results/global_landing.csv` and is a success (0.216 m). The map is hand-entered
+and the reactive stop is disabled. Details: [`global.md`](global.md).
+
 Restart the simulation between targets; do not teleport a running vehicle.
 
 ## Trial procedure

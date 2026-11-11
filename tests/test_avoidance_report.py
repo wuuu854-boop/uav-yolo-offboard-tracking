@@ -174,6 +174,26 @@ def test_a_detour_with_a_contact_fails():
     assert report["checks"]["no_contact"]["ok"] is False
 
 
+def _global_rows(contacts: int = 0) -> list[dict]:
+    rows = _rows(stopped=False, contacts=contacts)
+    for row in rows:
+        row["east_m"] = 7.5
+    return rows
+
+
+def test_a_clean_global_run_passes():
+    report = verdict(analyse(_global_rows(), OBSTACLE, MISSION), OBSTACLE, mode="global")
+
+    assert report["verdict"] == "PASS"
+    assert report["metrics"]["final_error_m"] == pytest.approx(0.0)
+
+
+def test_a_global_run_with_a_contact_fails():
+    report = verdict(analyse(_global_rows(contacts=1), OBSTACLE, MISSION), OBSTACLE, mode="global")
+
+    assert report["checks"]["no_contact"]["ok"] is False
+
+
 def test_an_unknown_report_mode_is_rejected():
     with pytest.raises(ValueError, match="unknown report mode"):
         verdict(analyse(_rows(), OBSTACLE, MISSION), OBSTACLE, mode="teleport")

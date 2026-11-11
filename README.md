@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/v/release/wuuu854-boop/uav-yolo-offboard-tracking?include_prereleases&sort=semver)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-416-brightgreen)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-425-brightgreen)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ci.yml)
 
 **UAV vision in the loop, measured.** Detection → pixel-to-ground projection → PX4 Offboard approach in Gazebo SITL, plus a forward depth camera that stops the approach before a wall — with a trial harness that turns every run into a CSV row and an environment doctor that diagnoses this stack's setup failures.
 
@@ -262,6 +262,27 @@ rows, not only during the search.
 Limits: one side, fixed 2 m step, bounded attempts; no alternating/2-D search;
 one static two-pillar world. See [`docs/search.md`](docs/search.md).
 
+### Known-map global planning
+
+Phase 9 is the other half of the question: with a map of the wall, plan the path
+before flying. A 2-D grid A* with line-of-sight smoothing reads
+`global_obstacles` from the mission and the offboard follows the planned
+waypoints.
+
+`make global` plans to a stand-off 0.7 m east of target_0 (target_0 itself is
+only 0.7 m from the wall face; landing exactly on it put the props inside the
+wall contact envelope). One run: **3 waypoints** around the wall, final target
+error **0.24 m**, landing 0.216 m `success=True`, minimum clearance **0.554 m**,
+**0** contacts, 640 depth frames, 42.5 s. The reactive stop is disabled for this
+mission (`avoidance_stop_enabled: false`); the red gate flag in the plot is not a
+hold.
+
+![Known-map A* path around the wall](results/global_run.png)
+
+Limits: hand-entered static axis-aligned boxes, one plan per goal, no perception
+in the planner, no replanning/dynamic or 3-D obstacles. See
+[`docs/global.md`](docs/global.md).
+
 **Version provenance.** The table is the nine-trial set measured with **v0.1.0**.
 v0.2.0 changes safety behaviour only — a geofence, a mission timeout and a
 requirement that a target be seen for consecutive frames before the mission acts
@@ -278,7 +299,7 @@ Gazebo rendered headless through WSL2.
 
 | Layer | Status | Evidence |
 |---|---|---|
-| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (416 tests) + `make demo` || YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
+| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (425 tests) + `make demo` || YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
 | Cross-frame identity (`track_id`) | ✅ verified | `tests/test_tracking.py` (12 tests) + a ROS test that the id survives two frames |
 | ROS 2 packages build, both nodes run | ✅ verified in CI | `ROS build` workflow on `ros:humble`: detector against synthetic images, controller against fake PX4 traffic |
 | Version matrix, world structure, camera intrinsics | ✅ checked | `make doctor`, `check_world_targets.py` in CI |
@@ -297,6 +318,7 @@ Gazebo rendered headless through WSL2.
 | Both sides blocked → repeat the back-off | ✅ **verified** | four 0.2 m steps, left at the last step, 3.772 m lateral, target 0.852 m, 0 contacts; [`results/sweep_summary.json`](results/sweep_summary.json) |
 | Both sides blocked → size the back-off from depth | ✅ **verified** | left 3.20 / right 2.32 m at the stop → computed 2.00 m step, target 0.618 m, 0 contacts; [`results/adaptive_summary.json`](results/adaptive_summary.json) |
 | Side-step search recovery after a blocked stop | ✅ **verified** | every stopped row `blocked` (L2.75/R1.91), `side-search left` → `search found a side`, target 0.669 m, landing 0.663 m, 0 contacts; [`results/search_summary.json`](results/search_summary.json) |
+| Known-map global path around the wall | ✅ **verified (known map)** | 3 waypoints, target 0.24 m, landing 0.216 m, clearance 0.554 m, 0 contacts; reactive stop disabled; [`results/global_summary.json`](results/global_summary.json) |
 | Contact sensor can report a contact | ✅ **checked positively** | a 0.5 kg box dropped on the wall produced 4632 messages; [`results/contact_sensor_check.txt`](results/contact_sensor_check.txt) |
 | Depth-sensor noise, holes, real hardware | ❌ **not verified** | Gazebo returns ideal float32 depth; there is no real depth camera, no multipath, no missing-return model |
 | Dynamic obstacles / global planning | ❌ **not implemented** | local stop + one detour + one hold; no obstacle track, no global planner |
@@ -382,6 +404,7 @@ make backoff                   # 深度相机：两侧都堵 → 后退 2 m 重�
 make backoff-sweep             # 深度相机：一次后退不够 → 0.2 m 步进重看，直到有空侧
 make adaptive                  # 深度相机：按左右实测距离计算后退量，再选边绕行
 make search                    # 深度相机：停住后侧移 2 m 重看，找到空侧再绕行
+make global                    # 已知地图 A*：先规划绕墙路径，再飞（关闭反应式停障）
 ```
 
 > **Windows 用户**：PX4 SITL 只能跑在 Linux 上。用 WSL2 + Ubuntu 22.04（Windows 11
@@ -463,13 +486,15 @@ Failure modes this system actually produced, each with the check that catches it
 - 搜索是固定方形草坪扫描（20 m、间距 8.9 m），不含重规划，也不覆盖大面积区域。
 - 避障验证了「停住」、固定右侧 L 形绕墙、用左右深度条带选择绕行方向、两侧都堵时
   拒绝猜方向并保持、后退重看、0.2 m 步进重复后退、按实测距离计算后退量，以及停住后
-  侧移 2 m 重新读条带并恢复：静态障碍、理想深度图、0.6 m/s、各一次飞行；
-  已验证停点双侧 blocked 的正例；仍没有交替/二维搜索、自适应方向、全局规划、
-  动态障碍、多障碍、真实深度相机的噪声/空洞（见
+  侧移 2 m 重新读条带并恢复，以及已知地图 A* 先规划绕墙路径：静态障碍、理想深度图、
+  0.6 m/s、各一次飞行；已验证停点双侧 blocked 的正例；
+  仍没有感知驱动的全局规划、边飞边重规划/动态/3D 障碍、交替/二维搜索、自适应方向、
+  多障碍、真实深度相机的噪声/空洞（见
   [`docs/avoidance.md`](docs/avoidance.md)、[`docs/detour.md`](docs/detour.md)、
   [`docs/side-selection.md`](docs/side-selection.md)、[`docs/blocked.md`](docs/blocked.md)、
   [`docs/backoff.md`](docs/backoff.md)、[`docs/backoff-sweep.md`](docs/backoff-sweep.md)、
-  [`docs/adaptive.md`](docs/adaptive.md)、[`docs/search.md`](docs/search.md)）。
+  [`docs/adaptive.md`](docs/adaptive.md)、[`docs/search.md`](docs/search.md)、
+  [`docs/global.md`](docs/global.md)）。
 - 默认 world 是合成彩色方块，COCO 预训练 YOLO 对其**零样本检测率为 0**，
   因此闭环演示使用 `backend: baseline`，YOLO 只用于延迟/部署基准；
   用 Gazebo 渲染帧自动标注并微调是 v0.2.0 的任务（见 `sim/README.md`）。

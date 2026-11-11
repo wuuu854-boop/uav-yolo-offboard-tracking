@@ -1,0 +1,50 @@
+# Mission used by the known-map global planner demo (`make global`).
+#
+# The wall is in `config/obstacle.yaml` and the same box is repeated in
+# `global_obstacles`; the planner does not read the world, it reads this map. It
+# is a one-waypoint mission to a stand-off 0.7 m east of target_0, local ENU
+# (8.2, 0): landing exactly on target_0 (0.7 m from the wall face) put the props
+# inside the wall's contact envelope in earlier runs. The report's final error is
+# measured against target_0, so 0.7 m is the honest expected value. The 0.5 m
+# inflation keeps the planned path clear of the wall; the reactive depth stop is
+# deliberately disabled because this run is testing the known-map planner, not
+# the local avoidance stack.
+takeoff_altitude_m: 5.0
+spawn_offset_enu: [-7.5, 0.0]
+reach_tolerance_m: 0.1
+max_speed_mps: 0.6
+hover_duration_s: 3.0
+
+target_loss_hover_s: 2.0
+setpoint_jump_limit_m: 3.0
+land_after_hover: true
+max_mission_s: 60.0
+
+confirm_frames: 3
+geofence_radius_m: 30.0
+control_rate_hz: 50.0
+
+heading_yaw_deg: 90.0
+
+patrol_waypoints:
+  - [8.2, 0.0]
+
+target_selection: nearest_centre
+search_after_s: 8.0
+search_area_m: 20.0
+search_spacing_m: 8.9
+
+avoidance_timeout_s: 1.0
+avoidance_stop_enabled: false
+detour_enabled: false
+
+global_planning: true
+global_bounds: [-10.0, 10.0, -10.0, 10.0]
+global_obstacles:
+  # Wall centre in local ENU: world -0.8 - spawn -7.5 = 6.7.
+  - [6.7, 0.0, 0.2, 3.0]
+global_resolution_m: 0.2
+global_inflation_m: 0.5
+global_waypoint_tolerance_m: 0.2
+global_pre_goal: [8.2, 0.0]
+global_min_clearance_m: 0.4

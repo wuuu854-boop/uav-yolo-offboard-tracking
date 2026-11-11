@@ -332,8 +332,28 @@ def verdict(
                     f"min_north_m={metrics['min_north_m']}, min_lateral_m={min_lateral}"
                 ),
             }
+    elif mode == "global":
+        min_clearance = float(mission.get("global_min_clearance_m", 0.4)) if mission else 0.4
+        checks = {
+            "target_reached": {
+                "ok": metrics["final_error_m"] <= 1.5,
+                "detail": f"final_error_m={metrics['final_error_m']} <= 1.5",
+            },
+            "clearance_at_least_min": {
+                "ok": metrics["min_clearance_m"] >= min_clearance,
+                "detail": (f"min_clearance_m={metrics['min_clearance_m']} >= {min_clearance}"),
+            },
+            "no_contact": {
+                "ok": metrics["contacts_total"] == 0,
+                "detail": f"contacts_total={metrics['contacts_total']}",
+            },
+            "depth_frames_seen": {
+                "ok": metrics["depth_frames"] > 0,
+                "detail": f"depth_frames={metrics['depth_frames']}",
+            },
+        }
     else:
-        raise ValueError(f"unknown report mode {mode!r}; expected 'hold' or 'detour'")
+        raise ValueError(f"unknown report mode {mode!r}; expected 'hold', 'detour' or 'global'")
 
     report["mode"] = mode
     report["checks"] = checks
@@ -396,6 +416,8 @@ def plot(report: dict, rows: list[dict], out: Path, stop_m: float, clear_m: floa
     top.set_ylabel("north (world ENU, m)")
     if report.get("mode") == "detour":
         top.set_title("detour flight: around the wall and on to the target")
+    elif report.get("mode") == "global":
+        top.set_title("global flight: around the known wall and on to the target")
     elif report.get("side_block"):
         top.set_title("hold flight: both sides blocked, the vehicle stays at the stop")
     else:
@@ -432,7 +454,7 @@ def main() -> int:
     parser.add_argument("--depth-config", default="config/depth.yaml")
     parser.add_argument("--targets", default="config/targets.yaml")
     parser.add_argument("--trace", default="results/avoidance_trace.csv")
-    parser.add_argument("--mode", choices=("hold", "detour"), default="hold")
+    parser.add_argument("--mode", choices=("hold", "detour", "global"), default="hold")
     parser.add_argument("--expect-side", choices=("left", "right"), default=None)
     args = parser.parse_args()
 
