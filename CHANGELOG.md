@@ -7,6 +7,16 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.27.1] - 2026-11-11
+
+### Fixed
+
+- CI's Docker image and ROS job add the Ubuntu `universe` component before
+  installing `python3-pip`/`libgl1`. On 2026-11-11 both jobs failed with
+  "Package 'python3-pip' has no installation candidate" even though
+  `apt-get update` succeeded; the test job passed. This is an apt-source fix,
+  not a code change.
+
 ## [0.27.0] - 2026-11-11
 
 ### Changed
