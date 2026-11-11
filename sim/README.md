@@ -160,6 +160,10 @@ exact rotated shape.
 `target_tracking_rotated_multi.sdf` copies that world and adds a 45° pillar with
 its own contact sensor. `make global-rotated-multi` passes both rotated boxes.
 
+`target_tracking_gate.sdf` replaces the solid wall with two segments and a 2.4 m
+gap at y ∈ [-1.2, 1.2], each with a contact sensor. `make gate` flies through the
+gap and lands on target_0 itself.
+
 The wall's pose and size are duplicated in `config/obstacle.yaml`, the pillar's
 in `config/side_obstacle.yaml`; `check_world_targets.py` fails when a world and
 its config disagree, because the clearance metric is computed from them. Both

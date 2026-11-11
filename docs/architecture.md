@@ -200,6 +200,9 @@ rotated wall. The report measures the exact rotated shape. See
 Phase 12 exercises two rotated boxes at once (30° wall and 45° pillar) with two
 contact sensors. See [`rotated-multi.md`](rotated-multi.md).
 
+Phase 13 adds a real doorway task: two gate segments with a 2.4 m gap, goal at
+target_0 itself, landing through the gap. See [`gate.md`](gate.md).
+
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a
 single missed frame ends the mission.

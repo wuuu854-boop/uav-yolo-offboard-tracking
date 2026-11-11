@@ -99,6 +99,11 @@ The two-rotated-obstacle variant uses `target_tracking_rotated_multi.sdf`,
 landing row is `results/global_rotated_multi_landing.csv` and is a success
 (0.439 m). The wall is 30° and the pillar 45°; both are hand-entered.
 
+The doorway task uses `target_tracking_gate.sdf`,
+`config/mission_gate.yaml` and `make gate`; its landing row is
+`results/gate_landing.csv` and is a success (0.275 m). The wall is split into two
+segments with a 2.4 m gap and the goal is target_0 itself.
+
 Restart the simulation between targets; do not teleport a running vehicle.
 
 ## Trial procedure

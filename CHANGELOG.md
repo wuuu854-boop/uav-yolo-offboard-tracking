@@ -7,6 +7,26 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.22.0] - 2026-11-11
+
+### Added
+
+- **Doorway traversal and target landing.** `target_tracking_gate.sdf` turns the
+  solid wall into two segments with a 2.4 m gap at y ∈ [-1.2, 1.2].
+  `config/mission_gate.yaml` gives the planner both segments and sets the goal to
+  target_0 itself, not the east stand-off. `make gate` runs it.
+- One run: **1 waypoint through 2 gate segments**, final target error **0.49 m**,
+  landing **0.275 m** `success=True`, clearance **1.17 m**, **0** contacts on
+  either segment, 639 depth frames, 42.4 s.
+
+### Why
+
+Every earlier global run stopped at a stand-off because target_0 was 0.7 m from a
+solid wall. A doorway is the realistic version: the target is reachable, and the
+planner must thread a gap. The straight one-waypoint answer is correct because the
+gap is aligned with the target; the result verifies the traversal and landing, not
+a turn inside a narrow passage.
+
 ## [0.21.0] - 2026-11-11
 
 ### Added

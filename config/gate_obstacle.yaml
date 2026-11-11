@@ -1,0 +1,6 @@
+# Lower gate segment at world (-0.8, -3.1), 0.2 x 3.8 m. The report's clearance
+# is measured to this segment; the upper segment has its own contact sensor.
+model: gate_lower
+pose_enu: [-0.8, -3.1, 3.0]
+size_m: [0.2, 3.8, 6.0]
+min_clearance_m: 0.4
