@@ -84,6 +84,7 @@ class MissionConfig:
     detour_clear_hold_s: float = 1.0
     detour_wait_timeout_s: float = 5.0
     detour_max_attempts: int = 2
+    detour_start_delay_s: float = 0.0
 
     # Empty unless the mission is a patrol: local ENU (east, north) waypoints
     # visited in order, with a hover at each and a landing after the last.

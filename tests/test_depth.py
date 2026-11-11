@@ -198,6 +198,29 @@ def test_choose_side_rejects_a_negative_margin():
         choose_side(SideClearance(left_m=1.0, right_m=2.0), margin_m=-0.1)
 
 
+def test_both_sides_below_the_safety_floor_are_blocked():
+    clearance = SideClearance(left_m=2.0, right_m=2.1)
+
+    assert choose_side(clearance, min_clearance_m=2.5) == "blocked"
+
+
+def test_one_side_above_the_floor_and_one_below_picks_the_clear_side():
+    assert choose_side(SideClearance(left_m=2.0, right_m=3.0), min_clearance_m=2.5) == "right"
+    assert choose_side(SideClearance(left_m=3.0, right_m=2.0), min_clearance_m=2.5) == "left"
+
+
+def test_the_fallback_is_not_used_below_the_safety_floor():
+    # Within the margin, but the fallback side is not clear; the other side is.
+    clearance = SideClearance(left_m=2.6, right_m=2.4)
+
+    assert choose_side(clearance, fallback="right", margin_m=0.5, min_clearance_m=2.5) == "left"
+
+
+def test_the_clearance_floor_cannot_be_negative():
+    with pytest.raises(ValueError, match="min_clearance_m"):
+        choose_side(SideClearance(left_m=1.0, right_m=2.0), min_clearance_m=-0.1)
+
+
 def test_side_clearance_rejects_a_width_fraction_that_overlaps_the_centre():
     with pytest.raises(ValueError, match="width_fraction"):
         side_clearance(np.zeros((10, 10), dtype=np.float32), width_fraction=0.5)

@@ -195,6 +195,36 @@ def test_a_held_detour_recovers_when_the_gate_stays_clear():
     assert planner.phase is DetourPhase.INACTIVE
 
 
+def test_a_configured_start_delay_holds_before_committing_to_a_side():
+    planner = _planner(start_delay_s=1.0)
+
+    first = planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0)
+    early = planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.5)
+    late = planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=1.1)
+
+    assert first.active is False
+    assert "confirming" in first.note
+    assert early.active is False
+    assert late.active is True
+    assert late.waypoint == pytest.approx((0.0, -3.0))
+
+
+def test_a_clearance_between_stop_attempts_restarts_the_confirmation():
+    planner = _planner(start_delay_s=1.0)
+    planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0)
+    planner.update((0.0, 0.0), (10.0, 0.0), stop=False, now_s=0.5)
+
+    decision = planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.6)
+
+    assert decision.active is False
+    assert "confirming" in decision.note
+
+
+def test_the_start_delay_cannot_be_negative():
+    with pytest.raises(ValueError, match="start_delay_s"):
+        DetourConfig(start_delay_s=-0.1)
+
+
 def test_reset_forgets_the_leg():
     planner = _planner()
     planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0)

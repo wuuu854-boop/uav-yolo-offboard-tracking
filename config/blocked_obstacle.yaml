@@ -1,0 +1,8 @@
+# Obstacle in target_tracking_blocked.sdf only (phase 4).
+#
+# A 4 m wide barrier across the path, 0.2 m in front of target_0's wall. Both
+# side strips see it at 2.5-2.8 m, below the 3.0 m floor in
+# config/depth_blocked.yaml, so the controller holds instead of choosing a side.
+model: barrier
+pose_enu: [-1.2, 0.0, 3.0]
+size_m: [0.2, 4.0, 6.0]

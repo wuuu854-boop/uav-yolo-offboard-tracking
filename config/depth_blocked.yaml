@@ -1,0 +1,27 @@
+# Depth gate for the both-sides-blocked scenario (`make blocked`).
+#
+# Same stop thresholds and ROI as config/depth.yaml; the only difference is the
+# side-clearance floor. The blocked world puts a 6 m pillar on each side of the
+# approach; at the stop the two strips read about 2.1 m and 2.7 m, so a 2.8 m
+# floor makes both "blocked" and the controller holds instead of choosing the
+# less-bad side. The normal detour mission keeps the 2.5 m floor: there the left
+# strip reads about 3.0 m, which must remain detourable.
+stop_distance_m: 2.5
+clear_distance_m: 3.2
+
+roi_width_fraction: 0.6
+roi_height_fraction: 0.5
+roi_center_x: 0.5
+roi_center_y: 0.5
+
+min_valid_m: 0.25
+max_valid_m: 12.0
+
+side_width_fraction: 0.2
+side_margin_m: 0.5
+min_clear_side_m: 3.0
+
+stale_timeout_s: 0.5
+fail_safe_on_stale: true
+
+publish_rate_hz: 10.0

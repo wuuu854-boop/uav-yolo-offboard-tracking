@@ -127,6 +127,13 @@ the right depth strip more blocked than the left, so `make auto-detour` can prov
 the side choice. The pillar is kept out of the wall on purpose: overlapping
 static bodies are not what "0 contacts" should be measuring.
 
+`target_tracking_blocked.sdf` is `target_tracking_obstacle.sdf` plus a
+0.2 × 4.0 × 6.0 m barrier at `(-1.2, 0)`, with its own contact sensor. A barrier,
+not two side pillars, because the vehicle's lateral drift at the stop decides
+which pillar falls inside a side strip; a 4 m barrier is in both strips
+regardless. `make blocked` uses it with the 3.0 m side floor in
+`config/depth_blocked.yaml`; the controller holds and the mission times out.
+
 The wall's pose and size are duplicated in `config/obstacle.yaml`, the pillar's
 in `config/side_obstacle.yaml`; `check_world_targets.py` fails when a world and
 its config disagree, because the clearance metric is computed from them. Both

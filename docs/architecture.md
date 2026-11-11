@@ -152,6 +152,12 @@ right strip outside the centre ROI, applies a 0.5 m margin and publishes
 first stopped tick when `detour_auto_side` is set; the fixed `detour_side` is the
 fallback for `unknown`. See [`side-selection.md`](side-selection.md).
 
+Phase 4 adds the refusal: a third value, `blocked`, when both strips are inside
+`min_clear_side_m`. The controller latches `blocked` for the rest of the stop and
+holds; `detour_start_delay_s` keeps it from committing during the settle
+transient. It does not search or back off; the mission times out and lands. See
+[`blocked.md`](blocked.md).
+
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a
 single missed frame ends the mission.

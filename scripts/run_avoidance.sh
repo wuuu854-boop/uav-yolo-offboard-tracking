@@ -40,7 +40,7 @@ FRAME="results/${PREFIX}_depth_frame.png"
 TRACE="results/${PREFIX}_trace.csv"
 SUMMARY="results/${PREFIX}_summary.json"
 PLOT="results/${PREFIX}_run.png"
-DEPTH_CONFIG="config/depth.yaml"
+DEPTH_CONFIG="${DEPTH_CONFIG:-config/depth.yaml}"
 
 usage() {
   cat <<'EOF'
@@ -145,7 +145,7 @@ if ! gz topic -l 2>/dev/null | grep -qx "/depth_camera"; then
   exit 1
 fi
 
-CONTACT_TOPIC="$(gz topic -l 2>/dev/null | grep -E '/(obstacle_wall|side_block)/.*/contact/contact$' | paste -sd, -)"
+CONTACT_TOPIC="$(gz topic -l 2>/dev/null | grep -E '/(obstacle_wall|side_block|left_block|barrier)/.*/contact/contact$' | paste -sd, -)"
 echo "contact topic(s): ${CONTACT_TOPIC:-<none; contact count will stay 0>}"
 
 echo "== starting nodes =="
@@ -155,9 +155,22 @@ DEPTH_BRIDGE_PID=$!
 sleep 4
 
 if ! timeout 10 ros2 topic list 2>/dev/null | grep -qx "/camera/depth/image_raw"; then
-  echo "ERROR: /camera/depth/image_raw was not bridged. log/depth_bridge.log:" >&2
-  tail -20 log/depth_bridge.log >&2
-  exit 1
+  # A stale ROS daemon makes `ros2 topic list` miss a topic that exists, which
+  # reads as "the bridge is broken". Restart it and retry before giving up.
+  BRIDGED=0
+  for _ in 1 2 3; do
+    ros2 daemon stop >/dev/null 2>&1 || true
+    sleep 2
+    if timeout 10 ros2 topic list 2>/dev/null | grep -qx "/camera/depth/image_raw"; then
+      BRIDGED=1
+      break
+    fi
+  done
+  if ((BRIDGED == 0)); then
+    echo "ERROR: /camera/depth/image_raw was not bridged. log/depth_bridge.log:" >&2
+    tail -20 log/depth_bridge.log >&2
+    exit 1
+  fi
 fi
 
 python3 src/uav_tracking/perception/depth_node.py --config "$DEPTH_CONFIG" \
@@ -230,7 +243,8 @@ if [[ -n "${SIDE_OBSTACLE:-}" ]]; then
 fi
 python3 scripts/avoidance_report.py --mode "$MODE" --csv "$RECORD" \
   --summary "$SUMMARY" --plot "$PLOT" --trace "$TRACE" \
-  --obstacle config/obstacle.yaml --mission "$MISSION" "${REPORT_ARGS[@]}"
+  --obstacle config/obstacle.yaml --mission "$MISSION" \
+  --depth-config "$DEPTH_CONFIG" "${REPORT_ARGS[@]}"
 REPORT_RC=$?
 
 echo "== landing row (this run only) =="

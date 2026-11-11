@@ -1,0 +1,51 @@
+# Mission used by the phase-4 both-sides-blocked flight (`make blocked`).
+#
+# Same spawn, heading and waypoint as the detour missions. The world has a 6 m
+# pillar on each side of the wall; both depth strips read below the 2.5 m
+# clearance floor, so the depth node publishes "blocked" and the controller
+# holds. The mission timeout lands from the stop point. The expected landing row
+# is therefore a failure to reach target_0: the point of this scenario is the
+# refusal to guess, not a successful mission.
+takeoff_altitude_m: 5.0
+spawn_offset_enu: [-7.5, 0.0]
+reach_tolerance_m: 1.0
+max_speed_mps: 0.6
+hover_duration_s: 3.0
+
+target_loss_hover_s: 2.0
+setpoint_jump_limit_m: 3.0
+land_after_hover: true
+max_mission_s: 40.0
+# The blocked scenario hovers for ~25 s; PX4's position hold drifts ~0.3 m in
+# that time. This is still a hold, but the phase-1 0.3 m threshold is tight for
+# a long hover, so this scenario states its own limit.
+hold_drift_limit_m: 0.5
+
+confirm_frames: 3
+geofence_radius_m: 30.0
+control_rate_hz: 50.0
+
+heading_yaw_deg: 90.0
+
+patrol_waypoints:
+  - [7.5, 0.0]
+
+target_selection: nearest_centre
+search_after_s: 8.0
+search_area_m: 20.0
+search_spacing_m: 8.9
+
+avoidance_timeout_s: 1.0
+
+detour_enabled: true
+detour_side: right
+detour_auto_side: true
+detour_offset_m: 3.5
+detour_forward_m: 5.0
+detour_reach_tolerance_m: 0.5
+detour_min_lateral_m: 3.0
+detour_clear_hold_s: 1.0
+detour_wait_timeout_s: 5.0
+detour_max_attempts: 2
+detour_start_delay_s: 1.0
+detour_min_clearance_m: 0.4

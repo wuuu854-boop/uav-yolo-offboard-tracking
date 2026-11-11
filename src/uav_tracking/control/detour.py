@@ -41,6 +41,10 @@ class DetourConfig:
     clear_hold_s: float = 1.0
     wait_timeout_s: float = 5.0
     max_attempts: int = 2
+    # Hold still for this long after the gate first stops before committing to a
+    # side. The side label can take a few frames to settle as the vehicle pitches
+    # to a stop; starting on the first frame picked the wrong side in SITL.
+    start_delay_s: float = 0.0
 
     def __post_init__(self) -> None:
         side = str(self.side).lower()
@@ -61,6 +65,9 @@ class DetourConfig:
         wait = float(self.wait_timeout_s)
         if not math.isfinite(wait) or wait < 0.0:
             raise ValueError(f"wait_timeout_s must be finite and non-negative, got {wait!r}")
+        delay = float(self.start_delay_s)
+        if not math.isfinite(delay) or delay < 0.0:
+            raise ValueError(f"start_delay_s must be finite and non-negative, got {delay!r}")
         if int(self.max_attempts) < 1:
             raise ValueError("max_attempts must be at least 1")
 
@@ -69,6 +76,7 @@ class DetourConfig:
         object.__setattr__(self, "reach_tolerance_m", float(self.reach_tolerance_m))
         object.__setattr__(self, "clear_hold_s", float(self.clear_hold_s))
         object.__setattr__(self, "wait_timeout_s", wait)
+        object.__setattr__(self, "start_delay_s", delay)
         object.__setattr__(self, "max_attempts", int(self.max_attempts))
 
 
@@ -115,6 +123,7 @@ class DetourPlanner:
         self._waypoint: tuple[float, float] | None = None
         self._clear_since: float | None = None
         self._wait_since: float | None = None
+        self._stop_since: float | None = None
 
     @property
     def enabled(self) -> bool:
@@ -131,6 +140,7 @@ class DetourPlanner:
         self._waypoint = None
         self._clear_since = None
         self._wait_since = None
+        self._stop_since = None
 
     def update(
         self,
@@ -164,7 +174,17 @@ class DetourPlanner:
 
         if self.phase is DetourPhase.INACTIVE:
             if not stop:
+                self._stop_since = None
                 return DetourDecision(False, DetourPhase.INACTIVE, None, "path clear")
+            if self._stop_since is None:
+                self._stop_since = now
+            if now - self._stop_since < self.config.start_delay_s:
+                return DetourDecision(
+                    False,
+                    DetourPhase.INACTIVE,
+                    None,
+                    f"confirming stop {now - self._stop_since:.1f}s",
+                )
             chosen = side if side in ("left", "right") else self.config.side
             self._start(here, chosen)
             return self._active("detour started: lateral leg")

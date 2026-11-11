@@ -38,5 +38,8 @@ fail_safe_on_stale: true
 # return means open space, not an obstacle.
 side_width_fraction: 0.2
 side_margin_m: 0.5
+# If both strips have a return closer than this, the node publishes "blocked"
+# and the controller holds instead of guessing a side.
+min_clear_side_m: 2.5
 
 publish_rate_hz: 10.0

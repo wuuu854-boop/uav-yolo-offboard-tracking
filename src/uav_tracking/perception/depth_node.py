@@ -61,6 +61,7 @@ class DepthNode(Node):
         self.fail_safe_on_stale = bool(config.get("fail_safe_on_stale", True))
         self.side_width_fraction = float(config.get("side_width_fraction", 0.2))
         self.side_margin_m = float(config.get("side_margin_m", 0.5))
+        self.min_clear_side_m = float(config.get("min_clear_side_m", 2.5))
 
         self.depth = None
         self.depth_s: float | None = None
@@ -144,7 +145,12 @@ class DepthNode(Node):
                 if clearance.left_m is None and clearance.right_m is None:
                     side = "unknown"
                 else:
-                    side = choose_side(clearance, fallback="right", margin_m=self.side_margin_m)
+                    side = choose_side(
+                        clearance,
+                        fallback="right",
+                        margin_m=self.side_margin_m,
+                        min_clearance_m=self.min_clear_side_m,
+                    )
             stop = self.gate.update(nearest)
 
         self.stop_pub.publish(Bool(data=bool(stop)))

@@ -208,13 +208,15 @@ def choose_side(
     *,
     fallback: str = "right",
     margin_m: float = 0.5,
+    min_clearance_m: float = 0.0,
 ) -> str:
-    """Pick the freer side, with a fallback when the difference is noise.
+    """Pick the freer side, or ``blocked`` when neither is safe.
 
     A missing return is treated as free space (it is beyond ``max_valid_m``).
     The margin prevents a few centimetres of depth noise from flipping the
-    direction between frames; the controller uses the choice only when a detour
-    starts, so one decision per obstacle is enough.
+    direction between frames. ``min_clearance_m`` is the safety floor: if both
+    strips have a return closer than that, the answer is ``blocked`` and the
+    controller must not guess a side.
     """
     fallback = str(fallback).lower()
     if fallback not in ("left", "right"):
@@ -222,11 +224,27 @@ def choose_side(
     margin = float(margin_m)
     if not math.isfinite(margin) or margin < 0.0:
         raise ValueError(f"margin_m must be non-negative and finite, got {margin_m!r}")
+    minimum = float(min_clearance_m)
+    if not math.isfinite(minimum) or minimum < 0.0:
+        raise ValueError(
+            f"min_clearance_m must be non-negative and finite, got {min_clearance_m!r}"
+        )
 
     left = math.inf if clearance.left_m is None else float(clearance.left_m)
     right = math.inf if clearance.right_m is None else float(clearance.right_m)
-    if left == right or abs(left - right) < margin:
+    if left == math.inf and right == math.inf:
         return fallback
+    if left == math.inf:
+        return "left"
+    if right == math.inf:
+        return "right"
+    if max(left, right) < minimum:
+        return "blocked"
+    if abs(left - right) < margin:
+        # The fallback is allowed only if it is itself above the safety floor.
+        if (fallback == "left" and left >= minimum) or (fallback == "right" and right >= minimum):
+            return fallback
+        return "left" if left >= minimum else "right"
     return "left" if left > right else "right"
 
 

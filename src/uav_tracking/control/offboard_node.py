@@ -166,12 +166,18 @@ class OffboardNode(Node):
                 clear_hold_s=mission_cfg.detour_clear_hold_s,
                 wait_timeout_s=mission_cfg.detour_wait_timeout_s,
                 max_attempts=mission_cfg.detour_max_attempts,
+                start_delay_s=mission_cfg.detour_start_delay_s,
             )
         )
         self._detour_phase = DetourPhase.INACTIVE
         # The depth node also says which side looks freer. "unknown" means no
         # usable return on either side; the planner then uses detour_side.
         self.clear_side = "unknown"
+        self._blocked_hold_logged = False
+        # Once a side has been blocked during a stop, hold for the rest of that
+        # stop. The label can flicker as the vehicle pitches to a halt; a detour
+        # must not start on a one-frame "left" between two "blocked" frames.
+        self._blocked_seen = False
 
         # PX4 publishes /fmu/out/* as best-effort (SensorDataQoS). A default
         # reliable subscription would never match and the node would sit there
@@ -222,7 +228,7 @@ class OffboardNode(Node):
 
     def on_clear_side(self, msg: String) -> None:
         side = str(msg.data).strip().lower()
-        if side in ("left", "right", "unknown"):
+        if side in ("left", "right", "blocked", "unknown"):
             self.clear_side = side
 
     # ------------------------------------------------------------- perception
@@ -361,8 +367,30 @@ class OffboardNode(Node):
         # keep their commands: refusing to climb or refusing to land because a
         # wall is in front would turn an obstacle into a different incident.
         avoiding = self.avoidance.active(now_s)
+        if not avoiding:
+            self._blocked_seen = False
+        elif self.clear_side == "blocked":
+            self._blocked_seen = True
+        # "blocked" means both side strips are closer than the safety floor.
+        # Do not start a detour into either one; hold and say so. An already
+        # running detour is not aborted by a side flip mid-escape.
+        blocked_hold = (
+            decision.command == "goto"
+            and target is not None
+            and avoiding
+            and (self.clear_side == "blocked" or self._blocked_seen)
+            and self.detour.phase is DetourPhase.INACTIVE
+        )
         detour = DetourDecision(False, DetourPhase.INACTIVE)
-        if decision.command == "goto" and target is not None:
+        if blocked_hold:
+            self.detour.reset()
+            if not self._blocked_hold_logged:
+                self.get_logger().warn(
+                    "both side strips are inside the clearance floor: holding instead of "
+                    "guessing a side"
+                )
+                self._blocked_hold_logged = True
+        elif decision.command == "goto" and target is not None:
             detour = self.detour.update(
                 (self.east, self.north),
                 target,
@@ -372,6 +400,8 @@ class OffboardNode(Node):
             )
         else:
             self.detour.reset()
+        if not blocked_hold:
+            self._blocked_hold_logged = False
 
         if detour.active:
             if detour.phase is not self._detour_phase:
@@ -393,9 +423,10 @@ class OffboardNode(Node):
         holding = decision.command == "goto" and avoiding and not detour.active
         if holding and not self.avoidance_holding:
             self.avoidance_hold = (self.east, self.north)
-            self.get_logger().warn(
-                "obstacle within stop threshold: holding position instead of advancing"
-            )
+            if not blocked_hold:
+                self.get_logger().warn(
+                    "obstacle within stop threshold: holding position instead of advancing"
+                )
         elif not holding and self.avoidance_holding:
             self.avoidance_hold = None
             if decision.command == "goto":
@@ -423,7 +454,9 @@ class OffboardNode(Node):
         # detour is a change of reason, not of state, so it replaces the empty
         # GOTO note.
         note = decision.note
-        if detour.active:
+        if blocked_hold:
+            note = "blocked: holding"
+        elif detour.active:
             note = f"detour: {detour.note}"
         elif holding:
             note = "avoidance stop"
@@ -631,6 +664,7 @@ def main() -> int:
         detour_clear_hold_s=float(mission_raw.get("detour_clear_hold_s", 1.0)),
         detour_wait_timeout_s=float(mission_raw.get("detour_wait_timeout_s", 5.0)),
         detour_max_attempts=int(mission_raw.get("detour_max_attempts", 2)),
+        detour_start_delay_s=float(mission_raw.get("detour_start_delay_s", 0.0)),
         patrol_waypoints=tuple(
             (float(pair[0]), float(pair[1])) for pair in mission_raw.get("patrol_waypoints", ())
         ),

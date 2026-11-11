@@ -382,3 +382,32 @@ in `results/autod_summary.json`.
 
 **Source** found during v0.11.0 bring-up.
 
+---
+
+## 17. The both-sides-blocked scenario still detours
+
+**Symptom** The blocked world has a barrier in both strips, but the vehicle flies
+the left L anyway; the hold report fails and sometimes the barrier contact fires.
+
+**Cause** The side label is not stable at the instant the gate stops. In SITL the
+first stopped frame said `left`; only 0.6 s later did both strips read below the
+floor and the node say `blocked`. The controller committed on the first frame.
+The label can then flicker between `blocked` and `left` as the vehicle pitches to
+a halt.
+
+**Fix** Two things, both in v0.12.0:
+
+1. `detour_start_delay_s: 1.0` holds through the settle transient before
+   committing to a side.
+2. The controller latches `blocked` for the rest of the stop once it has seen it,
+   so a one-frame `left` between two `blocked` frames cannot start the detour.
+
+The barrier itself is 4 m wide for the same reason: two side pillars moved in and
+out of the strips as the vehicle drifted laterally; a barrier is in both strips
+regardless.
+
+**Detected by** the `blocked_run.csv` `clear_side` sequence and the absent
+`blocked: holding` trace note in the failing runs.
+
+**Source** found during v0.12.0 bring-up.
+

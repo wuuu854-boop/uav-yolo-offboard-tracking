@@ -223,6 +223,7 @@ def verdict(
     """
     metrics = report["metrics"]
     if mode == "hold":
+        drift_limit = float(mission.get("hold_drift_limit_m", 0.3)) if mission else 0.3
         checks = {
             "stop_engaged": {
                 "ok": bool(metrics["stop_engaged"]),
@@ -232,9 +233,12 @@ def verdict(
                 "ok": metrics["stop_hold_s"] >= 3.0,
                 "detail": f"stop_hold_s={metrics['stop_hold_s']}",
             },
-            "settled_drift_under_0.3m": {
-                "ok": metrics["settled_drift_m"] is not None and metrics["settled_drift_m"] <= 0.3,
-                "detail": f"settled_drift_m={metrics['settled_drift_m']} after 10 s",
+            "settled_drift_under_limit": {
+                "ok": metrics["settled_drift_m"] is not None
+                and metrics["settled_drift_m"] <= drift_limit,
+                "detail": (
+                    f"settled_drift_m={metrics['settled_drift_m']} after 10 s <= {drift_limit}"
+                ),
             },
             "advance_after_stop_under_1m": {
                 "ok": metrics["stop_advance_m"] is not None and metrics["stop_advance_m"] <= 1.0,
@@ -385,13 +389,15 @@ def plot(report: dict, rows: list[dict], out: Path, stop_m: float, clear_m: floa
                 sd,
                 color="#9467bd",
                 alpha=0.8,
-                label="side_block",
+                label=str(side_block.get("model", "side_block")),
             )
         )
     top.set_xlabel("east (world ENU, m)")
     top.set_ylabel("north (world ENU, m)")
     if report.get("mode") == "detour":
         top.set_title("detour flight: around the wall and on to the target")
+    elif report.get("side_block"):
+        top.set_title("hold flight: both sides blocked, the vehicle stays at the stop")
     else:
         top.set_title("avoidance flight: the wall is on the path, the stop is before it")
     top.axis("equal")

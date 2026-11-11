@@ -4,7 +4,8 @@ Phase 2 always detoured right. Phase 3 is the smallest version of "look before
 you pick": the depth node measures the nearest return in a left and a right
 strip outside the centre ROI, publishes which side is freer, and the detour
 planner uses that side at the moment it starts. **It is not a planner**: one
-obstacle, one binary choice, no memory, no map.
+obstacle, one binary choice, no memory, no map. Phase 4 adds the refusal when
+both strips are inside the clearance floor; see [`blocked.md`](blocked.md).
 
 ![The auto-detour chose left around the wall; the side block is purple](../results/autod_run.png)
 
@@ -93,7 +94,7 @@ count is wrong.
 | The depth node picks the freer of two strips | ✅ verified | `tests/test_depth.py` + `tests/ros/test_depth_node.py` + `clear_side_at_stop=left` |
 | The planner uses the chosen side | ✅ verified | trace says "to the left"; max north 4.181 m; ten-check PASS |
 | The chosen side reaches target_0 without contact | ✅ verified | 0.714 m final error, 0 contacts |
-| Choosing a side when both are blocked | ❌ **not handled** | fallback is a constant; no search for another exit |
+| Choosing a side when both are blocked | ✅ **holds** (phase 4) | `blocked` label + latch; see [`blocked.md`](blocked.md) |
 | More than two strips / a real field of view | ❌ **not implemented** | one left and one right strip, ±22–34° |
 | Remembering the choice / re-planning | ❌ **not implemented** | one decision per stop; the whole-run mode can differ |
 | Dynamic obstacles, multiple obstacles, global planning | ❌ **not implemented** | one wall + one static pillar |

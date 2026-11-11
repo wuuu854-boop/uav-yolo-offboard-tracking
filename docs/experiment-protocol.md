@@ -47,6 +47,12 @@ The phase-3 side-choice run uses `sim/worlds/target_tracking_detour.sdf`,
 `config/mission_detour_auto.yaml` and `make auto-detour`; its landing row is
 `results/autod_landing.csv`. Details: [`side-selection.md`](side-selection.md).
 
+The phase-4 both-sides-blocked run uses
+`sim/worlds/target_tracking_blocked.sdf`, `config/mission_blocked.yaml` and
+`make blocked`; its landing row is `results/blocked_landing.csv` and is
+**expected to fail** (`mission timeout`), because the vehicle holds rather than
+reaching target_0. Details: [`blocked.md`](blocked.md).
+
 Restart the simulation between targets; do not teleport a running vehicle.
 
 ## Trial procedure

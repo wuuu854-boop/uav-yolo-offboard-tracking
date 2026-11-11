@@ -7,6 +7,33 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-11-11
+
+### Added
+
+- **Both sides blocked is now a refusal, not a guess.** `choose_side()` takes a
+  `min_clearance_m` floor; when both strips are closer than it the depth node
+  publishes `blocked`. The controller holds instead of starting a detour and
+  latches `blocked` for the rest of the stop, so a one-frame `left`/`right`
+  between two `blocked` frames cannot start an escape.
+- `detour_start_delay_s` (used by the blocked mission, 1.0 s) holds through the
+  settle transient before committing to a side.
+- `sim/worlds/target_tracking_blocked.sdf` adds a 4 m barrier across the path
+  with its own contact sensor; `config/depth_blocked.yaml` raises the side floor
+  to 3.0 m; `make blocked` flies it with the hold report.
+- One run: stop at 19.6 s, `blocked` latched 0.6 s later, **held 35.0 s**, settled
+  drift **0.129 m**, minimum wall clearance **2.68 m**, **0** contacts on the
+  wall and the barrier, 821 depth frames. The mission times out and lands
+  4.032 m from target_0 (`success=False`) — the refusal is the expected result.
+
+### Why
+
+Phase 3 chose the freer side, but if both sides are unsafe it still guessed the
+less-bad one. A hold is the honest answer until there is a search behaviour. The
+1 s delay and the latch exist because SITL showed the side label changing from
+`left` to `blocked` 0.6 s after the stop as the vehicle pitched; committing on
+the first frame chose the wrong answer.
+
 ## [0.11.0] - 2026-11-11
 
 ### Added

@@ -139,7 +139,7 @@ class AvoidanceRecorder(Node):
 
     def on_clear_side(self, msg: String) -> None:
         side = str(msg.data).strip().lower()
-        if side in ("left", "right", "unknown"):
+        if side in ("left", "right", "blocked", "unknown"):
             self.clear_side = side
 
     def on_contact(self, msg) -> None:  # noqa: ANN001 - protobuf message
