@@ -39,6 +39,6 @@ global_obstacles:
   - [16.7, -1.9, 0.2, 6.2]
   - [16.7, 4.3, 0.2, 1.4]
 global_resolution_m: 0.2
-global_inflation_m: 0.5
-global_waypoint_tolerance_m: 0.2
+global_inflation_m: 0.8
+global_waypoint_tolerance_m: 0.1
 global_min_clearance_m: 0.4

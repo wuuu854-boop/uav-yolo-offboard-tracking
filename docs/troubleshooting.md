@@ -632,3 +632,24 @@ at run start.
 
 **Source** found during v0.20.0 bring-up.
 
+---
+
+## 26. A doorway run passes once but fails when repeated
+
+**Symptom** The single gate-target1 run (v0.23) passed with 0.42 m clearance, but
+`make repeat` produced **0/3**: 4 contacts and a 0.018 m minimum clearance.
+
+**Cause** The retained single-run mission used **0.5 m inflation and 0.2 m
+waypoint tolerance**. The path threads the 2.4 m gap, and the follower's corner
+cut consumed the margin; run-to-run pose variation then clipped a gate segment.
+A single clean run did not prove robustness.
+
+**Fix** Use **0.8 m inflation and 0.1 m waypoint tolerance**, the same settings
+that made the double-gate mission robust. The fixed gate-target1 is **3/3** with
+0.684 m minimum clearance; the original config remains documented as 0/3.
+
+**Detected by** `make repeat` and `results/repeat_report.md`; a single run would
+have hidden it.
+
+**Source** found during v0.25.0 bring-up.
+

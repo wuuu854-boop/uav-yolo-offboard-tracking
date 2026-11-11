@@ -15,11 +15,14 @@ wall's propeller envelope.
 ## The run
 
 `make gate-target1` gives the planner both gate segments in local ENU
-(`(16.7, -1.9)` 0.2 × 6.2 m and `(16.7, 4.3)` 0.2 × 1.4 m), 0.5 m inflation, and
-the goal is target_1 at local `(27.5, 0)`. The report now takes
-`--target-id 1` so the target error is measured against target_1, not target_0.
+(`(16.7, -1.9)` 0.2 × 6.2 m and `(16.7, 4.3)` 0.2 × 1.4 m), **0.8 m inflation,
+0.1 m waypoint tolerance**, and the goal is target_1 at local `(27.5, 0)`. The
+report takes `--target-id 1` so the target error is measured against target_1,
+not target_0.
 
-One headless SITL flight, 2026-11-11. Raw data:
+One headless SITL flight, 2026-11-11. This is the **legacy 0.5 m / 0.2 m single
+run**; it passed, but the repeat suite later showed that configuration was not
+robust. Raw data:
 [`results/gate_target1_run.csv`](../results/gate_target1_run.csv) (625 rows at
 10 Hz), [`results/gate_target1_summary.json`](../results/gate_target1_summary.json),
 [`results/gate_target1_trace.csv`](../results/gate_target1_trace.csv),
@@ -36,13 +39,26 @@ One headless SITL flight, 2026-11-11. Raw data:
 | Flight duration | 62.4 s | CSV |
 
 Report: `scripts/avoidance_report.py --mode global --target-id 1` → four checks,
-all PASS.
+all PASS for this legacy run.
+
+## Repeatability: the single run was not enough
+
+`make repeat` ran this mission three times with the original 0.5 m / 0.2 m
+configuration: **0/3 PASS**, 4 contacts, minimum clearance **0.018 m**. The path
+threaded the gap too tightly and the follower cut a corner.
+
+The retained mission now uses **0.8 m inflation and 0.1 m waypoint tolerance**.
+The fixed configuration is **3/3 PASS**, target error 0.043 / 0.285 / 0.612 m,
+minimum clearance 0.684 m, 0 contacts. The original 0/3 is still preserved in
+`results/repeat/`; it is not hidden. See
+[`repeatability.md`](repeatability.md).
 
 ## What is verified, and what is not
 
 | Claim | Status | Evidence |
 |---|---|---|
-| Thread an offset 2.4 m gap, then turn to a far target | ✅ verified | 3 waypoints, target_1 0.277 m, 0 contacts |
+| Thread an offset 2.4 m gap, then turn to a far target | ✅ verified with fixed 0.8/0.1 | 3/3 repeats, target mean 0.285 m, 0 contacts |
+| The original 0.5/0.2 configuration is robust | ❌ **not robust** | 0/3, 4 contacts, 0.018 m minimum |
 | The target is far enough for a clean landing | ✅ verified | target_1 10.8 m east of gate, 0.425 m landing |
 | Report target is target_1 | ✅ verified | `--target-id 1`; target_1 0.277 m |
 | The gap is hand-entered | ❌ **not implemented** | two boxes in the mission |

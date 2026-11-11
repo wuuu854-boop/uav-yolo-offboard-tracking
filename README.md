@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/v/release/wuuu854-boop/uav-yolo-offboard-tracking?include_prereleases&sort=semver)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-432-brightgreen)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-435-brightgreen)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ci.yml)
 
 **UAV vision in the loop, measured.** Detection → pixel-to-ground projection → PX4 Offboard approach in Gazebo SITL, plus a forward depth camera that stops the approach before a wall — with a trial harness that turns every run into a CSV row and an environment doctor that diagnoses this stack's setup failures.
 
@@ -345,6 +345,22 @@ x = 12.2 with a south gap, target_1 at (20, 0). The planner makes **5 waypoints
 around 4 segments**: target **0.082 m**, landing **0.404 m** target 1
 `success=True`, clearance **0.45 m**, **0** contacts, 934 depth frames, 74.5 s.
 
+### Repeatability
+
+`make repeat` runs gate, gate-target1 and gate-double **3× each**, with a fresh
+simulator per run, and aggregates the summaries:
+
+| Scenario | PASS | Target error mean (m) | Clearance min (m) | Contacts |
+|---|---:|---:|---:|---:|
+| gate | **3/3** | 0.365 | 1.040 | 0 |
+| gate-double | **3/3** | 0.264 | 0.570 | 0 |
+| gate-target1, original 0.5 m / 0.2 m | **0/3** | 0.393 | 0.018 | 4 |
+| gate-target1, fixed 0.8 m / 0.1 m | **3/3** | 0.285 | 0.684 | 0 |
+
+The original gate-target1 single pass was **not repeatable**; the fixed mission is
+now 3/3. The sample is small (n=3) and still SITL with ideal depth. See
+[`docs/repeatability.md`](docs/repeatability.md).
+
 ![One waypoint through the doorway and landing on target_0](results/gate_run.png)
 
 Limits: one aligned 2.4 m doorway, hand-entered; no narrower/cluttered doorway,
@@ -366,7 +382,7 @@ Gazebo rendered headless through WSL2.
 
 | Layer | Status | Evidence |
 |---|---|---|
-| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (432 tests) + `make demo` || YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
+| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (435 tests) + `make demo` || YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
 | Cross-frame identity (`track_id`) | ✅ verified | `tests/test_tracking.py` (12 tests) + a ROS test that the id survives two frames |
 | ROS 2 packages build, both nodes run | ✅ verified in CI | `ROS build` workflow on `ros:humble`: detector against synthetic images, controller against fake PX4 traffic |
 | Version matrix, world structure, camera intrinsics | ✅ checked | `make doctor`, `check_world_targets.py` in CI |
@@ -390,9 +406,9 @@ Gazebo rendered headless through WSL2.
 | Depth stop → box → replan | ✅ **verified (one-shot)** | empty initial map, 2.46 m stop → box `(6.57, 0.17)`, 3-waypoint replan, target 0.777 m, 0 contacts; [`results/global_perception_summary.json`](results/global_perception_summary.json) |
 | Rotated-box known-map path | ✅ **verified (one static box)** | 30° wall, 2 waypoints, target 0.218 m, landing 0.391 m, exact clearance 0.509 m, 0 contacts; [`results/global_rotated_summary.json`](results/global_rotated_summary.json) |
 | Two rotated obstacles | ✅ **verified (two static boxes)** | 3 waypoints, target 0.586 m, landing 0.439 m, clearance 0.698 m, 0 contacts on wall and pillar; [`results/global_rotated_multi_summary.json`](results/global_rotated_multi_summary.json) |
-| Doorway traversal and target landing | ✅ **verified (one static gate)** | 1 waypoint through a 2.4 m gap, target 0.49 m, landing 0.275 m, clearance 1.17 m, 0 contacts on both segments; [`results/gate_summary.json`](results/gate_summary.json) |
-| Offset doorway, then turn to target_1 | ✅ **verified (one static gate)** | 3 waypoints, target_1 0.277 m, landing 0.425 m, clearance 0.42 m, 0 contacts on both segments; [`results/gate_target1_summary.json`](results/gate_target1_summary.json) |
-| Two doorways, then target_1 | ✅ **verified (one run, four segments)** | 5 waypoints, target_1 0.082 m, landing 0.404 m, clearance 0.45 m, 0 contacts on all four; [`results/gate_double_summary.json`](results/gate_double_summary.json) |
+| Doorway traversal and target landing | ✅ **verified (3/3 repeats)** | 1 waypoint through a 2.4 m gap, target 0.49 m, landing 0.275 m, clearance 1.17 m, 0 contacts; repeat 3/3, clearance min 1.040 m; [`results/gate_summary.json`](results/gate_summary.json) |
+| Offset doorway, then turn to target_1 | ✅ **verified (fixed config 3/3)** | original 0.5/0.2 was 0/3 with 4 contacts; fixed 0.8/0.1 is 3/3, target 0.285 m mean, clearance min 0.684 m; [`results/repeat_report.md`](results/repeat_report.md) |
+| Two doorways, then target_1 | ✅ **verified (3/3 repeats)** | 5 waypoints, target_1 0.082 m, landing 0.404 m, clearance 0.45 m, 0 contacts; repeat 3/3, clearance min 0.570 m; [`results/repeat_report.md`](results/repeat_report.md) |
 | Contact sensor can report a contact | ✅ **checked positively** | a 0.5 kg box dropped on the wall produced 4632 messages; [`results/contact_sensor_check.txt`](results/contact_sensor_check.txt) |
 | Depth-sensor noise, holes, real hardware | ❌ **not verified** | Gazebo returns ideal float32 depth; there is no real depth camera, no multipath, no missing-return model |
 | Dynamic obstacles / global planning | ❌ **not implemented** | local stop + one detour + one hold; no obstacle track, no global planner |
@@ -486,6 +502,7 @@ make global-rotated-multi      # 已知地图 A*：绕旋转墙 + 45° 旋转柱
 make gate                      # 穿 2.4 m 门洞并降落在 target_0 上
 make gate-target1              # 偏置门洞穿过后转弯飞向 target_1
 make gate-double               # 连续两个偏置门洞，再转弯飞向 target_1
+make repeat                    # gate / gate-target1 / gate-double 各重复 3 次
 ```
 
 > **Windows 用户**：PX4 SITL 只能跑在 Linux 上。用 WSL2 + Ubuntu 22.04（Windows 11
@@ -569,7 +586,8 @@ Failure modes this system actually produced, each with the check that catches it
   拒绝猜方向并保持、后退重看、0.2 m 步进重复后退、按实测距离计算后退量，以及停住后
   侧移 2 m 重新读条带并恢复、已知地图 A* 单/多障碍绕墙、30° 旋转墙与双旋转障碍、
   2.4 m 门洞降落 target_0、偏置门洞转弯降落 target_1、连续双门洞转弯降落 target_1，
-  以及一次深度停障→单框→重规划：静态障碍、理想深度图、0.6–0.8 m/s、各一次飞行；
+  以及 3× 重复性验证（gate 3/3、gate-double 3/3、gate-target1 原配置 0/3→修正后 3/3），
+  还有一次深度停障→单框→重规划：静态障碍、理想深度图、0.6–0.8 m/s；
   已验证停点双侧 blocked 的正例；仍没有占据栅格/持续重规划、动态/3D 障碍、
   交替/二维搜索、自适应方向、真实深度相机的噪声/空洞（见
   [`docs/avoidance.md`](docs/avoidance.md)、[`docs/detour.md`](docs/detour.md)、
@@ -579,7 +597,7 @@ Failure modes this system actually produced, each with the check that catches it
   [`docs/global.md`](docs/global.md)、[`docs/perception-planning.md`](docs/perception-planning.md)、
   [`docs/rotated.md`](docs/rotated.md)、[`docs/rotated-multi.md`](docs/rotated-multi.md)、
   [`docs/gate.md`](docs/gate.md)、[`docs/gate-target1.md`](docs/gate-target1.md)、
-  [`docs/gate-double.md`](docs/gate-double.md)）。
+  [`docs/gate-double.md`](docs/gate-double.md)、[`docs/repeatability.md`](docs/repeatability.md)）。
 - 默认 world 是合成彩色方块，COCO 预训练 YOLO 对其**零样本检测率为 0**，
   因此闭环演示使用 `backend: baseline`，YOLO 只用于延迟/部署基准；
   用 Gazebo 渲染帧自动标注并微调是 v0.2.0 的任务（见 `sim/README.md`）。

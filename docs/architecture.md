@@ -211,6 +211,10 @@ report takes `--target-id` so it measures target_1. See
 Phase 15 chains two offset gates (north gap at x = 1.2, south gap at x = 12.2)
 before target_1. See [`gate-double.md`](gate-double.md).
 
+Phase 16 repeats the three doorway missions 3× each and aggregates the evidence.
+The original gate-target1 configuration failed 0/3; the fixed 0.8 m/0.1 m
+configuration passes 3/3. See [`repeatability.md`](repeatability.md).
+
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a
 single missed frame ends the mission.

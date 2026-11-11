@@ -7,6 +7,31 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.25.0] - 2026-11-11
+
+### Added
+
+- **Repeatability suite.** `scripts/repeat_scenarios.sh` runs gate,
+  gate-target1 and gate-double three times each with a fresh simulator and
+  preserves per-run summaries/landings under `results/repeat/`.
+  `scripts/repeat_report.py` aggregates them into `results/repeat_report.md`.
+- Repeat results: gate **3/3**, gate-double **3/3**, gate-target1 original
+  **0/3** (4 contacts, 0.018 m minimum clearance), gate-target1 fixed
+  **3/3** (0.684 m minimum).
+
+### Fixed
+
+- `config/mission_gate_target1.yaml` now uses **0.8 m inflation and 0.1 m
+  waypoint tolerance**, the same fix that made gate-double robust. The v0.23
+  single-pass gate-target1 claim was not repeatable.
+
+### Why
+
+One clean SITL pass is not a reliability claim. Repeating the three recent
+doorway missions exposed a flaky gate-target1 configuration that a single run
+had hidden. The suite is now the acceptance path for these tasks; n=3 is still
+small, and the result remains SITL-only.
+
 ## [0.24.0] - 2026-11-11
 
 ### Added

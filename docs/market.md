@@ -39,7 +39,7 @@ frequencies.
 | Real-time performance | "real-time cognitive cycle" | 8.1 ms / 119 FPS at 320 px, 4 threads; end-to-end 143 ms | `docs/deployment.md` |
 | Simulation first, SITL → real | "simulation first (Gazebo, SITL and HITL), then real flight" | **Gazebo Harmonic SITL**, 9+6 closed-loop trials, reproducible patch | `docs/experiment-protocol.md` |
 | State estimation, EKF, VIO | "EKF tuning … GPS-denied navigation" | **PX4's EKF only**, no tuning, no VIO | — |
-| Obstacle avoidance, LiDAR/depth | "path planning and obstacle avoidance with ROS 2" | **Reactive stop + L detour + depth side choice + back-off/search + known-map A\* + one-shot depth-to-box replan + rotated-box A\* + aligned/offset/double doorway landing (target_0 and target_1)** (v0.9–v0.24); no occupancy map or perception-driven multi-obstacle planning, no dynamics, no 3-D | `docs/avoidance.md`, `docs/detour.md`, `docs/side-selection.md`, `docs/blocked.md`, `docs/backoff.md`, `docs/backoff-sweep.md`, `docs/adaptive.md`, `docs/search.md`, `docs/global.md`, `docs/perception-planning.md`, `docs/rotated.md`, `docs/rotated-multi.md`, `docs/gate.md`, `docs/gate-target1.md`, `docs/gate-double.md` |
+| Obstacle avoidance, LiDAR/depth | "path planning and obstacle avoidance with ROS 2" | **Reactive stop + L detour + depth side choice + back-off/search + known-map A\* + one-shot depth-to-box replan + rotated-box A\* + aligned/offset/double doorway landing (target_0 and target_1) + 3× repeatability suite** (v0.9–v0.25); no occupancy map or perception-driven multi-obstacle planning, no dynamics, no 3-D | `docs/avoidance.md`, `docs/detour.md`, `docs/side-selection.md`, `docs/blocked.md`, `docs/backoff.md`, `docs/backoff-sweep.md`, `docs/adaptive.md`, `docs/search.md`, `docs/global.md`, `docs/perception-planning.md`, `docs/rotated.md`, `docs/rotated-multi.md`, `docs/gate.md`, `docs/gate-target1.md`, `docs/gate-double.md`, `docs/repeatability.md` |
 | Multi-target / counter-drone | "detection, tracking and classification of airborne targets" | Single target per run | `control/selection.py` |
 | Dataset + labelling pipeline | not named, but implied by "model deployment" | **Geometry-based auto-labelling** on real frames | `scripts/label_real_frames.py` |
 
@@ -86,8 +86,11 @@ Ordered by (market weight × what is feasible without hardware we do not have):
    (0.586 m target error, zero contacts on either sensor), a doorway landing
    (0.49 m target error, zero contacts), an offset doorway before target_1
    (0.277 m target error, zero contacts) and two doorways before target_1
-   (0.082 m target error, zero contacts). Still missing: occupancy-map perception,
-   replanning after the handoff, dynamic or 3-D obstacles, and a real sensor.
+   (0.082 m target error, zero contacts); repeatability is gate 3/3,
+   gate-double 3/3, and gate-target1 3/3 only after fixing the inflation/tolerance
+   (the original single-run config was 0/3). Still missing: occupancy-map
+   perception, replanning after the handoff, dynamic or 3-D obstacles, and a real
+   sensor.
 
 ## What we deliberately stop pretending
 
