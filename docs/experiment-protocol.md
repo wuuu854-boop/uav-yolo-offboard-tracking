@@ -70,9 +70,9 @@ and `config/mission_adaptive.yaml`; its landing row is
 
 The phase-8 side-step search uses `target_tracking_search.sdf` with two side
 pillars, `config/mission_search.yaml` and `make search`; its landing row is
-`results/search_landing.csv` and is a success (0.506 m). Details:
-[`search.md`](search.md). Its blocked frame is captured during the search; a
-stable both-strips-blocked stop is not proven.
+`results/search_landing.csv` and is a success (0.663 m). Every stopped row is
+`blocked` (L 2.75 / R 1.91), so this is the genuine both-blocked start. Details:
+[`search.md`](search.md).
 
 Restart the simulation between targets; do not teleport a running vehicle.
 

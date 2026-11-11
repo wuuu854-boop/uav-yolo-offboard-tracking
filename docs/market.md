@@ -77,9 +77,8 @@ Ordered by (market weight × what is feasible without hardware we do not have):
    zero contacts, mission timeout), one 2 m back-off (0.831 m target error,
    zero contacts), a bounded 0.2 m back-off sweep (0.852 m target error), a
    measured 2.0 m back-off (0.618 m target error) and a side-step search
-   recovery (0.381 m target error, zero contacts; the blocked frame is during the
-   search, and a stable both-strip stop is not proven). Still missing: a stable
-   simultaneous both-strip stop, alternating/2-D search, multiple obstacles, a
+   recovery from a genuine both-blocked stop (0.669 m target error, zero
+   contacts). Still missing: alternating/2-D search, multiple obstacles, a
    global planner and a real sensor.
 
 ## What we deliberately stop pretending

@@ -141,10 +141,10 @@ blocked for four small steps, then clears. `make adaptive` uses the 6.0 m floor
 in `config/depth_adaptive.yaml` and sizes the step from the two strip distances.
 
 `target_tracking_search.sdf` is `target_tracking_obstacle.sdf` plus two 6 m
-pillars at `(-1.5, -1.0)` and `(-1.5, +1.5)` with contact sensors, for the
-phase-8 side-step search. The left strip sees the `-1.0` pillar only during the
-side-step; the first stopped frame still has one strip open, so a stable
-both-blocked stop is not proven.
+pillars at `(-1.5, -0.8)` and `(-1.5, +1.8)` with contact sensors, for the
+phase-8 side-step search. Both sit inside the side strips at the stop, so every
+stopped row is `blocked` (L 2.75 / R 1.91) and the search has a genuine
+both-blocked start.
 
 The wall's pose and size are duplicated in `config/obstacle.yaml`, the pillar's
 in `config/side_obstacle.yaml`; `check_world_targets.py` fails when a world and

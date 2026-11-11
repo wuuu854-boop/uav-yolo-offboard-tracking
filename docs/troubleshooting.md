@@ -524,28 +524,23 @@ columns.
 
 ---
 
-## 22. The blocked frame is captured during the search, not at the stop
+## 22. The blocked frame arrives later than the first stop row
 
-**Symptom** `search_depth_frame.png` shows both strips blocked (`L 2.61`,
-`R 1.98`) but the first stopped CSV rows are `L 7.66 / R 2.47`; the trace's
-`side-search` starts before the both-blocked frame.
+**Symptom** `search_depth_frame.png` reads `L 3.96 / R 3.97` while the first
+stopped CSV rows read `L 2.75 / R 1.91`.
 
 **Cause** The recorder saves a frame whenever the depth label becomes `blocked`,
-and the both-blocked state in this geometry happens **during** the side-step, not
-on the first stopped frame. The first stop has one strip open; the search starts
-from the latched `blocked` label during the settle.
+so the saved frame can be a later frame than the first `stop=1` row. Both values
+are inside the 4.0 m floor; the stopped rows are sampled every 0.1 s and are the
+stronger evidence.
 
-**What changed from v0.16.0** The right pillar was moved from `(-1.5, -1.5)` to
-`(-1.5, -1.0)`, putting it inside the left strip. The earlier frame read
-`L 9.47 / R 2.05`; now a blocked frame reads `L 2.61 / R 1.98`. That verifies
-both strips can be inside the floor, but only during the search.
+**Resolution in v0.16.2** The asymmetric pillars `(-1.5, -0.8)` and
+`(-1.5, +1.8)` put both strips inside the floor on **every** stopped row
+(17.8–18.6 s, `blocked` throughout). The earlier v0.16.0/v0.16.1 geometry had
+one strip open at the stop (`L 9.47 / R 2.05`, then `L 7.66 / R 2.47`); the
+v0.16.2 run is the clean both-blocked start.
 
-**Still open** A stop where both strips are inside the floor for several frames
-**at** the stop. The search trigger is still the settle latch. Do not describe
-the frame as a "both-blocked stop" in prose; say "both-blocked frame captured
-during the search".
+**Detected by** comparing the frame's L/R values with the stopped rows.
 
-**Detected by** comparing the frame's L/R values with the stop rows' timestamps.
-
-**Source** found during v0.16.1 bring-up.
+**Source** found during v0.16.1 bring-up; resolved in v0.16.2.
 

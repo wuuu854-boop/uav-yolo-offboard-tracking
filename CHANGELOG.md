@@ -7,6 +7,21 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.16.2] - 2026-11-11
+
+### Fixed
+
+- The two search pillars are now at `(-1.5, -0.8)` and `(-1.5, +1.8)`, placing
+  both inside the side strips at the stop. Every stopped row is `blocked`
+  (left 2.75 → 2.70 m, right 1.91 → 1.88 m); the earlier attempts had one strip
+  open at the stop.
+- One run: stop at 17.9 s, `side-search left` → `search found a side`, 1.93 m
+  search step, 3.36 m lateral leg, final target error **0.669 m**, landing
+  0.663 m `success=True`, minimum clearance **0.869 m**, **0** contacts, 1177
+  depth frames, 78.4 s.
+- The v0.16.1 caveat is resolved: the both-strips-blocked state is present on
+  the stopped rows, not only during the search.
+
 ## [0.16.1] - 2026-11-11
 
 ### Fixed

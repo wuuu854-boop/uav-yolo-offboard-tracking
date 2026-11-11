@@ -1,21 +1,21 @@
 t_s,state,note,east_m,north_m,altitude_m
-1794389820.9,IDLE,waiting for arming,0.0,0.0,0.0
-1794389822.92,TAKEOFF,climb to 5.0 m,0.01,-0.24,-0.6
-1794389822.94,TAKEOFF,,0.01,-0.24,-0.6
-1794389830.88,GOTO,takeoff altitude reached,0.02,-0.09,4.7
-1794389830.9,GOTO,confirming 1/3,0.02,-0.09,4.7
-1794389830.92,GOTO,confirming 2/3,0.02,-0.09,4.7
-1794389830.94,GOTO,,0.02,-0.09,4.7
-1794389835.62,GOTO,avoidance stop,2.92,0.54,4.97
-1794389836.64,GOTO,detour: both sides blocked: side-search left,3.06,-0.21,4.99
-1794389836.66,GOTO,detour: side-search left,3.06,-0.21,4.99
-1794389845.78,GOTO,detour: search found a side: lateral leg,2.96,1.74,5.03
-1794389845.8,GOTO,detour: detour lateral leg,2.96,1.74,5.03
-1794389860.14,GOTO,detour: detour lateral leg done: forward leg,4.19,5.05,4.97
-1794389860.16,GOTO,detour: detour forward leg,4.19,5.05,4.97
-1794389876.8,GOTO,detour: detour forward leg done: waiting for a clear gate,11.16,2.33,5.01
-1794389876.82,GOTO,detour: detour waiting for a clear gate,11.16,2.33,5.01
-1794389877.84,GOTO,,11.16,2.4,5.01
-1794389884.56,HOVER,arrived,8.29,0.6,5.02
-1794389887.58,LAND,patrol complete,7.72,0.45,5.02
-1794389887.6,LAND,,7.72,0.45,5.02
+1794390654.53,IDLE,waiting for arming,0.0,0.0,0.0
+1794390656.55,TAKEOFF,climb to 5.0 m,-0.06,-0.37,-0.16
+1794390656.57,TAKEOFF,,-0.06,-0.37,-0.16
+1794390664.19,GOTO,takeoff altitude reached,-0.01,-0.41,4.7
+1794390664.21,GOTO,confirming 1/3,-0.01,-0.41,4.7
+1794390664.23,GOTO,confirming 2/3,-0.01,-0.41,4.7
+1794390664.25,GOTO,,-0.01,-0.41,4.71
+1794390669.73,GOTO,avoidance stop,3.13,-0.53,5.0
+1794390670.73,GOTO,detour: both sides blocked: side-search left,3.18,-0.69,4.99
+1794390670.75,GOTO,detour: side-search left,3.18,-0.69,4.99
+1794390674.63,GOTO,detour: search found a side: lateral leg,2.89,1.24,4.97
+1794390674.65,GOTO,detour: detour lateral leg,2.89,1.25,4.98
+1794390690.53,GOTO,detour: detour lateral leg done: forward leg,3.75,4.6,5.0
+1794390690.55,GOTO,detour: detour forward leg,3.76,4.6,5.0
+1794390711.23,GOTO,detour: detour forward leg done: waiting for a clear gate,11.03,2.68,4.98
+1794390711.25,GOTO,detour: detour waiting for a clear gate,11.03,2.68,4.98
+1794390712.27,GOTO,,11.01,2.67,5.05
+1794390718.95,HOVER,arrived,8.23,0.69,4.97
+1794390721.95,LAND,patrol complete,7.7,0.63,5.01
+1794390721.97,LAND,,7.7,0.63,5.01

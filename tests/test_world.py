@@ -102,7 +102,7 @@ def test_a_search_pillar_moved_in_only_the_world_is_reported(tmp_path):
     world = tmp_path / "search.sdf"
     shutil.copy(SEARCH_WORLD, world)
     text = world.read_text(encoding="utf-8")
-    text = text.replace("<pose>-1.5 1.5 3.0 0 0 0</pose>", "<pose>-1.5 3.5 3.0 0 0 0</pose>")
+    text = text.replace("<pose>-1.5 1.8 3.0 0 0 0</pose>", "<pose>-1.5 3.8 3.0 0 0 0</pose>")
     world.write_text(text)
 
     problems = search_world_problems(world, SEARCH_OBSTACLE)

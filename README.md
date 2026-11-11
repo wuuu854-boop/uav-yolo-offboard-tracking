@@ -249,20 +249,18 @@ Phase 8 adds the other local degree of freedom: when a stop is still blocked,
 shift sideways 2 m toward the freer side, re-read the strips, and start the L
 from there. `make search` uses a wall with two 6 m side pillars.
 
-One run: stop at 17.6 s, **`side-search left` → `search found a side`**, 1.95 m
-search step, 3.31 m lateral leg, final target error **0.381 m** (landing 0.506 m,
-`success=True`), minimum clearance **0.836 m**, **0** contacts, 1181 depth
-frames, 78.6 s.
+One run: stop at 17.9 s, **every stopped row is `blocked`** (L 2.75 / R 1.91),
+**`side-search left` → `search found a side`**, 1.93 m search step, 3.36 m
+lateral leg, final target error **0.669 m** (landing 0.663 m, `success=True`),
+minimum clearance **0.869 m**, **0** contacts, 1177 depth frames, 78.4 s.
 
 ![Blocked frame with the left/right strip overlay](results/search_depth_frame.png)
 
-**Caveat:** the blocked frame reads L 2.61 m / R 1.98 m, both inside the 4.0 m
-floor, but it is captured **during** the search. The first stopped rows read
-L 7.66 / R 2.47, so the search still starts from the latched `blocked` label, not
-from a stable both-blocked stop. That last scenario remains unverified.
+This is the clean version: both strips are below the 4.0 m floor on the stopped
+rows, not only during the search.
 
 Limits: one side, fixed 2 m step, bounded attempts; no alternating/2-D search;
-the stable both-blocked stop is still open. See [`docs/search.md`](docs/search.md).
+one static two-pillar world. See [`docs/search.md`](docs/search.md).
 
 **Version provenance.** The table is the nine-trial set measured with **v0.1.0**.
 v0.2.0 changes safety behaviour only — a geofence, a mission timeout and a
@@ -298,7 +296,7 @@ Gazebo rendered headless through WSL2.
 | Both sides blocked → back off and recover | ✅ **verified** | 1.63 m back-off, left side at the back-off point, 3.254 m lateral, target 0.831 m, 0 contacts; [`results/backoff_summary.json`](results/backoff_summary.json) |
 | Both sides blocked → repeat the back-off | ✅ **verified** | four 0.2 m steps, left at the last step, 3.772 m lateral, target 0.852 m, 0 contacts; [`results/sweep_summary.json`](results/sweep_summary.json) |
 | Both sides blocked → size the back-off from depth | ✅ **verified** | left 3.20 / right 2.32 m at the stop → computed 2.00 m step, target 0.618 m, 0 contacts; [`results/adaptive_summary.json`](results/adaptive_summary.json) |
-| Side-step search recovery after a blocked stop | ✅ **verified with caveat** | `side-search left` → `search found a side`; target 0.381 m, 0 contacts, blocked frame L2.61/R1.98. Caveat: the blocked frame is during the search; the first stopped rows are L7.66/R2.47, so a stable both-blocked stop is not proven; [`results/search_summary.json`](results/search_summary.json) |
+| Side-step search recovery after a blocked stop | ✅ **verified** | every stopped row `blocked` (L2.75/R1.91), `side-search left` → `search found a side`, target 0.669 m, landing 0.663 m, 0 contacts; [`results/search_summary.json`](results/search_summary.json) |
 | Contact sensor can report a contact | ✅ **checked positively** | a 0.5 kg box dropped on the wall produced 4632 messages; [`results/contact_sensor_check.txt`](results/contact_sensor_check.txt) |
 | Depth-sensor noise, holes, real hardware | ❌ **not verified** | Gazebo returns ideal float32 depth; there is no real depth camera, no multipath, no missing-return model |
 | Dynamic obstacles / global planning | ❌ **not implemented** | local stop + one detour + one hold; no obstacle track, no global planner |
@@ -466,7 +464,7 @@ Failure modes this system actually produced, each with the check that catches it
 - 避障验证了「停住」、固定右侧 L 形绕墙、用左右深度条带选择绕行方向、两侧都堵时
   拒绝猜方向并保持、后退重看、0.2 m 步进重复后退、按实测距离计算后退量，以及停住后
   侧移 2 m 重新读条带并恢复：静态障碍、理想深度图、0.6 m/s、各一次飞行；
-  仍没有「停点两侧同时低于下限」的已验证正例、交替/二维搜索、自适应方向、全局规划、
+  已验证停点双侧 blocked 的正例；仍没有交替/二维搜索、自适应方向、全局规划、
   动态障碍、多障碍、真实深度相机的噪声/空洞（见
   [`docs/avoidance.md`](docs/avoidance.md)、[`docs/detour.md`](docs/detour.md)、
   [`docs/side-selection.md`](docs/side-selection.md)、[`docs/blocked.md`](docs/blocked.md)、

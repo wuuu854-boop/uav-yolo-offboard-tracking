@@ -3,9 +3,9 @@
   Phase 8: two side pillars close enough to block both side strips at the stop.
 
   This is target_tracking_obstacle.sdf plus 0.8 x 0.8 x 6.0 m pillars at
-  (-1.5, -1.0) and (-1.5, +1.5), between the vehicle and the wall but clear of
+  (-1.5, -0.8) and (-1.5, +1.8), between the vehicle and the wall but clear of
   both. The gate still stops on the wall; both side strips see a pillar at about
-  2.5 m. The planner side-steps 2 m toward the freer side, re-reads, and turns.
+  3 m. The planner side-steps 2 m toward the freer side, re-reads, and turns.
 
   The pillars carry contact sensors. A contact count of zero covers the wall and
   both sides.
@@ -173,11 +173,11 @@
       </link>
     </model>
 
-    <!-- search_right / search_left: 0.8 x 0.8 x 6.0 m pillars at (-1.5, -1.0)
-         and (-1.5, +1.5), in the two side strips and clear of the wall. -->
+    <!-- search_right / search_left: 0.8 x 0.8 x 6.0 m pillars at (-1.5, -0.8)
+         and (-1.5, +1.8), in the two side strips and clear of the wall. -->
     <model name="search_right">
       <static>true</static>
-      <pose>-1.5 -1.0 3.0 0 0 0</pose>
+      <pose>-1.5 -0.8 3.0 0 0 0</pose>
       <link name="link">
         <collision name="collision">
           <geometry><box><size>0.8 0.8 6.0</size></box></geometry>
@@ -200,7 +200,7 @@
 
     <model name="search_left">
       <static>true</static>
-      <pose>-1.5 1.5 3.0 0 0 0</pose>
+      <pose>-1.5 1.8 3.0 0 0 0</pose>
       <link name="link">
         <collision name="collision">
           <geometry><box><size>0.8 0.8 6.0</size></box></geometry>
