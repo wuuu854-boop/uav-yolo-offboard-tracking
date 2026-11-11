@@ -7,6 +7,25 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.26.0] - 2026-11-11
+
+### Added
+
+- **Expanded repeatability sample.** `make repeat5` runs gate, gate-target1
+  (fixed) and gate-double five times each, in addition to the original 3× suite.
+  The expanded table is `results/repeat_report.md`.
+- Results: gate **5/5** (target mean 0.489 m, clearance min 0.810 m), gate-double
+  **5/5** (0.260 m, 0.544 m), gate-target1 fixed **5/5** (0.247 m, 0.684 m).
+  The original gate-target1 0.5/0.2 configuration remains **0/3** (4 contacts,
+  0.018 m minimum).
+
+### Why
+
+n=3 was enough to catch the flaky gate-target1 configuration but not enough to
+see the tail of the gate target error (0.783 m at n=5). The expanded sample keeps
+the original failures visible and makes the retained configurations' minima and
+variances explicit. n=5 is still small and SITL-only.
+
 ## [0.25.0] - 2026-11-11
 
 ### Added

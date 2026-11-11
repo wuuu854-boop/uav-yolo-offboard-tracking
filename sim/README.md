@@ -172,7 +172,7 @@ the offset gap, turns, and lands on target_1.
 gate 2 at x = 12.2 (south gap). `make gate-double` threads both gaps before
 target_1.
 
-`make repeat` restarts the simulator for each of the three doorway missions, three
+`make repeat5` restarts the simulator for each of the three doorway missions, five
 times each, and aggregates the per-run summaries; it exposed the original
 gate-target1 configuration as 0/3.
 

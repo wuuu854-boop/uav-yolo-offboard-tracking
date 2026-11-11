@@ -116,12 +116,12 @@ The double-doorway task uses `target_tracking_gate_double.sdf`,
 north, gate 2 is south, and the target is target_1; the report uses
 `--target-id 1`.
 
-Repeatability uses `make repeat` (`scripts/repeat_scenarios.sh 3`): gate,
-gate-target1 and gate-double three times each, fresh simulator per run, with
+Repeatability uses `make repeat5` (`scripts/repeat_scenarios.sh 5`): gate,
+gate-target1 and gate-double five times each, fresh simulator per run, with
 per-run summaries under `results/repeat/` and the aggregate in
 `results/repeat_report.md`. It exposed the original gate-target1 configuration as
 0/3; the retained gate-target1 mission uses 0.8 m inflation and 0.1 m waypoint
-tolerance and is 3/3.
+tolerance and is 5/5.
 
 Restart the simulation between targets; do not teleport a running vehicle.
 

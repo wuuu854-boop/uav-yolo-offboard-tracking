@@ -48,7 +48,7 @@ configuration: **0/3 PASS**, 4 contacts, minimum clearance **0.018 m**. The path
 threaded the gap too tightly and the follower cut a corner.
 
 The retained mission now uses **0.8 m inflation and 0.1 m waypoint tolerance**.
-The fixed configuration is **3/3 PASS**, target error 0.043 / 0.285 / 0.612 m,
+The fixed configuration is **5/5 PASS**, target error 0.043 / 0.247 / 0.612 m,
 minimum clearance 0.684 m, 0 contacts. The original 0/3 is still preserved in
 `results/repeat/`; it is not hidden. See
 [`repeatability.md`](repeatability.md).
@@ -57,7 +57,7 @@ minimum clearance 0.684 m, 0 contacts. The original 0/3 is still preserved in
 
 | Claim | Status | Evidence |
 |---|---|---|
-| Thread an offset 2.4 m gap, then turn to a far target | ✅ verified with fixed 0.8/0.1 | 3/3 repeats, target mean 0.285 m, 0 contacts |
+| Thread an offset 2.4 m gap, then turn to a far target | ✅ verified with fixed 0.8/0.1 | 5/5 repeats, target mean 0.247 m, 0 contacts |
 | The original 0.5/0.2 configuration is robust | ❌ **not robust** | 0/3, 4 contacts, 0.018 m minimum |
 | The target is far enough for a clean landing | ✅ verified | target_1 10.8 m east of gate, 0.425 m landing |
 | Report target is target_1 | ✅ verified | `--target-id 1`; target_1 0.277 m |
