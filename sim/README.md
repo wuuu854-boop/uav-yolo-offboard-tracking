@@ -146,6 +146,10 @@ phase-8 side-step search. Both sit inside the side strips at the stop, so every
 stopped row is `blocked` (L 2.75 / R 1.91) and the search has a genuine
 both-blocked start.
 
+`make global` uses `target_tracking_obstacle.sdf` itself: the wall at local
+`(6.7, 0)` is passed to the known-map planner as a box. The map is hand-entered,
+not read from the world file, and the reactive stop is disabled for that run.
+
 The wall's pose and size are duplicated in `config/obstacle.yaml`, the pillar's
 in `config/side_obstacle.yaml`; `check_world_targets.py` fails when a world and
 its config disagree, because the clearance metric is computed from them. Both
