@@ -7,6 +7,32 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-11
+
+### Added
+
+- **The detour side is measured, not fixed.** `side_clearance()` compares the
+  nearest return in a left 20% and a right 20% strip outside the centre ROI;
+  `choose_side()` applies a 0.5 m margin and the depth node publishes
+  `/avoidance/clear_side`. The planner uses the value at the first stopped tick
+  when `detour_auto_side: true`; `detour_side` stays the fallback. The whole-run
+  majority is not the decision — after the detour the free side often flips.
+- `sim/worlds/target_tracking_detour.sdf` adds a 6 m side pillar in the right
+  strip (clear of the wall, so static bodies do not overlap), with its own
+  contact sensor. `make auto-detour` flies it; the report checks the side label
+  and that the lateral direction matches it, in addition to the phase-2 checks.
+- One run: stop at 18.5 s, side at the stop **left**, 4.181 m lateral leg, gate
+  released at 22.7 s, final target error **0.714 m**, landing 0.591 m
+  `success=True`, minimum clearance **0.688 m**, **0** contacts on the wall and
+  the pillar, 790 depth frames.
+
+### Why
+
+A fixed side is a guess. The smallest honest improvement is to look at the two
+places a forward depth camera can see beside the nose and pick the freer one. It
+still does not search when both are blocked, and it still has no map; the docs
+say so.
+
 ## [0.10.0] - 2026-11-11
 
 ### Added

@@ -41,7 +41,7 @@ from px4_msgs.msg import (  # noqa: E402
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node  # noqa: E402
 from rclpy.qos import qos_profile_sensor_data  # noqa: E402
-from std_msgs.msg import Bool  # noqa: E402
+from std_msgs.msg import Bool, String  # noqa: E402
 
 from uav_interfaces.msg import TargetArray  # noqa: E402
 from uav_tracking.control.arming import ArmingSequencer  # noqa: E402
@@ -169,6 +169,9 @@ class OffboardNode(Node):
             )
         )
         self._detour_phase = DetourPhase.INACTIVE
+        # The depth node also says which side looks freer. "unknown" means no
+        # usable return on either side; the planner then uses detour_side.
+        self.clear_side = "unknown"
 
         # PX4 publishes /fmu/out/* as best-effort (SensorDataQoS). A default
         # reliable subscription would never match and the node would sit there
@@ -181,6 +184,7 @@ class OffboardNode(Node):
         self.create_subscription(VehicleStatus, "/fmu/out/vehicle_status", self.on_status, px4_qos)
         self.create_subscription(TargetArray, "/detections", self.on_detections, 10)
         self.create_subscription(Bool, "/avoidance/stop", self.on_avoidance_stop, 10)
+        self.create_subscription(String, "/avoidance/clear_side", self.on_clear_side, 10)
 
         self.offboard_pub = self.create_publisher(
             OffboardControlMode, "/fmu/in/offboard_control_mode", 10
@@ -215,6 +219,11 @@ class OffboardNode(Node):
     def on_avoidance_stop(self, msg: Bool) -> None:
         now_s = self.get_clock().now().nanoseconds / 1e9
         self.avoidance.update(bool(msg.data), now_s)
+
+    def on_clear_side(self, msg: String) -> None:
+        side = str(msg.data).strip().lower()
+        if side in ("left", "right", "unknown"):
+            self.clear_side = side
 
     # ------------------------------------------------------------- perception
     def _project_best_detection(self) -> tuple[float, float] | None:
@@ -354,7 +363,13 @@ class OffboardNode(Node):
         avoiding = self.avoidance.active(now_s)
         detour = DetourDecision(False, DetourPhase.INACTIVE)
         if decision.command == "goto" and target is not None:
-            detour = self.detour.update((self.east, self.north), target, avoiding, now_s)
+            detour = self.detour.update(
+                (self.east, self.north),
+                target,
+                avoiding,
+                now_s,
+                side=self.clear_side if self.cfg.detour_auto_side else None,
+            )
         else:
             self.detour.reset()
 
@@ -365,7 +380,7 @@ class OffboardNode(Node):
                 elif detour.phase in (DetourPhase.LATERAL, DetourPhase.FORWARD):
                     self.get_logger().warn(
                         f"obstacle within stop threshold: {detour.note} to the "
-                        f"{self.cfg.detour_side}, waypoint {detour.waypoint}"
+                        f"{detour.side or self.cfg.detour_side}, waypoint {detour.waypoint}"
                     )
                 else:
                     self.get_logger().info(detour.note)
@@ -608,6 +623,7 @@ def main() -> int:
         avoidance_timeout_s=mission_raw.get("avoidance_timeout_s", 1.0),
         detour_enabled=bool(mission_raw.get("detour_enabled", False)),
         detour_side=str(mission_raw.get("detour_side", "right")),
+        detour_auto_side=bool(mission_raw.get("detour_auto_side", False)),
         detour_offset_m=float(mission_raw.get("detour_offset_m", 3.0)),
         detour_forward_m=float(mission_raw.get("detour_forward_m", 3.0)),
         detour_reach_tolerance_m=float(mission_raw.get("detour_reach_tolerance_m", 0.5)),

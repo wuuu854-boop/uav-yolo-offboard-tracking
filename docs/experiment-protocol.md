@@ -43,6 +43,10 @@ The phase-2 detour uses the same world and pose with
 is still a separate scenario, not one of the nine tracking trials. Details:
 [`detour.md`](detour.md).
 
+The phase-3 side-choice run uses `sim/worlds/target_tracking_detour.sdf`,
+`config/mission_detour_auto.yaml` and `make auto-detour`; its landing row is
+`results/autod_landing.csv`. Details: [`side-selection.md`](side-selection.md).
+
 Restart the simulation between targets; do not teleport a running vehicle.
 
 ## Trial procedure

@@ -74,6 +74,9 @@ class MissionConfig:
     # in. One fixed side, one lateral leg, no map.
     detour_enabled: bool = False
     detour_side: str = "right"
+    # Use the depth node's left/right free-space choice instead of the fixed
+    # side. "unknown" falls back to detour_side.
+    detour_auto_side: bool = False
     detour_offset_m: float = 3.0
     detour_forward_m: float = 3.0
     detour_reach_tolerance_m: float = 0.5

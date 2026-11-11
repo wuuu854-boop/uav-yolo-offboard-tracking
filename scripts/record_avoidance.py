@@ -9,11 +9,12 @@ the sky.
     python3 scripts/record_avoidance.py \
         --out results/avoidance_run.csv \
         --frame-out results/avoidance_depth_frame.png \
-        --contact-topic /world/target_tracking_obstacle/model/obstacle_wall/link/link/sensor/contact/contact
+        --contact-topic /world/.../obstacle_wall/.../contact,/world/.../side_block/.../contact
 
-The contact topic is passed in because Gazebo scopes a contact sensor under the
-model even when the SDF names the topic; scripts/run_avoidance.sh discovers it
-from `gz topic -l` instead of hard-coding a path that a renamed model breaks.
+The contact topics are passed in because Gazebo scopes a contact sensor under
+the model even when the SDF names the topic; scripts/run_avoidance.sh discovers
+them from `gz topic -l` instead of hard-coding a path that a renamed model
+breaks. A comma-separated list records the wall and the side block together.
 """
 
 from __future__ import annotations
@@ -39,7 +40,7 @@ from rclpy.executors import ExternalShutdownException  # noqa: E402
 from rclpy.node import Node  # noqa: E402
 from rclpy.qos import qos_profile_sensor_data  # noqa: E402
 from sensor_msgs.msg import Image  # noqa: E402
-from std_msgs.msg import Bool, Float32  # noqa: E402
+from std_msgs.msg import Bool, Float32, String  # noqa: E402
 
 from uav_tracking.control.frames import (  # noqa: E402
     heading_ned_to_yaw_enu,
@@ -60,6 +61,7 @@ HEADER = [
     "yaw_deg",
     "nearest_m",
     "stop",
+    "clear_side",
     "stop_events",
     "contacts_total",
     "depth_frames",
@@ -78,6 +80,7 @@ class AvoidanceRecorder(Node):
         self.have_odometry = False
         self.nearest: float | None = None
         self.stop = False
+        self.clear_side = "unknown"
         self.stop_events = 0
         self.depth_frames = 0
         self.contacts_total = 0
@@ -96,16 +99,17 @@ class AvoidanceRecorder(Node):
         )
         self.create_subscription(Bool, "/avoidance/stop", self.on_stop, 10)
         self.create_subscription(Float32, "/avoidance/nearest_m", self.on_nearest, 10)
+        self.create_subscription(String, "/avoidance/clear_side", self.on_clear_side, 10)
         self.create_subscription(
             Image, "/camera/depth/image_raw", self.on_depth, qos_profile_sensor_data
         )
 
         self.gz_node = gz_transport.Node()
-        if args.contact_topic:
-            if not self.gz_node.subscribe(
-                gz_contacts.Contacts, args.contact_topic, self.on_contact
-            ):
-                self.get_logger().warn(f"could not subscribe to contact topic {args.contact_topic}")
+        contact_topics = [item.strip() for item in args.contact_topic.split(",") if item.strip()]
+        if contact_topics:
+            for topic in contact_topics:
+                if not self.gz_node.subscribe(gz_contacts.Contacts, topic, self.on_contact):
+                    self.get_logger().warn(f"could not subscribe to contact topic {topic}")
         else:
             self.get_logger().warn("no contact topic given; contact count will stay 0")
 
@@ -132,6 +136,11 @@ class AvoidanceRecorder(Node):
     def on_nearest(self, msg: Float32) -> None:
         value = float(msg.data)
         self.nearest = None if math.isnan(value) else value
+
+    def on_clear_side(self, msg: String) -> None:
+        side = str(msg.data).strip().lower()
+        if side in ("left", "right", "unknown"):
+            self.clear_side = side
 
     def on_contact(self, msg) -> None:  # noqa: ANN001 - protobuf message
         with self._lock:
@@ -171,6 +180,7 @@ class AvoidanceRecorder(Node):
             round(math.degrees(self.yaw), 2),
             "" if self.nearest is None else round(self.nearest, 3),
             int(self.stop),
+            self.clear_side,
             self.stop_events,
             self.contacts_total,
             self.depth_frames,

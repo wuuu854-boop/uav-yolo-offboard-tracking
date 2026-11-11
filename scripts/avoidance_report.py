@@ -20,6 +20,7 @@ import csv
 import json
 import math
 import sys
+from collections import Counter
 from pathlib import Path
 
 import yaml
@@ -44,6 +45,7 @@ def read_rows(path: Path) -> list[dict]:
             }
             nearest = raw.get("nearest_m", "").strip()
             row["nearest_m"] = None if nearest in ("", "nan") else float(nearest)
+            row["clear_side"] = raw.get("clear_side", "unknown").strip() or "unknown"
             rows.append(row)
     return rows
 
@@ -85,6 +87,7 @@ def analyse(
     obstacle: dict,
     mission: dict,
     target: tuple[float, float] = (0.0, 0.0),
+    side_block: dict | None = None,
 ) -> dict:
     if not rows:
         raise ValueError("the CSV has no rows; did the recorder see odometry?")
@@ -135,8 +138,19 @@ def analyse(
 
     final_world = world[-1]
     final_error = math.hypot(final_world[0] - target[0], final_world[1] - target[1])
-    max_abs_north = max(abs(north) for _, north in world)
+    north_values = [north for _, north in world]
+    max_abs_north = max(abs(north) for north in north_values)
     gate_released = bool(stopped and any(not row["stop"] for row in rows[start:]))
+    side_votes = [
+        side
+        for side in (row.get("clear_side", "unknown") for row in rows)
+        if side in ("left", "right")
+    ]
+    clear_side_mode = Counter(side_votes).most_common(1)[0][0] if side_votes else "unknown"
+    # The mode over the whole flight is not the choice the planner made: after
+    # the detour the free side often flips. The decision is the value at the
+    # first stopped row, which is the tick the detour started on.
+    clear_side_at_stop = rows[start].get("clear_side", "unknown") if stopped else "unknown"
 
     return {
         "obstacle": {
@@ -147,6 +161,15 @@ def analyse(
         },
         "spawn_enu": [spawn_east, spawn_north],
         "target_enu": [float(target[0]), float(target[1])],
+        "side_block": (
+            {
+                "model": side_block["model"],
+                "centre_enu": [float(v) for v in side_block["pose_enu"]],
+                "size_m": [float(v) for v in side_block["size_m"]],
+            }
+            if side_block
+            else None
+        ),
         "metrics": {
             "rows": len(rows),
             "duration_s": round(rows[-1]["t_s"] - rows[0]["t_s"], 2),
@@ -159,6 +182,10 @@ def analyse(
             "stop_retreat_m": None if retreat is None else round(retreat, 3),
             "settled_drift_m": None if settled_drift is None else round(settled_drift, 3),
             "gate_released": gate_released,
+            "clear_side_mode": clear_side_mode,
+            "clear_side_at_stop": clear_side_at_stop,
+            "max_north_m": round(max(north_values), 3),
+            "min_north_m": round(min(north_values), 3),
             "max_abs_north_m": round(max_abs_north, 3),
             "final_error_m": round(final_error, 3),
             "min_clearance_m": round(clearances[min_index], 3),
@@ -185,6 +212,7 @@ def verdict(
     mode: str = "hold",
     mission: dict | None = None,
     trace_notes: list[str] | tuple[str, ...] = (),
+    expect_side: str | None = None,
 ) -> dict:
     """Apply the acceptance checks for one of the two behaviours.
 
@@ -275,6 +303,31 @@ def verdict(
                 "detail": f"depth_frames={metrics['depth_frames']}",
             },
         }
+        if expect_side is not None:
+            expected = str(expect_side).lower()
+            if expected not in ("left", "right"):
+                raise ValueError(f"expect_side must be 'left' or 'right', got {expect_side!r}")
+            chosen = metrics["clear_side_at_stop"]
+            checks["side_selected"] = {
+                "ok": chosen == expected,
+                "detail": (
+                    f"clear_side_at_stop={chosen}, expected={expected} "
+                    f"(whole-run mode {metrics['clear_side_mode']})"
+                ),
+            }
+            if chosen == "left":
+                lateral_ok = metrics["max_north_m"] >= min_lateral
+            elif chosen == "right":
+                lateral_ok = metrics["min_north_m"] <= -min_lateral
+            else:
+                lateral_ok = False
+            checks["lateral_direction_matches_side"] = {
+                "ok": lateral_ok,
+                "detail": (
+                    f"chosen={chosen}, max_north_m={metrics['max_north_m']}, "
+                    f"min_north_m={metrics['min_north_m']}, min_lateral_m={min_lateral}"
+                ),
+            }
     else:
         raise ValueError(f"unknown report mode {mode!r}; expected 'hold' or 'detour'")
 
@@ -321,6 +374,20 @@ def plot(report: dict, rows: list[dict], out: Path, stop_m: float, clear_m: floa
             label="obstacle_wall",
         )
     )
+    side_block = report.get("side_block")
+    if side_block:
+        sx, sy, _ = side_block["centre_enu"]
+        sw, sd, _ = side_block["size_m"]
+        top.add_patch(
+            Rectangle(
+                (sx - sw / 2.0, sy - sd / 2.0),
+                sw,
+                sd,
+                color="#9467bd",
+                alpha=0.8,
+                label="side_block",
+            )
+        )
     top.set_xlabel("east (world ENU, m)")
     top.set_ylabel("north (world ENU, m)")
     if report.get("mode") == "detour":
@@ -354,16 +421,22 @@ def main() -> int:
     parser.add_argument("--summary", default="results/avoidance_summary.json")
     parser.add_argument("--plot", default="results/avoidance_run.png")
     parser.add_argument("--obstacle", default="config/obstacle.yaml")
+    parser.add_argument("--side-obstacle", default=None)
     parser.add_argument("--mission", default="config/mission_avoidance.yaml")
     parser.add_argument("--depth-config", default="config/depth.yaml")
     parser.add_argument("--targets", default="config/targets.yaml")
     parser.add_argument("--trace", default="results/avoidance_trace.csv")
     parser.add_argument("--mode", choices=("hold", "detour"), default="hold")
+    parser.add_argument("--expect-side", choices=("left", "right"), default=None)
     args = parser.parse_args()
 
     rows = read_rows(Path(args.csv))
     with open(args.obstacle, encoding="utf-8") as handle:
         obstacle = yaml.safe_load(handle)
+    side_block = None
+    if args.side_obstacle:
+        with open(args.side_obstacle, encoding="utf-8") as handle:
+            side_block = yaml.safe_load(handle)
     with open(args.mission, encoding="utf-8") as handle:
         mission = yaml.safe_load(handle)
     with open(args.depth_config, encoding="utf-8") as handle:
@@ -375,11 +448,12 @@ def main() -> int:
     )
 
     report = verdict(
-        analyse(rows, obstacle, mission, target),
+        analyse(rows, obstacle, mission, target, side_block),
         obstacle,
         mode=args.mode,
         mission=mission,
         trace_notes=read_trace(Path(args.trace)),
+        expect_side=args.expect_side,
     )
     report["gate"] = {
         "stop_distance_m": float(gate["stop_distance_m"]),

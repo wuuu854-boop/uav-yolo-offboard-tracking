@@ -355,3 +355,30 @@ clearance below 0.4 m; the trace shows where the forward leg ended.
 
 **Source** found during v0.10.0 bring-up.
 
+---
+
+## 16. The automatic detour picks the "wrong" side, or the report disagrees with the log
+
+**Symptom** The offboard log says "to the left", but the report's side check
+fails; or the side topic flips between `left` and `right` during the flight.
+
+**Cause** Three different things:
+
+1. **Whole-run mode vs the decision.** The side that looks freer often flips
+   after the vehicle is around the obstacle. The planner uses the value at the
+   first stopped tick; a report that counts the whole run can disagree.
+2. **Margin.** A difference below `side_margin_m` (0.5 m) falls back to
+   `detour_side` instead of flipping on noise. If the two strips are nearly
+   equal, the fallback is the expected answer.
+3. **Both sides blocked / no return.** The node publishes `unknown`; the
+   controller uses the fallback. There is no search for another exit.
+
+**Fix** Read `clear_side` on the first `stop=1` row, not the mode over the whole
+CSV. `scripts/avoidance_report.py --expect-side` does exactly that and also
+checks that the lateral direction matches the chosen side.
+
+**Detected by** the `side_selected` and `lateral_direction_matches_side` checks
+in `results/autod_summary.json`.
+
+**Source** found during v0.11.0 bring-up.
+

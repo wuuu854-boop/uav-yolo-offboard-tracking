@@ -19,7 +19,7 @@ rclpy = pytest.importorskip("rclpy")
 from rclpy.executors import SingleThreadedExecutor  # noqa: E402
 from rclpy.node import Node  # noqa: E402
 from sensor_msgs.msg import Image  # noqa: E402
-from std_msgs.msg import Bool, Float32  # noqa: E402
+from std_msgs.msg import Bool, Float32, String  # noqa: E402
 
 from uav_tracking.perception.depth_node import DepthNode  # noqa: E402
 
@@ -34,11 +34,16 @@ CONFIG = {
     "stale_timeout_s": 0.5,
     "fail_safe_on_stale": True,
     "publish_rate_hz": 20.0,
+    "side_width_fraction": 0.2,
+    "side_margin_m": 0.5,
 }
 
 
-def _depth_image(foreground_m: float | None) -> Image:
+def _depth_image(foreground_m: float | None, left_m: float = 10.0, right_m: float = 10.0) -> Image:
     depth = np.full((HEIGHT, WIDTH), 10.0, dtype=np.float32)
+    strip = WIDTH // 5
+    depth[:, :strip] = left_m
+    depth[:, -strip:] = right_m
     if foreground_m is not None:
         depth[HEIGHT // 3 : 2 * HEIGHT // 3, WIDTH // 3 : 2 * WIDTH // 3] = foreground_m
 
@@ -69,15 +74,17 @@ def rig():
 
     stops: list[Bool] = []
     distances: list[Float32] = []
+    sides: list[String] = []
     helper.create_subscription(Bool, "/avoidance/stop", stops.append, 10)
     helper.create_subscription(Float32, "/avoidance/nearest_m", distances.append, 10)
+    helper.create_subscription(String, "/avoidance/clear_side", sides.append, 10)
     publisher = helper.create_publisher(Image, "/camera/depth/image_raw", 10)
 
     executor = SingleThreadedExecutor()
     executor.add_node(node)
     executor.add_node(helper)
 
-    yield executor, publisher, stops, distances
+    yield executor, publisher, stops, distances, sides
 
     executor.shutdown()
     node.destroy_node()
@@ -86,7 +93,7 @@ def rig():
 
 
 def test_a_close_surface_publishes_stop_and_its_distance(rig):
-    executor, publisher, stops, distances = rig
+    executor, publisher, stops, distances, _sides = rig
     stops.clear()
     distances.clear()
 
@@ -114,7 +121,7 @@ def test_a_close_surface_publishes_stop_and_its_distance(rig):
 
 
 def test_a_clear_frame_releases_the_stop(rig):
-    executor, publisher, stops, distances = rig
+    executor, publisher, stops, distances, _sides = rig
     stops.clear()
 
     # 10 m is beyond the clear threshold, so the gate must release.
@@ -134,3 +141,16 @@ def test_a_clear_frame_releases_the_stop(rig):
         predicate=lambda message: math.isfinite(float(message.data)) and message.data > 5.0,
         timeout_s=3.0,
     ), "the released gate did not publish the far distance"
+
+
+def test_the_freer_side_is_published(rig):
+    executor, publisher, _stops, _distances, sides = rig
+    sides.clear()
+
+    assert _pump_until(
+        executor,
+        publisher,
+        _depth_image(1.0, left_m=5.0, right_m=1.5),
+        sides,
+        predicate=lambda message: message.data == "left",
+    ), "the left side was freer but was not published"

@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  target_tracking_obstacle plus one side block, for the phase-3 free-space choice.
+
+  THE SIDE BLOCK
+  target_tracking_obstacle.sdf has one symmetric wall; adding a pillar there
+  would silently change the world the phase-1/2 results were recorded against.
+  This world adds a 0.8 x 0.8 x 6.0 m pillar at (-1.8, -0.8), clear of the wall
+  by 0.5 m. At the stop the right side strip sees it at ~2.38 m; the left strip
+  sees the wall's north edge at ~2.97 m. The 0.59 m difference is above the
+  0.5 m decision margin, so `make auto-detour` should choose left.
+
+  The pillar carries its own contact sensor. A contact count of zero then covers
+  both the wall and the side the vehicle did not choose.
+-->
+<sdf version="1.9">
+  <world name="target_tracking_detour">
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-contact-system" name="gz::sim::systems::Contact"/>
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+    <plugin filename="gz-sim-air-pressure-system" name="gz::sim::systems::AirPressure"/>
+    <plugin filename="gz-sim-magnetometer-system" name="gz::sim::systems::Magnetometer"/>
+    <plugin filename="gz-sim-navsat-system" name="gz::sim::systems::NavSat"/>
+
+    <physics type="ode">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>250</real_time_update_rate>
+    </physics>
+
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type="adiabatic"/>
+
+    <scene>
+      <grid>false</grid>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+      <shadows>true</shadows>
+    </scene>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <pose>0 0 -5 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>100000 100000 10</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode/>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>500 500</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+          </material>
+        </visual>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
+      <pose>0 0 0 0 -0 0</pose>
+      <self_collide>false</self_collide>
+    </model>
+
+    <!-- target_0: red cube at world (0, 0). Spawn 3.5 m west to see it at takeoff. -->
+    <model name="target_0">
+      <static>true</static>
+      <pose>0 0 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
+          <material>
+            <ambient>0.8 0.05 0.05 1</ambient>
+            <diffuse>0.8 0.05 0.05 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- target_1: green cube at world (20, 0) -->
+    <model name="target_1">
+      <static>true</static>
+      <pose>20 0 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
+          <material>
+            <ambient>0.05 0.7 0.1 1</ambient>
+            <diffuse>0.05 0.7 0.1 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- target_2: blue cube at world (0, 20) -->
+    <model name="target_2">
+      <static>true</static>
+      <pose>0 20 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
+          <material>
+            <ambient>0.1 0.2 0.8 1</ambient>
+            <diffuse>0.1 0.2 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- obstacle_wall: 6 m tall, 0.8 m west of target_0, centred on the approach
+         path. config/obstacle.yaml duplicates this pose and size: the clearance
+         metric in results/avoidance_summary.json is computed from that file, so
+         check_world_targets.py fails if the wall moves here without it. -->
+    <model name="obstacle_wall">
+      <static>true</static>
+      <pose>-0.8 0 3.0 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.2 3.0 6.0</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.2 3.0 6.0</size></box></geometry>
+          <material>
+            <ambient>0.9 0.45 0.05 1</ambient>
+            <diffuse>0.9 0.45 0.05 1</diffuse>
+          </material>
+        </visual>
+        <sensor name="contact" type="contact">
+          <contact><collision>collision</collision></contact>
+          <always_on>1</always_on>
+          <update_rate>100</update_rate>
+          <topic>obstacle_contact</topic>
+        </sensor>
+      </link>
+    </model>
+
+    <!-- side_block: 0.8 x 0.8 x 6.0 m pillar at (-1.8, -0.8), inside the right
+         side strip at the stop and clear of the wall by 0.5 m. It makes the
+         right strip read ~2.38 m while the left reads the wall's north edge at
+         ~2.97 m, so the depth node chooses left. It does not overlap the wall:
+         static-overlapping contact pairs are not what the contact count should
+         measure. config/side_obstacle.yaml duplicates pose and size. -->
+    <model name="side_block">
+      <static>true</static>
+      <pose>-1.8 -0.8 3.0 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.8 0.8 6.0</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.8 0.8 6.0</size></box></geometry>
+          <material>
+            <ambient>0.5 0.3 0.8 1</ambient>
+            <diffuse>0.5 0.3 0.8 1</diffuse>
+          </material>
+        </visual>
+        <sensor name="contact" type="contact">
+          <contact><collision>collision</collision></contact>
+          <always_on>1</always_on>
+          <update_rate>100</update_rate>
+          <topic>side_contact</topic>
+        </sensor>
+      </link>
+    </model>
+
+    <light name="sunUTC" type="directional">
+      <pose>0 0 500 0 -0 0</pose>
+      <cast_shadows>true</cast_shadows>
+      <intensity>1</intensity>
+      <direction>0.001 0.625 -0.78</direction>
+      <diffuse>0.904 0.904 0.904 1</diffuse>
+      <specular>0.271 0.271 0.271 1</specular>
+      <attenuation>
+        <range>2000</range>
+        <linear>0</linear>
+        <constant>1</constant>
+        <quadratic>0</quadratic>
+      </attenuation>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+
+    <!-- Origin copied from PX4's default world. It only matters for NavSat and
+         the magnetometer; local flight is unaffected, but the element has to be
+         present or those sensors have no reference. -->
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>47.397971057728974</latitude_deg>
+      <longitude_deg>8.546163739800146</longitude_deg>
+      <elevation>488</elevation>
+    </spherical_coordinates>
+
+  </world>
+</sdf>

@@ -7,14 +7,14 @@ PX4_DIR  ?= $(HOME)/PX4-Autopilot
 WORLD    ?= target_tracking
 # Both worlds are installed: the tracking trials must keep the unobstructed one,
 # and the avoidance flight needs the wall. See sim/worlds/target_tracking_obstacle.sdf.
-WORLDS   := target_tracking target_tracking_obstacle
+WORLDS   := target_tracking target_tracking_obstacle target_tracking_detour
 # Forward-looking `x500_mono_cam` would break the nadir projection: use _down.
 PX4_MODEL ?= gz_x500_mono_cam_down
 # Spawn 3.5 m west of target_0 so it is the only target in view at takeoff.
 # Per-target poses are listed in docs/experiment-protocol.md.
 POSE     ?= -3.5,0,0.05
 
-.PHONY: help setup doctor demo trials qa shots pipeline patch-px4 install-world sim detect e2e avoid detour preflight test lint fmt lock bench check clean
+.PHONY: help setup doctor demo trials qa shots pipeline patch-px4 install-world sim detect e2e avoid detour auto-detour preflight test lint fmt lock bench check clean
 
 help: ## show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-8s\033[0m %s\n", $$1, $$2}'
@@ -79,6 +79,9 @@ avoid: install-world ## depth camera: takeoff -> stop before a wall -> land, wit
 
 detour: install-world ## depth camera: stop, fly around the wall, resume the waypoint
 	MISSION=config/mission_detour.yaml PREFIX=detour MODE=detour bash scripts/run_avoidance.sh
+
+auto-detour: install-world ## depth camera: choose the freer side, then fly around
+	MISSION=config/mission_detour_auto.yaml WORLD=target_tracking_detour PREFIX=autod MODE=detour EXPECT_SIDE=left SIDE_OBSTACLE=config/side_obstacle.yaml bash scripts/run_avoidance.sh
 
 trials: ## run N closed-loop trials (N=3 default), restarting the sim each time
 	bash scripts/run_trials.sh --count $(or $(N),3)

@@ -72,6 +72,7 @@ Check them in that order — they are listed from most to least likely.
 | `/camera/depth/image_raw` | `sensor_msgs/Image` (`32FC1`) | depth bridge → depth node | sensor data (best effort) |
 | `/avoidance/stop` | `std_msgs/Bool` | depth node → control | default (reliable, depth 10) |
 | `/avoidance/nearest_m` | `std_msgs/Float32` | depth node → recorder | default |
+| `/avoidance/clear_side` | `std_msgs/String` (`left`/`right`/`unknown`) | depth node → control | default |
 | `/detections` | `uav_interfaces/TargetArray` | detector → control | default (reliable, depth 10) |
 | `/target_pose` | `geometry_msgs/PoseStamped` | control → debug | default |
 | `/fmu/out/vehicle_odometry` | `px4_msgs/VehicleOdometry` | PX4 → control | default |
@@ -144,6 +145,12 @@ during the two legs, because flying sideways is the escape; it is consulted at
 the forward point before turning back. The planner never becomes a mission state,
 and a mission with `detour_enabled: false` behaves exactly as before. See
 [`detour.md`](detour.md).
+
+Phase 3 adds the side: the depth node compares the nearest return in a left and a
+right strip outside the centre ROI, applies a 0.5 m margin and publishes
+`/avoidance/clear_side`. The controller passes that value to the planner at the
+first stopped tick when `detour_auto_side` is set; the fixed `detour_side` is the
+fallback for `unknown`. See [`side-selection.md`](side-selection.md).
 
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a

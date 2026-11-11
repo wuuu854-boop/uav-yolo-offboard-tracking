@@ -1,0 +1,50 @@
+# Mission used by the phase-3 free-space choice flight (`make auto-detour`).
+#
+# Same wall and spawn as config/mission_detour.yaml, but the side is chosen from
+# the depth node's left/right strips instead of the fixed right. The world is
+# sim/worlds/target_tracking_detour.sdf, which adds a 6 m pillar to the wall's
+# south (right) face: the right strip sees it at ~2.2 m, the left strip sees the
+# wall's north edge at ~3.0 m, so the expected choice is left.
+#
+# detour_side is the fallback when the depth node reports "unknown" (no usable
+# return on either side or a stale stream).
+takeoff_altitude_m: 5.0
+spawn_offset_enu: [-7.5, 0.0]
+reach_tolerance_m: 1.0
+max_speed_mps: 0.6
+hover_duration_s: 3.0
+
+target_loss_hover_s: 2.0
+setpoint_jump_limit_m: 3.0
+land_after_hover: true
+max_mission_s: 75.0
+
+confirm_frames: 3
+geofence_radius_m: 30.0
+control_rate_hz: 50.0
+
+# East, clockwise from north; the forward depth camera faces the wall.
+heading_yaw_deg: 90.0
+
+# A patrol leg to target_0, local ENU (east, north) relative to the spawn.
+patrol_waypoints:
+  - [7.5, 0.0]
+
+target_selection: nearest_centre
+search_after_s: 8.0
+search_area_m: 20.0
+search_spacing_m: 8.9
+
+avoidance_timeout_s: 1.0
+
+detour_enabled: true
+detour_side: right
+detour_auto_side: true
+detour_offset_m: 3.5
+detour_forward_m: 5.0
+detour_reach_tolerance_m: 0.5
+detour_min_lateral_m: 3.0
+detour_clear_hold_s: 1.0
+detour_wait_timeout_s: 5.0
+detour_max_attempts: 2
+detour_min_clearance_m: 0.4

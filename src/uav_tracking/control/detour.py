@@ -80,6 +80,7 @@ class DetourDecision:
     phase: DetourPhase
     waypoint: tuple[float, float] | None = None
     note: str = ""
+    side: str | None = None
 
 
 def _unit(vector: tuple[float, float]) -> tuple[float, float] | None:
@@ -103,6 +104,7 @@ class DetourPlanner:
     config: DetourConfig = field(default_factory=DetourConfig)
     phase: DetourPhase = DetourPhase.INACTIVE
     attempts: int = 0
+    side: str | None = None
 
     def __post_init__(self) -> None:
         self._direction: tuple[float, float] = (1.0, 0.0)
@@ -125,6 +127,7 @@ class DetourPlanner:
     def reset(self) -> None:
         self.phase = DetourPhase.INACTIVE
         self.attempts = 0
+        self.side = None
         self._waypoint = None
         self._clear_since = None
         self._wait_since = None
@@ -135,8 +138,14 @@ class DetourPlanner:
         target: tuple[float, float],
         stop: bool,
         now_s: float,
+        side: str | None = None,
     ) -> DetourDecision:
-        """Feed one control tick; get the detour waypoint or an inactive decision."""
+        """Feed one control tick; get the detour waypoint or an inactive decision.
+
+        ``side`` is the free-space choice from the depth node (``left``/``right``/
+        ``unknown``). It is used only when a detour starts; ``unknown`` and any
+        other value fall back to ``config.side``.
+        """
         if not self.enabled:
             return DetourDecision(False, DetourPhase.INACTIVE, None, "detour disabled")
 
@@ -156,7 +165,8 @@ class DetourPlanner:
         if self.phase is DetourPhase.INACTIVE:
             if not stop:
                 return DetourDecision(False, DetourPhase.INACTIVE, None, "path clear")
-            self._start(here)
+            chosen = side if side in ("left", "right") else self.config.side
+            self._start(here, chosen)
             return self._active("detour started: lateral leg")
 
         assert self._waypoint is not None
@@ -221,9 +231,10 @@ class DetourPlanner:
             self._clear_since = now
         return now - self._clear_since
 
-    def _start(self, position: tuple[float, float]) -> None:
+    def _start(self, position: tuple[float, float], side: str) -> None:
+        self.side = side
         self._approach = self._direction
-        self._lateral = _perpendicular(self._approach, self.config.side)
+        self._lateral = _perpendicular(self._approach, side)
         self.phase = DetourPhase.LATERAL
         self.attempts = 1
         self._wait_since = None
@@ -243,4 +254,4 @@ class DetourPlanner:
         )
 
     def _active(self, note: str) -> DetourDecision:
-        return DetourDecision(True, self.phase, self._waypoint, note)
+        return DetourDecision(True, self.phase, self._waypoint, note, self.side)

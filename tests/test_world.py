@@ -5,11 +5,14 @@ from __future__ import annotations
 import shutil
 
 from scripts.check_world_targets import (
+    DETOUR_WORLD,
     OBSTACLE,
     OBSTACLE_WORLD,
+    SIDE_OBSTACLE,
     TARGETS,
     VEHICLE_MODEL,
     WORLD,
+    detour_side_block_problems,
     obstacle_problems,
     structure_problems,
     vehicle_model_problems,
@@ -26,13 +29,19 @@ def test_repository_obstacle_world_has_no_structural_problems():
     assert structure_problems(OBSTACLE_WORLD) == []
 
 
+def test_repository_detour_world_has_no_structural_problems():
+    assert structure_problems(DETOUR_WORLD) == []
+
+
 def test_repository_targets_match_the_ground_truth_yaml():
     assert world_poses(WORLD) == yaml_poses(TARGETS)
     assert world_poses(OBSTACLE_WORLD) == yaml_poses(TARGETS)
+    assert world_poses(DETOUR_WORLD) == yaml_poses(TARGETS)
 
 
 def test_the_obstacle_and_the_vehicle_model_match_their_configs():
     assert obstacle_problems() == []
+    assert detour_side_block_problems() == []
     assert vehicle_model_problems() == []
 
 
@@ -45,6 +54,18 @@ def test_a_wall_moved_in_only_the_world_is_reported(tmp_path):
     problems = obstacle_problems(world, OBSTACLE)
 
     assert any("obstacle pose[0]" in problem for problem in problems)
+
+
+def test_a_side_block_moved_in_only_the_world_is_reported(tmp_path):
+    world = tmp_path / "detour.sdf"
+    shutil.copy(DETOUR_WORLD, world)
+    text = world.read_text(encoding="utf-8")
+    text = text.replace("<pose>-1.8 -0.8 3.0 0 0 0</pose>", "<pose>-1.8 -3.8 3.0 0 0 0</pose>")
+    world.write_text(text)
+
+    problems = detour_side_block_problems(world, SIDE_OBSTACLE)
+
+    assert any("side_block pose[1]" in problem for problem in problems)
 
 
 def test_a_missing_contact_system_is_reported(tmp_path):

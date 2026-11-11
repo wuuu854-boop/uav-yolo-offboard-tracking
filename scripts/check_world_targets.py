@@ -23,8 +23,10 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[1]
 WORLD = REPO_ROOT / "sim" / "worlds" / "target_tracking.sdf"
 OBSTACLE_WORLD = REPO_ROOT / "sim" / "worlds" / "target_tracking_obstacle.sdf"
+DETOUR_WORLD = REPO_ROOT / "sim" / "worlds" / "target_tracking_detour.sdf"
 TARGETS = REPO_ROOT / "config" / "targets.yaml"
 OBSTACLE = REPO_ROOT / "config" / "obstacle.yaml"
+SIDE_OBSTACLE = REPO_ROOT / "config" / "side_obstacle.yaml"
 VEHICLE_MODEL = REPO_ROOT / "sim" / "models" / "x500_mono_cam_down" / "model.sdf"
 TOLERANCE_M = 1e-6
 
@@ -143,6 +145,44 @@ def obstacle_problems(world: Path = OBSTACLE_WORLD, config: Path = OBSTACLE) -> 
     return problems
 
 
+def detour_side_block_problems(
+    world: Path = DETOUR_WORLD,
+    config: Path = SIDE_OBSTACLE,
+    wall_config: Path = OBSTACLE,
+) -> list[str]:
+    """The phase-3 side block must match its config and carry a contact sensor.
+
+    The wall and the contact system are checked by :func:`obstacle_problems`;
+    this adds the asymmetric block that makes one side genuinely blocked.
+    """
+    if not world.exists():
+        return [f"{world.name} is missing"]
+    if not config.exists():
+        return [f"{config.name} is missing"]
+
+    problems = obstacle_problems(world, wall_config)
+    side = yaml.safe_load(config.read_text(encoding="utf-8"))
+    pose, size = obstacle_geometry(world, side["model"])
+    expected_pose = [float(v) for v in side["pose_enu"]]
+    expected_size = [float(v) for v in side["size_m"]]
+    for axis, (actual, expected) in enumerate(zip(pose, expected_pose, strict=False)):
+        if abs(actual - expected) > TOLERANCE_M:
+            problems.append(f"side_block pose[{axis}] {actual} != config {expected}")
+    for axis, (actual, expected) in enumerate(zip(size, expected_size, strict=False)):
+        if abs(actual - expected) > TOLERANCE_M:
+            problems.append(f"side_block size[{axis}] {actual} != config {expected}")
+
+    root = ET.parse(world).getroot()
+    block = next(
+        (model for model in root.iter("model") if model.get("name") == side["model"]), None
+    )
+    if block is None:
+        problems.append(f"model {side['model']!r} not found in {world}")
+    elif not any(sensor.get("type") == "contact" for sensor in block.iter("sensor")):
+        problems.append("side_block has no contact sensor: 'no contact' would be unmeasured")
+    return problems
+
+
 def vehicle_model_problems(path: Path = VEHICLE_MODEL) -> list[str]:
     """The installed vehicle model must carry the forward depth camera."""
     if not path.exists():
@@ -168,11 +208,11 @@ def vehicle_model_problems(path: Path = VEHICLE_MODEL) -> list[str]:
 def main() -> int:
     problems: list[str] = []
 
-    for world in (WORLD, OBSTACLE_WORLD):
+    for world in (WORLD, OBSTACLE_WORLD, DETOUR_WORLD):
         problems.extend(f"{world.name}: {problem}" for problem in structure_problems(world))
 
     truth = yaml_poses(TARGETS)
-    for world in (WORLD, OBSTACLE_WORLD):
+    for world in (WORLD, OBSTACLE_WORLD, DETOUR_WORLD):
         poses = world_poses(world)
         if not poses:
             problems.append(f"no target_* models found in {world}")
@@ -188,6 +228,7 @@ def main() -> int:
                 )
 
     problems.extend(obstacle_problems())
+    problems.extend(detour_side_block_problems())
     problems.extend(vehicle_model_problems())
 
     if problems:
@@ -197,8 +238,9 @@ def main() -> int:
         return 1
 
     print(
-        f"OK: {len(world_poses(WORLD))} targets agree in both worlds, "
-        "the obstacle matches config/obstacle.yaml, the vehicle model has the depth camera"
+        f"OK: {len(world_poses(WORLD))} targets agree in three worlds, "
+        "the wall and side block match their configs, "
+        "the vehicle model has the depth camera"
     )
     return 0
 

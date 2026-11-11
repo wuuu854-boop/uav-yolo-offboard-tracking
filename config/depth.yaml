@@ -32,4 +32,11 @@ max_valid_m: 12.0
 stale_timeout_s: 0.5
 fail_safe_on_stale: true
 
+# Side strips for the phase-3 free-space choice. They sit outside the centre
+# 60% ROI on purpose: the centre sees the wall that already stopped the vehicle
+# and would hide the difference between a blocked and a free side. A missing
+# return means open space, not an obstacle.
+side_width_fraction: 0.2
+side_margin_m: 0.5
+
 publish_rate_hz: 10.0

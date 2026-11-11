@@ -1,0 +1,8 @@
+# The asymmetric side used by the phase-3 free-space-choice scenario only.
+#
+# It lives in its own file because target_tracking_obstacle.sdf (phase 1/2) does
+# not contain it. Duplicated from sim/worlds/target_tracking_detour.sdf on
+# purpose: check_world_targets.py compares the two and fails when only one moves.
+model: side_block
+pose_enu: [-1.8, -0.8, 3.0]
+size_m: [0.8, 0.8, 6.0]

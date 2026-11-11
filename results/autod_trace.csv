@@ -1,0 +1,18 @@
+t_s,state,note,east_m,north_m,altitude_m
+1794370539.5,IDLE,waiting for arming,0.0,0.0,0.0
+1794370541.54,TAKEOFF,climb to 5.0 m,-0.08,-0.13,1.16
+1794370541.56,TAKEOFF,,-0.08,-0.13,1.17
+1794370549.22,GOTO,takeoff altitude reached,0.38,0.15,4.7
+1794370549.24,GOTO,confirming 1/3,0.39,0.15,4.71
+1794370549.26,GOTO,confirming 2/3,0.39,0.15,4.71
+1794370549.28,GOTO,,0.39,0.15,4.71
+1794370555.12,GOTO,detour: detour started: lateral leg,3.89,0.77,4.95
+1794370555.14,GOTO,detour: detour lateral leg,3.92,0.75,4.95
+1794370562.38,GOTO,detour: detour lateral leg done: forward leg,4.75,3.71,4.99
+1794370562.4,GOTO,detour: detour forward leg,4.75,3.72,4.99
+1794370571.46,GOTO,detour: detour forward leg done: waiting for a clear gate,9.16,2.74,4.98
+1794370571.48,GOTO,detour: detour waiting for a clear gate,9.16,2.73,4.98
+1794370572.5,GOTO,,9.53,2.64,5.01
+1794370577.52,HOVER,arrived,8.12,0.78,5.06
+1794370580.54,LAND,patrol complete,7.55,0.59,5.0
+1794370580.56,LAND,,7.55,0.59,5.0

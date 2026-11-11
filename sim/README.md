@@ -114,16 +114,23 @@ immediately, replace the cubes with textured objects (e.g. a Fuel model of a
 person) and switch `backend: yolo` in `config/detector.yaml`. Fine-tuning on
 Gazebo-rendered frames is the v0.2.0 task.
 
-## 8. The obstacle world
+## 8. The obstacle worlds
 
 `target_tracking_obstacle.sdf` is `target_tracking.sdf` plus one 0.2 × 3.0 × 6.0 m
 static wall at world `(-0.8, 0, 3.0)` and a contact sensor on it. It exists so the
 nine tracking trials keep flying the unobstructed world: a wall on the approach
 path there would invalidate every one of them.
 
-The wall's pose and size are duplicated in `config/obstacle.yaml`;
-`check_world_targets.py` fails when the two disagree, because the clearance metric
-is computed from the YAML. The obstacle world also loads
-`gz-sim-contact-system` — without it the contact sensor's topic is never created
-and "0 contacts" would be produced by a system that was never loaded. The
-positive check for that sensor is in [`docs/avoidance.md`](../docs/avoidance.md).
+`target_tracking_detour.sdf` is that world plus a 0.8 × 0.8 × 6.0 m pillar at
+`(-1.8, -0.8)`, clear of the wall by 0.5 m, with its own contact sensor. It makes
+the right depth strip more blocked than the left, so `make auto-detour` can prove
+the side choice. The pillar is kept out of the wall on purpose: overlapping
+static bodies are not what "0 contacts" should be measuring.
+
+The wall's pose and size are duplicated in `config/obstacle.yaml`, the pillar's
+in `config/side_obstacle.yaml`; `check_world_targets.py` fails when a world and
+its config disagree, because the clearance metric is computed from them. Both
+obstacle worlds load `gz-sim-contact-system` — without it the contact sensor's
+topic is never created and "0 contacts" would be produced by a system that was
+never loaded. The positive check for that sensor is in
+[`docs/avoidance.md`](../docs/avoidance.md).

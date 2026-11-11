@@ -88,18 +88,24 @@ def test_a_run_that_never_stops_fails():
     assert report["checks"]["stop_engaged"]["ok"] is False
 
 
-def _detour_rows(stop_released: bool = True, contact_count: int = 0, lateral_m: float = 7.0):
+def _detour_rows(
+    stop_released: bool = True,
+    contact_count: int = 0,
+    lateral_m: float = 7.0,
+    side: str = "right",
+):
     """A synthetic path: approach, sideways leg, diagonal return to target_0."""
+    sign = 1.0 if side == "left" else -1.0
     rows = []
     for second in range(30):
         if second < 10:
             east, north = 0.5 * second, 0.0
         elif second < 20:
-            east, north = 5.0, -lateral_m * (second - 9) / 10.0
+            east, north = 5.0, sign * lateral_m * (second - 9) / 10.0
         elif second < 25:
-            east, north = 5.0 + 2.5 * (second - 19) / 5.0, -lateral_m
+            east, north = 5.0 + 2.5 * (second - 19) / 5.0, sign * lateral_m
         else:
-            east, north = 7.5, -lateral_m * (1.0 - (second - 24) / 5.0)
+            east, north = 7.5, sign * lateral_m * (1.0 - (second - 24) / 5.0)
         rows.append(
             {
                 "t_s": float(second),
@@ -109,6 +115,7 @@ def _detour_rows(stop_released: bool = True, contact_count: int = 0, lateral_m: 
                 "yaw_deg": 0.0,
                 "nearest_m": 2.3,
                 "stop": 8 <= second <= (15 if stop_released else 29),
+                "clear_side": side,
                 "contacts_total": contact_count,
                 "depth_frames": second * 10,
             }
@@ -170,3 +177,51 @@ def test_a_detour_with_a_contact_fails():
 def test_an_unknown_report_mode_is_rejected():
     with pytest.raises(ValueError, match="unknown report mode"):
         verdict(analyse(_rows(), OBSTACLE, MISSION), OBSTACLE, mode="teleport")
+
+
+def test_an_auto_detour_that_chose_the_expected_side_passes():
+    report = verdict(
+        analyse(_detour_rows(side="left"), OBSTACLE, MISSION),
+        OBSTACLE,
+        mode="detour",
+        mission=DETOUR_MISSION,
+        expect_side="left",
+    )
+
+    assert report["verdict"] == "PASS"
+    assert report["metrics"]["clear_side_mode"] == "left"
+    assert report["checks"]["side_selected"]["ok"] is True
+
+
+def test_an_auto_detour_that_chose_the_other_side_fails():
+    report = verdict(
+        analyse(_detour_rows(side="right"), OBSTACLE, MISSION),
+        OBSTACLE,
+        mode="detour",
+        mission=DETOUR_MISSION,
+        expect_side="left",
+    )
+
+    assert report["verdict"] == "FAIL"
+    assert report["checks"]["side_selected"]["ok"] is False
+
+
+def test_an_auto_detour_whose_motion_is_on_the_wrong_side_fails():
+    # The depth node says "left" but the path goes south (right): the check is
+    # about the motion, not only about the label.
+    rows = _detour_rows(side="left")
+    for row in rows:
+        row["clear_side"] = "right"
+
+    report = verdict(
+        analyse(rows, OBSTACLE, MISSION),
+        OBSTACLE,
+        mode="detour",
+        mission=DETOUR_MISSION,
+        expect_side="right",
+    )
+
+    # The label matches the expectation, but the path went +north, so the
+    # direction does not match "right".
+    assert report["checks"]["side_selected"]["ok"] is True
+    assert report["checks"]["lateral_direction_matches_side"]["ok"] is False

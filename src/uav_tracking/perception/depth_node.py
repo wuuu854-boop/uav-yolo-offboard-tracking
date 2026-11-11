@@ -31,12 +31,14 @@ from rclpy.executors import ExternalShutdownException  # noqa: E402
 from rclpy.node import Node  # noqa: E402
 from rclpy.qos import qos_profile_sensor_data  # noqa: E402
 from sensor_msgs.msg import Image  # noqa: E402
-from std_msgs.msg import Bool, Float32  # noqa: E402
+from std_msgs.msg import Bool, Float32, String  # noqa: E402
 
 from uav_tracking.perception.depth import (  # noqa: E402
     StopGate,
     analyse_depth,
+    choose_side,
     depth_from_bytes,
+    side_clearance,
 )
 
 
@@ -57,16 +59,20 @@ class DepthNode(Node):
         self.max_valid_m = float(config.get("max_valid_m", 12.0))
         self.stale_timeout_s = float(config.get("stale_timeout_s", 0.5))
         self.fail_safe_on_stale = bool(config.get("fail_safe_on_stale", True))
+        self.side_width_fraction = float(config.get("side_width_fraction", 0.2))
+        self.side_margin_m = float(config.get("side_margin_m", 0.5))
 
         self.depth = None
         self.depth_s: float | None = None
         self.frames = 0
         self.dropped = 0
         self._last_stop: bool | None = None
+        self._last_side: str | None = None
         self._stale_logged = False
 
         self.stop_pub = self.create_publisher(Bool, "/avoidance/stop", 10)
         self.nearest_pub = self.create_publisher(Float32, "/avoidance/nearest_m", 10)
+        self.side_pub = self.create_publisher(String, "/avoidance/clear_side", 10)
         self.create_subscription(
             Image, "/camera/depth/image_raw", self.on_depth, qos_profile_sensor_data
         )
@@ -105,6 +111,7 @@ class DepthNode(Node):
     def on_timer(self) -> None:
         now_s = self.get_clock().now().nanoseconds / 1e9
         nearest: float | None = None
+        side = "unknown"
         stale = self.depth_s is None or (now_s - self.depth_s) > self.stale_timeout_s
 
         if stale and self.fail_safe_on_stale:
@@ -127,10 +134,25 @@ class DepthNode(Node):
                     **self.roi,
                 )
                 nearest = stats.nearest_m
+                clearance = side_clearance(
+                    self.depth,
+                    width_fraction=self.side_width_fraction,
+                    height_fraction=self.roi["height_fraction"],
+                    min_distance_m=self.min_valid_m,
+                    max_distance_m=self.max_valid_m,
+                )
+                if clearance.left_m is None and clearance.right_m is None:
+                    side = "unknown"
+                else:
+                    side = choose_side(clearance, fallback="right", margin_m=self.side_margin_m)
             stop = self.gate.update(nearest)
 
         self.stop_pub.publish(Bool(data=bool(stop)))
         self.nearest_pub.publish(Float32(data=math.nan if nearest is None else float(nearest)))
+        self.side_pub.publish(String(data=side))
+        if side != self._last_side:
+            self.get_logger().info(f"clear side: {side}")
+            self._last_side = side
 
         if stop != self._last_stop:
             if stop:

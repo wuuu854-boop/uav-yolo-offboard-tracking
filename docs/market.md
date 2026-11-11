@@ -39,7 +39,7 @@ frequencies.
 | Real-time performance | "real-time cognitive cycle" | 8.1 ms / 119 FPS at 320 px, 4 threads; end-to-end 143 ms | `docs/deployment.md` |
 | Simulation first, SITL → real | "simulation first (Gazebo, SITL and HITL), then real flight" | **Gazebo Harmonic SITL**, 9+6 closed-loop trials, reproducible patch | `docs/experiment-protocol.md` |
 | State estimation, EKF, VIO | "EKF tuning … GPS-denied navigation" | **PX4's EKF only**, no tuning, no VIO | — |
-| Obstacle avoidance, LiDAR/depth | "path planning and obstacle avoidance with ROS 2" | **Reactive stop + fixed-side L detour** (v0.9.0/v0.10.0); no global planner, no side selection, no dynamic obstacles | `docs/avoidance.md`, `docs/detour.md`, `results/detour_summary.json` |
+| Obstacle avoidance, LiDAR/depth | "path planning and obstacle avoidance with ROS 2" | **Reactive stop + L detour + depth-based side choice** (v0.9–v0.11); no global planner, no multi-obstacle reasoning, no dynamic obstacles | `docs/avoidance.md`, `docs/detour.md`, `docs/side-selection.md` |
 | Multi-target / counter-drone | "detection, tracking and classification of airborne targets" | Single target per run | `control/selection.py` |
 | Dataset + labelling pipeline | not named, but implied by "model deployment" | **Geometry-based auto-labelling** on real frames | `scripts/label_real_frames.py` |
 
@@ -70,12 +70,12 @@ Ordered by (market weight × what is feasible without hardware we do not have):
    `pymavlink`. *Feasible now, medium value.*
 4. **EKF/estimator work** — real value, but it is PX4-internal tuning and needs
    flight data to mean anything. *Needs a vehicle.*
-5. **Obstacle avoidance** — *phase 1 and a minimal phase 2 delivered*: a forward
-   depth camera, a latched stop (2.204 m minimum clearance, zero contacts) and a
-   fixed-side L-shaped detour that reaches target_0 with 0.527 m error and no
-   contacts ([`avoidance.md`](avoidance.md), [`detour.md`](detour.md)). Still
-   missing: choosing a side from free space, multiple obstacles, a global planner
-   and a real sensor.
+5. **Obstacle avoidance** — *phases 1–3 delivered*: a forward depth camera, a
+   latched stop (2.204 m clearance, zero contacts), a fixed-side L detour
+   (0.527 m target error) and a depth-based side choice (left chosen at the
+   stop, 0.714 m target error, zero contacts). Still missing: choosing a path
+   when both sides are blocked, multiple obstacles, a global planner and a real
+   sensor.
 
 ## What we deliberately stop pretending
 

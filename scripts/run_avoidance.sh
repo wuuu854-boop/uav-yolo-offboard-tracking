@@ -10,6 +10,9 @@
 #   # phase 2:
 #   MISSION=config/mission_detour.yaml PREFIX=detour MODE=detour \
 #     bash scripts/run_avoidance.sh
+#   # phase 3 (world with the side block, side chosen from depth):
+#   MISSION=config/mission_detour_auto.yaml WORLD=target_tracking_detour \
+#     PREFIX=autod MODE=detour EXPECT_SIDE=left bash scripts/run_avoidance.sh
 #
 # The world and the wall are in sim/worlds/target_tracking_obstacle.sdf; the
 # mission is config/mission_avoidance.yaml. The run is deliberately headless:
@@ -142,8 +145,8 @@ if ! gz topic -l 2>/dev/null | grep -qx "/depth_camera"; then
   exit 1
 fi
 
-CONTACT_TOPIC="$(gz topic -l 2>/dev/null | grep -E '/obstacle_wall/.*/contact/contact$' | head -1)"
-echo "contact topic: ${CONTACT_TOPIC:-<none; contact count will stay 0>}"
+CONTACT_TOPIC="$(gz topic -l 2>/dev/null | grep -E '/(obstacle_wall|side_block)/.*/contact/contact$' | paste -sd, -)"
+echo "contact topic(s): ${CONTACT_TOPIC:-<none; contact count will stay 0>}"
 
 echo "== starting nodes =="
 python3 scripts/gz_depth_bridge.py --gz-topic /depth_camera --ros-topic /camera/depth/image_raw \
@@ -218,9 +221,16 @@ cleanup
 trap - EXIT
 
 echo "== report =="
+REPORT_ARGS=()
+if [[ -n "${EXPECT_SIDE:-}" ]]; then
+  REPORT_ARGS+=(--expect-side "$EXPECT_SIDE")
+fi
+if [[ -n "${SIDE_OBSTACLE:-}" ]]; then
+  REPORT_ARGS+=(--side-obstacle "$SIDE_OBSTACLE")
+fi
 python3 scripts/avoidance_report.py --mode "$MODE" --csv "$RECORD" \
   --summary "$SUMMARY" --plot "$PLOT" --trace "$TRACE" \
-  --obstacle config/obstacle.yaml --mission "$MISSION"
+  --obstacle config/obstacle.yaml --mission "$MISSION" "${REPORT_ARGS[@]}"
 REPORT_RC=$?
 
 echo "== landing row (this run only) =="

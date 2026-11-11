@@ -15,11 +15,14 @@ import pytest
 from uav_tracking.perception.depth import (
     DepthStats,
     Roi,
+    SideClearance,
     StopGate,
     StopWatchdog,
     analyse_depth,
+    choose_side,
     depth_from_bytes,
     roi_bounds,
+    side_clearance,
 )
 
 
@@ -147,6 +150,77 @@ def test_analyse_depth_rejects_an_inverted_range():
 def test_analyse_depth_rejects_a_non_finite_minimum():
     with pytest.raises(ValueError, match="min_distance_m"):
         analyse_depth(np.zeros((2, 2), dtype=np.float32), min_distance_m=math.nan)
+
+
+def test_side_clearance_looks_outside_the_centre_window():
+    depth = np.full((100, 100), 10.0, dtype=np.float32)
+    depth[:, 0:20] = 5.0  # left strip
+    depth[:, 80:100] = 2.0  # right strip
+    depth[:, 40:60] = 1.0  # centre wall, which must not win either side
+
+    stats = side_clearance(depth, min_distance_m=0.1, max_distance_m=20.0)
+
+    assert stats == SideClearance(left_m=5.0, right_m=2.0)
+
+
+def test_side_clearance_reports_none_for_open_space():
+    depth = np.zeros((100, 100), dtype=np.float32)  # no returns at all
+
+    stats = side_clearance(depth, min_distance_m=0.1, max_distance_m=20.0)
+
+    assert stats == SideClearance(left_m=None, right_m=None)
+
+
+def test_choose_side_treats_a_missing_return_as_free_space():
+    assert choose_side(SideClearance(left_m=None, right_m=2.0)) == "left"
+    assert choose_side(SideClearance(left_m=2.0, right_m=None)) == "right"
+
+
+def test_choose_side_uses_the_fallback_when_both_are_equal_or_missing():
+    assert choose_side(SideClearance(left_m=None, right_m=None), fallback="right") == "right"
+    assert choose_side(SideClearance(left_m=3.0, right_m=3.0), fallback="left") == "left"
+
+
+def test_choose_side_respects_the_margin():
+    close = SideClearance(left_m=3.0, right_m=2.8)
+
+    assert choose_side(close, fallback="right", margin_m=0.5) == "right"
+    assert choose_side(close, fallback="right", margin_m=0.1) == "left"
+
+
+def test_choose_side_rejects_a_bad_fallback():
+    with pytest.raises(ValueError, match="fallback"):
+        choose_side(SideClearance(left_m=1.0, right_m=2.0), fallback="up")
+
+
+def test_choose_side_rejects_a_negative_margin():
+    with pytest.raises(ValueError, match="margin_m"):
+        choose_side(SideClearance(left_m=1.0, right_m=2.0), margin_m=-0.1)
+
+
+def test_side_clearance_rejects_a_width_fraction_that_overlaps_the_centre():
+    with pytest.raises(ValueError, match="width_fraction"):
+        side_clearance(np.zeros((10, 10), dtype=np.float32), width_fraction=0.5)
+
+
+def test_side_clearance_rejects_a_bad_height_fraction():
+    with pytest.raises(ValueError, match="height_fraction"):
+        side_clearance(np.zeros((10, 10), dtype=np.float32), height_fraction=0.0)
+
+
+def test_side_clearance_rejects_a_non_2d_array():
+    with pytest.raises(ValueError, match="2-D"):
+        side_clearance(np.zeros((2, 2, 2), dtype=np.float32))
+
+
+def test_side_clearance_rejects_an_inverted_range():
+    with pytest.raises(ValueError, match="greater than min_distance_m"):
+        side_clearance(np.zeros((2, 2), dtype=np.float32), min_distance_m=5.0, max_distance_m=1.0)
+
+
+def test_side_clearance_rejects_a_non_finite_minimum():
+    with pytest.raises(ValueError, match="min_distance_m"):
+        side_clearance(np.zeros((2, 2), dtype=np.float32), min_distance_m=math.nan)
 
 
 def test_gate_starts_clear_and_stops_below_the_threshold():

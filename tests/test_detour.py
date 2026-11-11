@@ -62,6 +62,25 @@ def test_left_is_the_mirror_of_right():
     assert decision.waypoint == pytest.approx((0.0, 3.0))
 
 
+def test_the_side_can_come_from_the_depth_choice():
+    planner = _planner(side="right")
+
+    decision = planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="left")
+
+    assert decision.waypoint == pytest.approx((0.0, 3.0))
+    assert decision.side == "left"
+    assert planner.side == "left"
+
+
+def test_an_unknown_side_falls_back_to_the_configured_side():
+    planner = _planner(side="right")
+
+    decision = planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="unknown")
+
+    assert decision.waypoint == pytest.approx((0.0, -3.0))
+    assert decision.side == "right"
+
+
 def test_the_lateral_leg_is_perpendicular_to_a_diagonal_approach():
     planner = _planner()
 
