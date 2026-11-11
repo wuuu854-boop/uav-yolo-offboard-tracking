@@ -41,6 +41,11 @@ README and in the resume, so they are written by scripts, never by hand.
 | `blocked_trace.csv` | `src/uav_tracking/control/trace.py` | `avoidance stop` → `blocked: holding` → `LAND` |
 | `blocked_summary.json` | `scripts/avoidance_report.py --mode hold` | PASS: 35.0 s hold, 0.129 m settled drift, 2.68 m clearance, 0 contacts |
 | `blocked_run.png` | the same report | the path stops at the barrier and stays there |
+| `backoff_run.csv` | `scripts/record_avoidance.py` during `make backoff` | 587 rows: stop, back-off, left side, depth, 0 contacts |
+| `backoff_landing.csv` | `offboard_node` recorder on the same run | one row: 0.684 m from `target_0`, `success=True`, `patrol complete` |
+| `backoff_trace.csv` | `src/uav_tracking/control/trace.py` | `blocked: backing off` → `backoff done: lateral leg` → forward → land |
+| `backoff_summary.json` | `scripts/avoidance_report.py --mode detour` | PASS: 1.63 m back-off, 3.254 m lateral, 0.831 m target error, 0.595 m clearance, 0 contacts |
+| `backoff_run.png` | the same report | the barrier and the back-off-then-L path |
 | `detections.geojson` | `scripts/export_geojson.py` on the moving-target capture | 88 Point features with track id, timestamp and ENU offsets — the GIS-ready deliverable an inspection operator asks for |
 | `qa_moving.json` | `scripts/qa_report.py` on the moving-target capture | the asset was 3 m from its declared position, and the report says so (association 7.1 m, FAIL) |
 | `qa_north.json` | the same report with the asset position passed in | median association drops from 4.95 m to 0.62 m when the asset is where it actually was |

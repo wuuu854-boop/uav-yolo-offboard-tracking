@@ -53,6 +53,11 @@ The phase-4 both-sides-blocked run uses
 **expected to fail** (`mission timeout`), because the vehicle holds rather than
 reaching target_0. Details: [`blocked.md`](blocked.md).
 
+The phase-5 back-off run uses the same world and a 4.0 m side floor,
+`config/mission_backoff.yaml` and `make backoff`; its landing row is
+`results/backoff_landing.csv` and is a success (0.684 m). Details:
+[`backoff.md`](backoff.md).
+
 Restart the simulation between targets; do not teleport a running vehicle.
 
 ## Trial procedure

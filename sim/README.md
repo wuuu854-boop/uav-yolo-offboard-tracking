@@ -133,6 +133,9 @@ not two side pillars, because the vehicle's lateral drift at the stop decides
 which pillar falls inside a side strip; a 4 m barrier is in both strips
 regardless. `make blocked` uses it with the 3.0 m side floor in
 `config/depth_blocked.yaml`; the controller holds and the mission times out.
+`make backoff` uses the same world with the 4.0 m floor in
+`config/depth_backoff.yaml`: the vehicle backs 2 m, the barrier's edges leave the
+strips, and the L goes around its north end.
 
 The wall's pose and size are duplicated in `config/obstacle.yaml`, the pillar's
 in `config/side_obstacle.yaml`; `check_world_targets.py` fails when a world and

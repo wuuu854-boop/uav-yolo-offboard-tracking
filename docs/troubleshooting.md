@@ -411,3 +411,25 @@ regardless.
 
 **Source** found during v0.12.0 bring-up.
 
+---
+
+## 18. The back-off recovery clips the barrier
+
+**Symptom** The trace shows the back-off and lateral legs, but the run has
+contacts and the final target error is large; the return path crosses the
+barrier's north edge.
+
+**Cause** The forward leg is relative to the **back-off point**. Reusing the
+phase-2/3 5 m forward leg from a point 2 m further back ends at the barrier's x;
+the diagonal back to target_0 then crosses the barrier's edge. The back-off is
+correct; the leg after it is too short.
+
+**Fix** `config/mission_backoff.yaml` uses `detour_forward_m: 7.0`. That puts the
+forward point east of the barrier before turning back. The retained run has
+0.595 m clearance and 0 contacts.
+
+**Detected by** `contacts_total` and `clearance_at_least_min` in the first
+phase-5 report.
+
+**Source** found during v0.13.0 bring-up.
+

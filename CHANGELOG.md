@@ -7,6 +7,29 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-11-11
+
+### Added
+
+- **Both sides blocked can now recover by backing off.** `DetourConfig.backoff_m`
+  adds a `BACKOFF` phase: the planner drives straight away from the approach by
+  2 m, re-reads the left/right strips and starts the L from there if a side is
+  free. If neither clears it enters `HOLDING` and does not repeat.
+- `config/mission_backoff.yaml` (`make backoff`) uses the phase-4 barrier world
+  with a 4.0 m side floor (`config/depth_backoff.yaml`). The forward leg is 7 m:
+  5 m from the back-off point clipped the barrier's north edge on the return.
+- One run: stop at 19.7 s, back-off 1.63 m measured (2.0 m waypoint, 0.5 m
+  tolerance), **left** side at the back-off point, 3.254 m lateral leg, 7 m
+  forward, final target error **0.831 m**, landing 0.684 m `success=True`,
+  minimum clearance **0.595 m**, **0** contacts, 882 depth frames, 58.6 s.
+
+### Why
+
+Phase 4 held, which is safe but leaves the mission stuck. If the obstacle is
+narrow enough that its edges leave the side strips once the vehicle is a little
+further back, a single controlled back-off is enough to find a side. It is still
+one fixed distance and one retry, not a search; if it fails it holds.
+
 ## [0.12.0] - 2026-11-11
 
 ### Added

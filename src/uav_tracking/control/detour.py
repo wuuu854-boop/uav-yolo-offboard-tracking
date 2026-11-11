@@ -23,6 +23,7 @@ from enum import Enum
 
 class DetourPhase(str, Enum):
     INACTIVE = "INACTIVE"
+    BACKOFF = "BACKOFF"
     LATERAL = "LATERAL"
     FORWARD = "FORWARD"
     WAITING = "WAITING"
@@ -45,6 +46,9 @@ class DetourConfig:
     # side. The side label can take a few frames to settle as the vehicle pitches
     # to a stop; starting on the first frame picked the wrong side in SITL.
     start_delay_s: float = 0.0
+    # If both side strips are blocked, back away from the obstacle by this much
+    # and re-evaluate. 0 keeps the phase-4 behaviour (hold without moving).
+    backoff_m: float = 0.0
 
     def __post_init__(self) -> None:
         side = str(self.side).lower()
@@ -68,6 +72,9 @@ class DetourConfig:
         delay = float(self.start_delay_s)
         if not math.isfinite(delay) or delay < 0.0:
             raise ValueError(f"start_delay_s must be finite and non-negative, got {delay!r}")
+        backoff = float(self.backoff_m)
+        if not math.isfinite(backoff) or backoff < 0.0:
+            raise ValueError(f"backoff_m must be finite and non-negative, got {backoff!r}")
         if int(self.max_attempts) < 1:
             raise ValueError("max_attempts must be at least 1")
 
@@ -77,6 +84,7 @@ class DetourConfig:
         object.__setattr__(self, "clear_hold_s", float(self.clear_hold_s))
         object.__setattr__(self, "wait_timeout_s", wait)
         object.__setattr__(self, "start_delay_s", delay)
+        object.__setattr__(self, "backoff_m", backoff)
         object.__setattr__(self, "max_attempts", int(self.max_attempts))
 
 
@@ -185,11 +193,31 @@ class DetourPlanner:
                     None,
                     f"confirming stop {now - self._stop_since:.1f}s",
                 )
+            if side == "blocked":
+                if self.config.backoff_m > 0.0:
+                    self._start_backoff(here)
+                    return self._active("both sides blocked: backing off")
+                return DetourDecision(
+                    False,
+                    DetourPhase.INACTIVE,
+                    None,
+                    "both sides blocked: holding",
+                )
             chosen = side if side in ("left", "right") else self.config.side
             self._start(here, chosen)
             return self._active("detour started: lateral leg")
 
         assert self._waypoint is not None
+        if self.phase is DetourPhase.BACKOFF:
+            if self._reached(here):
+                if side in ("left", "right"):
+                    self._start(here, side)
+                    return self._active("backoff done: lateral leg")
+                self.phase = DetourPhase.HOLDING
+                self._waypoint = here
+                self._clear_since = None
+                return self._active("backoff done: both sides still blocked, holding")
+            return self._active("backing off from blocked sides")
         if self.phase is DetourPhase.LATERAL:
             if self._reached(here):
                 self._begin_forward(here)
@@ -225,8 +253,12 @@ class DetourPlanner:
                 return self._active("detour extending forward")
             return self._active("detour waiting for a clear gate")
 
-        # HOLDING: the forward-extension budget is spent. Hold; recover if the
-        # gate later stays clear.
+        # HOLDING: the forward-extension budget is spent, or both sides were
+        # still blocked after backing off. Hold; recover if a side later clears
+        # or the gate stays clear.
+        if self.side is None and stop and side in ("left", "right"):
+            self._start(here, side)
+            return self._active("detour recovered after backoff: lateral leg")
         clear_for = self._update_clear_since(stop, now)
         if clear_for >= self.config.clear_hold_s:
             self.reset()
@@ -250,6 +282,19 @@ class DetourPlanner:
         if self._clear_since is None:
             self._clear_since = now
         return now - self._clear_since
+
+    def _start_backoff(self, position: tuple[float, float]) -> None:
+        self.side = None
+        self._approach = self._direction
+        self._lateral = _perpendicular(self._approach, self.config.side)
+        self.phase = DetourPhase.BACKOFF
+        self.attempts = 1
+        self._wait_since = None
+        self._clear_since = None
+        self._waypoint = (
+            position[0] - self.config.backoff_m * self._approach[0],
+            position[1] - self.config.backoff_m * self._approach[1],
+        )
 
     def _start(self, position: tuple[float, float], side: str) -> None:
         self.side = side

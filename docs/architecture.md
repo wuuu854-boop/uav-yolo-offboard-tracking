@@ -158,6 +158,11 @@ holds; `detour_start_delay_s` keeps it from committing during the settle
 transient. It does not search or back off; the mission times out and lands. See
 [`blocked.md`](blocked.md).
 
+Phase 5 adds one recovery move: with `backoff_m` set, `blocked` starts a
+`BACKOFF` leg opposite the approach, then re-reads the side at the back-off
+point. A free side starts the normal L from there; otherwise the planner holds
+and does not repeat. See [`backoff.md`](backoff.md).
+
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a
 single missed frame ends the mission.

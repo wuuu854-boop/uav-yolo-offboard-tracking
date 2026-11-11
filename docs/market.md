@@ -39,7 +39,7 @@ frequencies.
 | Real-time performance | "real-time cognitive cycle" | 8.1 ms / 119 FPS at 320 px, 4 threads; end-to-end 143 ms | `docs/deployment.md` |
 | Simulation first, SITL → real | "simulation first (Gazebo, SITL and HITL), then real flight" | **Gazebo Harmonic SITL**, 9+6 closed-loop trials, reproducible patch | `docs/experiment-protocol.md` |
 | State estimation, EKF, VIO | "EKF tuning … GPS-denied navigation" | **PX4's EKF only**, no tuning, no VIO | — |
-| Obstacle avoidance, LiDAR/depth | "path planning and obstacle avoidance with ROS 2" | **Reactive stop + L detour + depth-based side choice + both-blocked hold** (v0.9–v0.12); no global planner, no multi-obstacle reasoning, no dynamic obstacles, no back-off/search | `docs/avoidance.md`, `docs/detour.md`, `docs/side-selection.md`, `docs/blocked.md` |
+| Obstacle avoidance, LiDAR/depth | "path planning and obstacle avoidance with ROS 2" | **Reactive stop + L detour + depth-based side choice + both-blocked hold/back-off recovery** (v0.9–v0.13); no global planner, no multi-obstacle reasoning, no dynamic obstacles, no repeated search | `docs/avoidance.md`, `docs/detour.md`, `docs/side-selection.md`, `docs/blocked.md`, `docs/backoff.md` |
 | Multi-target / counter-drone | "detection, tracking and classification of airborne targets" | Single target per run | `control/selection.py` |
 | Dataset + labelling pipeline | not named, but implied by "model deployment" | **Geometry-based auto-labelling** on real frames | `scripts/label_real_frames.py` |
 
@@ -70,13 +70,13 @@ Ordered by (market weight × what is feasible without hardware we do not have):
    `pymavlink`. *Feasible now, medium value.*
 4. **EKF/estimator work** — real value, but it is PX4-internal tuning and needs
    flight data to mean anything. *Needs a vehicle.*
-5. **Obstacle avoidance** — *phases 1–4 delivered*: a forward depth camera, a
+5. **Obstacle avoidance** — *phases 1–5 delivered*: a forward depth camera, a
    latched stop (2.204 m clearance, zero contacts), a fixed-side L detour
    (0.527 m target error), a depth-based side choice (left chosen at the stop,
-   0.714 m target error, zero contacts) and a both-sides-blocked hold (35.0 s
-   hold, zero contacts, mission timeout). Still missing: choosing a path when
-   both sides are blocked, backing off or searching, multiple obstacles, a
-   global planner and a real sensor.
+   0.714 m target error, zero contacts), a both-sides-blocked hold (35.0 s hold,
+   zero contacts, mission timeout) and one 2 m back-off that recovers a free
+   side (0.831 m target error, zero contacts). Still missing: repeated search,
+   multiple obstacles, a global planner and a real sensor.
 
 ## What we deliberately stop pretending
 

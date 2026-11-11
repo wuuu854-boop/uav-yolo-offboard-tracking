@@ -220,6 +220,77 @@ def test_a_clearance_between_stop_attempts_restarts_the_confirmation():
     assert "confirming" in decision.note
 
 
+def test_both_blocked_with_backoff_starts_away_from_the_obstacle():
+    planner = _planner(backoff_m=2.0)
+
+    decision = planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+
+    assert decision.active is True
+    assert decision.phase is DetourPhase.BACKOFF
+    assert decision.waypoint == pytest.approx((-2.0, 0.0))
+
+
+def test_backoff_that_has_not_arrived_keeps_going():
+    planner = _planner(backoff_m=2.0)
+    planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+
+    decision = planner.update((-1.0, 0.0), (10.0, 0.0), stop=True, now_s=0.5, side="blocked")
+
+    assert decision.active is True
+    assert decision.phase is DetourPhase.BACKOFF
+    assert decision.waypoint == pytest.approx((-2.0, 0.0))
+
+
+def test_backoff_that_ends_still_blocked_holds_at_the_backoff_point():
+    planner = _planner(backoff_m=2.0)
+    planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+
+    decision = planner.update((-2.0, 0.0), (10.0, 0.0), stop=True, now_s=1.0, side="blocked")
+
+    assert decision.active is True
+    assert decision.phase is DetourPhase.HOLDING
+    assert decision.waypoint == pytest.approx((-2.0, 0.0))
+    assert "still blocked" in decision.note
+
+
+def test_backoff_that_ends_with_a_clear_side_starts_the_lateral_leg():
+    planner = _planner(backoff_m=2.0)
+    planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+
+    decision = planner.update((-2.0, 0.0), (10.0, 0.0), stop=True, now_s=1.0, side="left")
+
+    assert decision.active is True
+    assert decision.phase is DetourPhase.LATERAL
+    assert decision.side == "left"
+    assert decision.waypoint == pytest.approx((-2.0, 3.0))
+
+
+def test_holding_after_backoff_recovers_when_a_side_later_clears():
+    planner = _planner(backoff_m=2.0)
+    planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+    planner.update((-2.0, 0.0), (10.0, 0.0), stop=True, now_s=1.0, side="blocked")
+
+    decision = planner.update((-2.0, 0.0), (10.0, 0.0), stop=True, now_s=2.0, side="left")
+
+    assert decision.active is True
+    assert decision.phase is DetourPhase.LATERAL
+    assert decision.side == "left"
+
+
+def test_backoff_zero_keeps_the_hold_instead_of_moving():
+    planner = _planner()
+
+    decision = planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+
+    assert decision.active is False
+    assert decision.note == "both sides blocked: holding"
+
+
+def test_the_backoff_cannot_be_negative():
+    with pytest.raises(ValueError, match="backoff_m"):
+        DetourConfig(backoff_m=-0.1)
+
+
 def test_the_start_delay_cannot_be_negative():
     with pytest.raises(ValueError, match="start_delay_s"):
         DetourConfig(start_delay_s=-0.1)

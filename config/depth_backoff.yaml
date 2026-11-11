@@ -1,0 +1,25 @@
+# Depth gate for the phase-5 back-off scenario (`make backoff`).
+#
+# Same stop/clear thresholds as config/depth.yaml. The side floor is 4.0 m so
+# the 4 m barrier is "blocked" on both sides at the stop; 2 m of back-off puts
+# its edges beyond 4 m in the strips, which is the clearance the back-off is
+# meant to recover. If it never clears, the planner holds.
+stop_distance_m: 2.5
+clear_distance_m: 3.2
+
+roi_width_fraction: 0.6
+roi_height_fraction: 0.5
+roi_center_x: 0.5
+roi_center_y: 0.5
+
+min_valid_m: 0.25
+max_valid_m: 12.0
+
+side_width_fraction: 0.2
+side_margin_m: 0.5
+min_clear_side_m: 4.0
+
+stale_timeout_s: 0.5
+fail_safe_on_stale: true
+
+publish_rate_hz: 10.0

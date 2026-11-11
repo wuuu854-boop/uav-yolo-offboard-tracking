@@ -167,13 +167,13 @@ class OffboardNode(Node):
                 wait_timeout_s=mission_cfg.detour_wait_timeout_s,
                 max_attempts=mission_cfg.detour_max_attempts,
                 start_delay_s=mission_cfg.detour_start_delay_s,
+                backoff_m=mission_cfg.detour_backoff_m,
             )
         )
         self._detour_phase = DetourPhase.INACTIVE
         # The depth node also says which side looks freer. "unknown" means no
         # usable return on either side; the planner then uses detour_side.
         self.clear_side = "unknown"
-        self._blocked_hold_logged = False
         # Once a side has been blocked during a stop, hold for the rest of that
         # stop. The label can flicker as the vehicle pitches to a halt; a detour
         # must not start on a one-frame "left" between two "blocked" frames.
@@ -369,44 +369,33 @@ class OffboardNode(Node):
         avoiding = self.avoidance.active(now_s)
         if not avoiding:
             self._blocked_seen = False
-        elif self.clear_side == "blocked":
+        elif self.detour.phase is DetourPhase.INACTIVE and self.clear_side == "blocked":
+            # Latch only while the planner has not committed. Once it is backing
+            # off or holding, use the live label so a clear side can recover.
             self._blocked_seen = True
-        # "blocked" means both side strips are closer than the safety floor.
-        # Do not start a detour into either one; hold and say so. An already
-        # running detour is not aborted by a side flip mid-escape.
-        blocked_hold = (
-            decision.command == "goto"
-            and target is not None
-            and avoiding
-            and (self.clear_side == "blocked" or self._blocked_seen)
-            and self.detour.phase is DetourPhase.INACTIVE
-        )
+        elif self.detour.phase is not DetourPhase.INACTIVE:
+            self._blocked_seen = False
+        side_for_planner = None
+        if self.cfg.detour_auto_side:
+            side_for_planner = "blocked" if self._blocked_seen else self.clear_side
         detour = DetourDecision(False, DetourPhase.INACTIVE)
-        if blocked_hold:
-            self.detour.reset()
-            if not self._blocked_hold_logged:
-                self.get_logger().warn(
-                    "both side strips are inside the clearance floor: holding instead of "
-                    "guessing a side"
-                )
-                self._blocked_hold_logged = True
-        elif decision.command == "goto" and target is not None:
+        if decision.command == "goto" and target is not None:
             detour = self.detour.update(
                 (self.east, self.north),
                 target,
                 avoiding,
                 now_s,
-                side=self.clear_side if self.cfg.detour_auto_side else None,
+                side=side_for_planner,
             )
         else:
             self.detour.reset()
-        if not blocked_hold:
-            self._blocked_hold_logged = False
 
         if detour.active:
             if detour.phase is not self._detour_phase:
                 if detour.phase is DetourPhase.HOLDING:
                     self.get_logger().error(f"detour cannot clear the obstacle: {detour.note}")
+                elif detour.phase is DetourPhase.BACKOFF:
+                    self.get_logger().warn(f"obstacle within stop threshold: {detour.note}")
                 elif detour.phase in (DetourPhase.LATERAL, DetourPhase.FORWARD):
                     self.get_logger().warn(
                         f"obstacle within stop threshold: {detour.note} to the "
@@ -423,10 +412,9 @@ class OffboardNode(Node):
         holding = decision.command == "goto" and avoiding and not detour.active
         if holding and not self.avoidance_holding:
             self.avoidance_hold = (self.east, self.north)
-            if not blocked_hold:
-                self.get_logger().warn(
-                    "obstacle within stop threshold: holding position instead of advancing"
-                )
+            self.get_logger().warn(
+                "obstacle within stop threshold: holding position instead of advancing"
+            )
         elif not holding and self.avoidance_holding:
             self.avoidance_hold = None
             if decision.command == "goto":
@@ -454,10 +442,10 @@ class OffboardNode(Node):
         # detour is a change of reason, not of state, so it replaces the empty
         # GOTO note.
         note = decision.note
-        if blocked_hold:
-            note = "blocked: holding"
-        elif detour.active:
+        if detour.active:
             note = f"detour: {detour.note}"
+        elif detour.note == "both sides blocked: holding":
+            note = "blocked: holding"
         elif holding:
             note = "avoidance stop"
         if self.trace is not None:
@@ -665,6 +653,7 @@ def main() -> int:
         detour_wait_timeout_s=float(mission_raw.get("detour_wait_timeout_s", 5.0)),
         detour_max_attempts=int(mission_raw.get("detour_max_attempts", 2)),
         detour_start_delay_s=float(mission_raw.get("detour_start_delay_s", 0.0)),
+        detour_backoff_m=float(mission_raw.get("detour_backoff_m", 0.0)),
         patrol_waypoints=tuple(
             (float(pair[0]), float(pair[1])) for pair in mission_raw.get("patrol_waypoints", ())
         ),

@@ -1,0 +1,49 @@
+# Mission used by the phase-5 back-off-and-recover flight (`make backoff`).
+#
+# Same blocked world as phase 4: a 4 m barrier across the path. The difference is
+# detour_backoff_m: 2.0. When both strips are inside the 3.0 m floor, the planner
+# backs straight away from the barrier by 2 m, then re-reads the side strips.
+# From 2 m further back the barrier's edges fall outside the strips, a side
+# becomes free, and the L can go around its end. The forward leg is 7 m, not 5:
+# a 5 m leg from the back-off point ended at the barrier's x and the return to
+# target_0 clipped its north edge. If no side clears, the planner holds.
+takeoff_altitude_m: 5.0
+spawn_offset_enu: [-7.5, 0.0]
+reach_tolerance_m: 1.0
+max_speed_mps: 0.6
+hover_duration_s: 3.0
+
+target_loss_hover_s: 2.0
+setpoint_jump_limit_m: 3.0
+land_after_hover: true
+max_mission_s: 75.0
+
+confirm_frames: 3
+geofence_radius_m: 30.0
+control_rate_hz: 50.0
+
+heading_yaw_deg: 90.0
+
+patrol_waypoints:
+  - [7.5, 0.0]
+
+target_selection: nearest_centre
+search_after_s: 8.0
+search_area_m: 20.0
+search_spacing_m: 8.9
+
+avoidance_timeout_s: 1.0
+
+detour_enabled: true
+detour_side: right
+detour_auto_side: true
+detour_offset_m: 3.5
+detour_forward_m: 7.0
+detour_reach_tolerance_m: 0.5
+detour_min_lateral_m: 3.0
+detour_clear_hold_s: 1.0
+detour_wait_timeout_s: 5.0
+detour_max_attempts: 2
+detour_start_delay_s: 1.0
+detour_backoff_m: 2.0
+detour_min_clearance_m: 0.4
