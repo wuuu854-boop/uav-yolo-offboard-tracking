@@ -41,7 +41,7 @@ from px4_msgs.msg import (  # noqa: E402
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node  # noqa: E402
 from rclpy.qos import qos_profile_sensor_data  # noqa: E402
-from std_msgs.msg import Bool, String  # noqa: E402
+from std_msgs.msg import Bool, Float32MultiArray, String  # noqa: E402
 
 from uav_interfaces.msg import TargetArray  # noqa: E402
 from uav_tracking.control.arming import ArmingSequencer  # noqa: E402
@@ -50,6 +50,7 @@ from uav_tracking.control.detour import (  # noqa: E402
     DetourDecision,
     DetourPhase,
     DetourPlanner,
+    adaptive_backoff_step,
 )
 from uav_tracking.control.frames import (  # noqa: E402
     heading_ned_to_yaw_enu,
@@ -175,6 +176,8 @@ class OffboardNode(Node):
         # The depth node also says which side looks freer. "unknown" means no
         # usable return on either side; the planner then uses detour_side.
         self.clear_side = "unknown"
+        self.side_left_m = math.nan
+        self.side_right_m = math.nan
         # Once a side has been blocked during a stop, hold for the rest of that
         # stop. The label can flicker as the vehicle pitches to a halt; a detour
         # must not start on a one-frame "left" between two "blocked" frames.
@@ -192,6 +195,9 @@ class OffboardNode(Node):
         self.create_subscription(TargetArray, "/detections", self.on_detections, 10)
         self.create_subscription(Bool, "/avoidance/stop", self.on_avoidance_stop, 10)
         self.create_subscription(String, "/avoidance/clear_side", self.on_clear_side, 10)
+        self.create_subscription(
+            Float32MultiArray, "/avoidance/side_clearance", self.on_side_clearance, 10
+        )
 
         self.offboard_pub = self.create_publisher(
             OffboardControlMode, "/fmu/in/offboard_control_mode", 10
@@ -231,6 +237,11 @@ class OffboardNode(Node):
         side = str(msg.data).strip().lower()
         if side in ("left", "right", "blocked", "unknown"):
             self.clear_side = side
+
+    def on_side_clearance(self, msg: Float32MultiArray) -> None:
+        values = [float(value) for value in msg.data]
+        if len(values) >= 2:
+            self.side_left_m, self.side_right_m = values[0], values[1]
 
     # ------------------------------------------------------------- perception
     def _project_best_detection(self) -> tuple[float, float] | None:
@@ -379,6 +390,17 @@ class OffboardNode(Node):
         side_for_planner = None
         if self.cfg.detour_auto_side:
             side_for_planner = "blocked" if self._blocked_seen else self.clear_side
+        if self.cfg.detour_adaptive_backoff and side_for_planner == "blocked":
+            step = adaptive_backoff_step(
+                self.side_left_m,
+                self.side_right_m,
+                target_m=self.cfg.detour_backoff_target_m,
+                min_step_m=self.cfg.detour_backoff_min_step_m,
+                max_step_m=self.cfg.detour_backoff_max_step_m,
+            )
+            self.detour.set_backoff_step(step)
+        else:
+            self.detour.set_backoff_step(None)
         detour = DetourDecision(False, DetourPhase.INACTIVE)
         if decision.command == "goto" and target is not None:
             detour = self.detour.update(
@@ -656,6 +678,10 @@ def main() -> int:
         detour_start_delay_s=float(mission_raw.get("detour_start_delay_s", 0.0)),
         detour_backoff_m=float(mission_raw.get("detour_backoff_m", 0.0)),
         detour_backoff_max_attempts=int(mission_raw.get("detour_backoff_max_attempts", 1)),
+        detour_adaptive_backoff=bool(mission_raw.get("detour_adaptive_backoff", False)),
+        detour_backoff_target_m=float(mission_raw.get("detour_backoff_target_m", 0.0)),
+        detour_backoff_min_step_m=float(mission_raw.get("detour_backoff_min_step_m", 0.2)),
+        detour_backoff_max_step_m=float(mission_raw.get("detour_backoff_max_step_m", 2.0)),
         patrol_waypoints=tuple(
             (float(pair[0]), float(pair[1])) for pair in mission_raw.get("patrol_waypoints", ())
         ),

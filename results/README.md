@@ -51,6 +51,11 @@ README and in the resume, so they are written by scripts, never by hand.
 | `sweep_trace.csv` | `src/uav_tracking/control/trace.py` | `backing off` → `(2/4)`…`(4/4)` → lateral → forward → land |
 | `sweep_summary.json` | `scripts/avoidance_report.py --mode detour` | PASS: 0.62 m back-off travel, 3.772 m lateral, 0.852 m target error, 0.639 m clearance, 0 contacts |
 | `sweep_run.png` | the same report | the four-step back-off cluster and the L |
+| `adaptive_run.csv` | `scripts/record_avoidance.py` during `make adaptive` | 667 rows: `left_m`/`right_m`, computed step, left after it, 0 contacts |
+| `adaptive_landing.csv` | `offboard_node` recorder on the same run | one row: 0.572 m from `target_0`, `success=True`, `patrol complete` |
+| `adaptive_trace.csv` | `src/uav_tracking/control/trace.py` | `backing off 2.00 m` → lateral → forward → land |
+| `adaptive_summary.json` | `scripts/avoidance_report.py --mode detour` | PASS: 2.02 m back-off, 3.566 m lateral, 0.618 m target error, 0.47 m clearance, 0 contacts |
+| `adaptive_run.png` | the same report | the measured 2 m back-off and the L |
 | `detections.geojson` | `scripts/export_geojson.py` on the moving-target capture | 88 Point features with track id, timestamp and ENU offsets — the GIS-ready deliverable an inspection operator asks for |
 | `qa_moving.json` | `scripts/qa_report.py` on the moving-target capture | the asset was 3 m from its declared position, and the report says so (association 7.1 m, FAIL) |
 | `qa_north.json` | the same report with the asset position passed in | median association drops from 4.95 m to 0.62 m when the asset is where it actually was |

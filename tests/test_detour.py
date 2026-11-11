@@ -6,7 +6,12 @@ import math
 
 import pytest
 
-from uav_tracking.control.detour import DetourConfig, DetourPhase, DetourPlanner
+from uav_tracking.control.detour import (
+    DetourConfig,
+    DetourPhase,
+    DetourPlanner,
+    adaptive_backoff_step,
+)
 
 
 def _planner(**overrides) -> DetourPlanner:
@@ -350,6 +355,50 @@ def test_an_exhausted_backoff_still_recovers_if_a_side_clears():
 def test_the_backoff_attempt_budget_cannot_be_zero():
     with pytest.raises(ValueError, match="backoff_max_attempts"):
         DetourConfig(backoff_max_attempts=0)
+
+
+def test_adaptive_step_lifts_the_better_side_to_the_target():
+    assert adaptive_backoff_step(2.0, 3.0, target_m=6.0, max_step_m=2.0) == pytest.approx(2.0)
+    assert adaptive_backoff_step(5.0, 5.5, target_m=6.0) == pytest.approx(0.5)
+
+
+def test_adaptive_step_is_none_when_the_side_is_already_clear_or_values_are_missing():
+    assert adaptive_backoff_step(6.0, 6.5, target_m=6.0) is None
+    assert adaptive_backoff_step(math.nan, 3.0, target_m=6.0) is None
+
+
+def test_adaptive_step_rejects_bad_bounds():
+    with pytest.raises(ValueError, match="min_step_m"):
+        adaptive_backoff_step(1.0, 3.0, target_m=6.0, min_step_m=0.0)
+    with pytest.raises(ValueError, match="max_step_m"):
+        adaptive_backoff_step(1.0, 3.0, target_m=6.0, min_step_m=1.0, max_step_m=0.5)
+
+
+def test_an_adaptive_step_changes_the_backoff_leg():
+    planner = _planner(backoff_m=0.0, backoff_max_attempts=2)
+    planner.set_backoff_step(1.5)
+
+    decision = planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+
+    assert decision.phase is DetourPhase.BACKOFF
+    assert decision.waypoint == pytest.approx((-1.5, 0.0))
+    assert "1.50 m" in decision.note
+
+
+def test_setting_no_adaptive_step_falls_back_to_the_config():
+    planner = _planner(backoff_m=0.5)
+    planner.set_backoff_step(2.0)
+    planner.set_backoff_step(None)
+
+    decision = planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+
+    assert decision.waypoint == pytest.approx((-0.5, 0.0))
+
+
+def test_a_bad_adaptive_step_is_rejected():
+    planner = _planner()
+    with pytest.raises(ValueError, match="backoff step"):
+        planner.set_backoff_step(0.0)
 
 
 def test_the_backoff_cannot_be_negative():

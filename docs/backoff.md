@@ -91,7 +91,7 @@ the clearance is below 0.4 m, or either contact sensor fires.
 | The L from the back-off point reaches target_0 | ✅ verified | 0.831 m final error, 0.684 m landing, 8/8 checks |
 | It does not touch the wall or barrier | ✅ verified | 0 contacts, 0.595 m clearance |
 | Repeating the back-off until a side appears | ✅ **phase 6** | bounded sweep, 0.2 m steps; see [`backoff-sweep.md`](backoff-sweep.md) |
-| Choosing a different back-off distance | ❌ **not implemented** | fixed `backoff_m` in the mission |
+| Choosing a different back-off distance | ✅ **phase 7** | measured step from the strip clearances; see [`adaptive.md`](adaptive.md) |
 | Multiple obstacles / dynamic obstacles / global planning | ❌ **not verified** | one static barrier + wall |
 | A real depth sensor | ❌ **not verified** | ideal Gazebo float32 depth |
 

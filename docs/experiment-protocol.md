@@ -63,6 +63,11 @@ steps, `config/mission_backoff_sweep.yaml` and `make backoff-sweep`; its landing
 row is `results/sweep_landing.csv` and is a success (0.808 m). Details:
 [`backoff-sweep.md`](backoff-sweep.md).
 
+The phase-7 measured back-off uses the same world, `config/depth_adaptive.yaml`
+and `config/mission_adaptive.yaml`; its landing row is
+`results/adaptive_landing.csv` and is a success (0.572 m). Details:
+[`adaptive.md`](adaptive.md).
+
 Restart the simulation between targets; do not teleport a running vehicle.
 
 ## Trial procedure

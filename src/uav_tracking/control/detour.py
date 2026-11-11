@@ -119,6 +119,37 @@ def _perpendicular(direction: tuple[float, float], side: str) -> tuple[float, fl
     return (-dy, dx)
 
 
+def adaptive_backoff_step(
+    left_m: float,
+    right_m: float,
+    *,
+    target_m: float,
+    min_step_m: float = 0.2,
+    max_step_m: float = 2.0,
+) -> float | None:
+    """How far to back off to lift the better side to ``target_m``.
+
+    The side distance grows roughly one-for-one with the retreat along the
+    approach, so ``target - max(left, right)`` is the first estimate. It is
+    clamped to the step bounds. ``None`` means no usable pair or already at the
+    target; the caller then keeps its configured step.
+    """
+    for value in (left_m, right_m, target_m):
+        if not math.isfinite(float(value)):
+            return None
+    target = float(target_m)
+    low = float(min_step_m)
+    high = float(max_step_m)
+    if not math.isfinite(low) or low <= 0.0:
+        raise ValueError(f"min_step_m must be positive and finite, got {min_step_m!r}")
+    if not math.isfinite(high) or high < low:
+        raise ValueError(f"max_step_m must be >= min_step_m and finite, got {max_step_m!r}")
+    needed = target - max(float(left_m), float(right_m))
+    if needed <= 0.0:
+        return None
+    return min(high, max(low, needed))
+
+
 @dataclass
 class DetourPlanner:
     """Lateral leg, forward leg, then resume once the gate stays clear."""
@@ -140,6 +171,7 @@ class DetourPlanner:
         self._stop_since: float | None = None
         self._backoff_attempts = 0
         self._backoff_hold = False
+        self._backoff_step = None
 
     @property
     def enabled(self) -> bool:
@@ -159,6 +191,17 @@ class DetourPlanner:
         self._stop_since = None
         self._backoff_attempts = 0
         self._backoff_hold = False
+        self._backoff_step = None
+
+    def set_backoff_step(self, step_m: float | None) -> None:
+        """Set the next back-off distance; ``None`` uses ``config.backoff_m``."""
+        if step_m is None:
+            self._backoff_step = None
+            return
+        step = float(step_m)
+        if not math.isfinite(step) or step <= 0.0:
+            raise ValueError(f"backoff step must be positive and finite, got {step_m!r}")
+        self._backoff_step = step
 
     def update(
         self,
@@ -204,9 +247,10 @@ class DetourPlanner:
                     f"confirming stop {now - self._stop_since:.1f}s",
                 )
             if side == "blocked":
-                if self.config.backoff_m > 0.0:
+                step = self._effective_backoff_step()
+                if step > 0.0:
                     self._start_backoff(here)
-                    return self._active("both sides blocked: backing off")
+                    return self._active(f"both sides blocked: backing off {step:.2f} m")
                 return DetourDecision(
                     False,
                     DetourPhase.INACTIVE,
@@ -225,13 +269,15 @@ class DetourPlanner:
                     return self._active("backoff done: lateral leg")
                 if self._backoff_attempts < self.config.backoff_max_attempts:
                     self._backoff_attempts += 1
+                    step = self._effective_backoff_step()
                     self._waypoint = (
-                        here[0] - self.config.backoff_m * self._approach[0],
-                        here[1] - self.config.backoff_m * self._approach[1],
+                        here[0] - step * self._approach[0],
+                        here[1] - step * self._approach[1],
                     )
                     return self._active(
                         "still blocked: backing off again "
-                        f"({self._backoff_attempts}/{self.config.backoff_max_attempts})"
+                        f"({self._backoff_attempts}/{self.config.backoff_max_attempts}) "
+                        f"by {step:.2f} m"
                     )
                 self.phase = DetourPhase.HOLDING
                 self._waypoint = here
@@ -310,7 +356,13 @@ class DetourPlanner:
             self._clear_since = now
         return now - self._clear_since
 
+    def _effective_backoff_step(self) -> float:
+        if self._backoff_step is not None:
+            return self._backoff_step
+        return self.config.backoff_m
+
     def _start_backoff(self, position: tuple[float, float]) -> None:
+        step = self._effective_backoff_step()
         self.side = None
         self._approach = self._direction
         self._lateral = _perpendicular(self._approach, self.config.side)
@@ -321,8 +373,8 @@ class DetourPlanner:
         self._wait_since = None
         self._clear_since = None
         self._waypoint = (
-            position[0] - self.config.backoff_m * self._approach[0],
-            position[1] - self.config.backoff_m * self._approach[1],
+            position[0] - step * self._approach[0],
+            position[1] - step * self._approach[1],
         )
 
     def _start(self, position: tuple[float, float], side: str) -> None:

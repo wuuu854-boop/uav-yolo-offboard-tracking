@@ -1,0 +1,54 @@
+# Mission used by the phase-7 adaptive-backoff flight (`make adaptive`).
+#
+# Same barrier world as phases 4-6. The depth node publishes the left/right strip
+# distances; the controller backs off by (6.0 - better side), clamped to
+# 0.2..2.0 m, instead of a fixed step. The trace records the step it chose. The
+# forward leg is 7.5 m: with 6 m the return to target_0 cut the wall corner
+# (0.244 m clearance, no contact) even though the back-off size was right. The
+# retained run cleared on the first adaptive step; a second step is covered by
+# the planner tests, not by this flight.
+takeoff_altitude_m: 5.0
+spawn_offset_enu: [-7.5, 0.0]
+reach_tolerance_m: 1.0
+max_speed_mps: 0.6
+hover_duration_s: 3.0
+
+target_loss_hover_s: 2.0
+setpoint_jump_limit_m: 3.0
+land_after_hover: true
+max_mission_s: 75.0
+
+confirm_frames: 3
+geofence_radius_m: 30.0
+control_rate_hz: 50.0
+
+heading_yaw_deg: 90.0
+
+patrol_waypoints:
+  - [7.5, 0.0]
+
+target_selection: nearest_centre
+search_after_s: 8.0
+search_area_m: 20.0
+search_spacing_m: 8.9
+
+avoidance_timeout_s: 1.0
+
+detour_enabled: true
+detour_side: right
+detour_auto_side: true
+detour_offset_m: 3.5
+detour_forward_m: 7.5
+detour_reach_tolerance_m: 0.05
+detour_min_lateral_m: 3.0
+detour_clear_hold_s: 1.0
+detour_wait_timeout_s: 5.0
+detour_max_attempts: 2
+detour_start_delay_s: 1.0
+detour_backoff_m: 0.0
+detour_backoff_max_attempts: 4
+detour_adaptive_backoff: true
+detour_backoff_target_m: 6.0
+detour_backoff_min_step_m: 0.2
+detour_backoff_max_step_m: 2.0
+detour_min_clearance_m: 0.4

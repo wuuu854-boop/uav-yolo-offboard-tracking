@@ -1,0 +1,113 @@
+{
+  "obstacle": {
+    "model": "obstacle_wall",
+    "centre_enu": [
+      -0.8,
+      0.0,
+      3.0
+    ],
+    "size_m": [
+      0.2,
+      3.0,
+      6.0
+    ],
+    "aabb_enu_m": [
+      -0.9,
+      -0.7000000000000001,
+      -1.5,
+      1.5
+    ]
+  },
+  "spawn_enu": [
+    -7.5,
+    0.0
+  ],
+  "target_enu": [
+    0.0,
+    0.0
+  ],
+  "side_block": {
+    "model": "barrier",
+    "centre_enu": [
+      -1.2,
+      0.0,
+      3.0
+    ],
+    "size_m": [
+      0.2,
+      4.0,
+      6.0
+    ]
+  },
+  "metrics": {
+    "rows": 667,
+    "duration_s": 66.6,
+    "stop_engaged": true,
+    "stop_start_s": 18.9,
+    "stop_end_s": 22.7,
+    "stop_hold_s": 3.8,
+    "stop_drift_m": 1.052,
+    "stop_advance_m": 0.266,
+    "stop_retreat_m": 1.034,
+    "settled_drift_m": null,
+    "gate_released": true,
+    "clear_side_mode": "right",
+    "clear_side_at_stop": "blocked",
+    "max_north_m": 3.566,
+    "min_north_m": -0.395,
+    "max_abs_north_m": 3.566,
+    "final_error_m": 0.618,
+    "min_clearance_m": 0.47,
+    "min_clearance_at_s": 60.1,
+    "final_east_m": 7.546,
+    "max_east_m": 9.137,
+    "max_altitude_m": 5.067,
+    "contacts_total": 0,
+    "depth_frames": 1001,
+    "min_nearest_m": 0.25
+  },
+  "checks": {
+    "stop_engaged": {
+      "ok": true,
+      "detail": "stop_start_s=18.9"
+    },
+    "detour_started": {
+      "ok": true,
+      "detail": "trace_note=True, max_abs_north_m=3.566"
+    },
+    "lateral_leg_at_least_min": {
+      "ok": true,
+      "detail": "max_abs_north_m=3.566 >= 3.0"
+    },
+    "gate_released": {
+      "ok": true,
+      "detail": "gate_released=True"
+    },
+    "target_reached": {
+      "ok": true,
+      "detail": "final_error_m=0.618 <= 1.5"
+    },
+    "clearance_at_least_min": {
+      "ok": true,
+      "detail": "min_clearance_m=0.47 >= 0.4 (the target is closer to the wall than the phase-1 stop point)"
+    },
+    "no_contact": {
+      "ok": true,
+      "detail": "contacts_total=0"
+    },
+    "depth_frames_seen": {
+      "ok": true,
+      "detail": "depth_frames=1001"
+    }
+  },
+  "mode": "detour",
+  "verdict": "PASS",
+  "gate": {
+    "stop_distance_m": 2.5,
+    "clear_distance_m": 3.2,
+    "roi_width_fraction": 0.6,
+    "roi_height_fraction": 0.5,
+    "source": "config/depth_adaptive.yaml"
+  },
+  "source_csv": "results/adaptive_run.csv"
+}

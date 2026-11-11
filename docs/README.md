@@ -9,6 +9,7 @@
 | [blocked](blocked.md) | Both strips blocked: the hold, the latch, the 1 s delay, and why the landing is a failure |
 | [backoff](backoff.md) | Backing off 2 m to re-read the strips, the one retry, and why the forward leg became 7 m |
 | [backoff-sweep](backoff-sweep.md) | Repeating the back-off in 0.2 m steps until a side clears, and the budget that stops it |
+| [adaptive](adaptive.md) | Sizing the back-off from the measured side clearance, and why one step was enough |
 | [model](model.md) | The YOLO detector: dataset, training, the decoder bug it exposed, and how it was made to fly |
 | [deployment](deployment.md) | Detector throughput per input size and thread count, and what it does not measure |
 | [market](market.md) | What UAV-autonomy postings ask for, where this project stands, what to build next |
@@ -16,7 +17,7 @@
 | [experiment-protocol](experiment-protocol.md) | How a trial is run, what each metric means, spawn poses |
 | [scenario](scenario.md) | Camera maths, range budget, why the targets are 20 m apart |
 | [adoption](adoption.md) | What to change for your own target, camera or scene |
-| [troubleshooting](troubleshooting.md) | Nineteen failures with the upstream source of each |
+| [troubleshooting](troubleshooting.md) | Twenty failures with the upstream source of each |
 | [verification-log](verification-log.md) | What each non-obvious claim was checked against |
 | [prior-art](prior-art.md) | The existing projects, what they lack, and the gap |
 | [market](market.md) | Job requirements mapped to files in this repository |

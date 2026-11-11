@@ -1,0 +1,24 @@
+# Depth gate for the phase-7 adaptive-backoff scenario (`make adaptive`).
+#
+# Same stop/clear thresholds. The 6.0 m floor makes the barrier blocked at the
+# stop; the controller reads /avoidance/side_clearance and backs off only as far
+# as needed to lift the better side to 6.0 m, capped at 2.0 m per step.
+stop_distance_m: 2.5
+clear_distance_m: 3.2
+
+roi_width_fraction: 0.6
+roi_height_fraction: 0.5
+roi_center_x: 0.5
+roi_center_y: 0.5
+
+min_valid_m: 0.25
+max_valid_m: 12.0
+
+side_width_fraction: 0.2
+side_margin_m: 0.5
+min_clear_side_m: 6.0
+
+stale_timeout_s: 0.5
+fail_safe_on_stale: true
+
+publish_rate_hz: 10.0

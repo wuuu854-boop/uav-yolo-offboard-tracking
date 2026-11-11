@@ -6,6 +6,8 @@ Subscribes
 Publishes
     std_msgs/Bool       /avoidance/stop
     std_msgs/Float32    /avoidance/nearest_m       (NaN when nothing is valid)
+    std_msgs/String     /avoidance/clear_side      (left/right/blocked/unknown)
+    std_msgs/Float32MultiArray /avoidance/side_clearance  ([left_m, right_m], NaN if absent)
 
 The arithmetic lives in ``uav_tracking.perception.depth`` and is unit-tested
 without ROS. This file is the wiring: one subscription, one timer, one decision
@@ -31,7 +33,7 @@ from rclpy.executors import ExternalShutdownException  # noqa: E402
 from rclpy.node import Node  # noqa: E402
 from rclpy.qos import qos_profile_sensor_data  # noqa: E402
 from sensor_msgs.msg import Image  # noqa: E402
-from std_msgs.msg import Bool, Float32, String  # noqa: E402
+from std_msgs.msg import Bool, Float32, Float32MultiArray, String  # noqa: E402
 
 from uav_tracking.perception.depth import (  # noqa: E402
     StopGate,
@@ -74,6 +76,9 @@ class DepthNode(Node):
         self.stop_pub = self.create_publisher(Bool, "/avoidance/stop", 10)
         self.nearest_pub = self.create_publisher(Float32, "/avoidance/nearest_m", 10)
         self.side_pub = self.create_publisher(String, "/avoidance/clear_side", 10)
+        self.side_clearance_pub = self.create_publisher(
+            Float32MultiArray, "/avoidance/side_clearance", 10
+        )
         self.create_subscription(
             Image, "/camera/depth/image_raw", self.on_depth, qos_profile_sensor_data
         )
@@ -113,6 +118,7 @@ class DepthNode(Node):
         now_s = self.get_clock().now().nanoseconds / 1e9
         nearest: float | None = None
         side = "unknown"
+        clearance = None
         stale = self.depth_s is None or (now_s - self.depth_s) > self.stale_timeout_s
 
         if stale and self.fail_safe_on_stale:
@@ -156,6 +162,13 @@ class DepthNode(Node):
         self.stop_pub.publish(Bool(data=bool(stop)))
         self.nearest_pub.publish(Float32(data=math.nan if nearest is None else float(nearest)))
         self.side_pub.publish(String(data=side))
+        left_m = (
+            math.nan if clearance is None or clearance.left_m is None else float(clearance.left_m)
+        )
+        right_m = (
+            math.nan if clearance is None or clearance.right_m is None else float(clearance.right_m)
+        )
+        self.side_clearance_pub.publish(Float32MultiArray(data=[left_m, right_m]))
         if side != self._last_side:
             self.get_logger().info(f"clear side: {side}")
             self._last_side = side

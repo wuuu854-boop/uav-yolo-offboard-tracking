@@ -40,7 +40,7 @@ from rclpy.executors import ExternalShutdownException  # noqa: E402
 from rclpy.node import Node  # noqa: E402
 from rclpy.qos import qos_profile_sensor_data  # noqa: E402
 from sensor_msgs.msg import Image  # noqa: E402
-from std_msgs.msg import Bool, Float32, String  # noqa: E402
+from std_msgs.msg import Bool, Float32, Float32MultiArray, String  # noqa: E402
 
 from uav_tracking.control.frames import (  # noqa: E402
     heading_ned_to_yaw_enu,
@@ -62,6 +62,8 @@ HEADER = [
     "nearest_m",
     "stop",
     "clear_side",
+    "left_m",
+    "right_m",
     "stop_events",
     "contacts_total",
     "depth_frames",
@@ -81,6 +83,8 @@ class AvoidanceRecorder(Node):
         self.nearest: float | None = None
         self.stop = False
         self.clear_side = "unknown"
+        self.left_m = math.nan
+        self.right_m = math.nan
         self.stop_events = 0
         self.depth_frames = 0
         self.contacts_total = 0
@@ -100,6 +104,9 @@ class AvoidanceRecorder(Node):
         self.create_subscription(Bool, "/avoidance/stop", self.on_stop, 10)
         self.create_subscription(Float32, "/avoidance/nearest_m", self.on_nearest, 10)
         self.create_subscription(String, "/avoidance/clear_side", self.on_clear_side, 10)
+        self.create_subscription(
+            Float32MultiArray, "/avoidance/side_clearance", self.on_side_clearance, 10
+        )
         self.create_subscription(
             Image, "/camera/depth/image_raw", self.on_depth, qos_profile_sensor_data
         )
@@ -142,6 +149,11 @@ class AvoidanceRecorder(Node):
         if side in ("left", "right", "blocked", "unknown"):
             self.clear_side = side
 
+    def on_side_clearance(self, msg: Float32MultiArray) -> None:
+        values = [float(value) for value in msg.data]
+        if len(values) >= 2:
+            self.left_m, self.right_m = values[0], values[1]
+
     def on_contact(self, msg) -> None:  # noqa: ANN001 - protobuf message
         with self._lock:
             self.contact_events += 1
@@ -181,6 +193,8 @@ class AvoidanceRecorder(Node):
             "" if self.nearest is None else round(self.nearest, 3),
             int(self.stop),
             self.clear_side,
+            self.left_m,
+            self.right_m,
             self.stop_events,
             self.contacts_total,
             self.depth_frames,

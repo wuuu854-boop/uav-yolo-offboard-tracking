@@ -7,6 +7,31 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-11-11
+
+### Added
+
+- **The back-off distance is measured, not configured.** The depth node publishes
+  `/avoidance/side_clearance` (`std_msgs/Float32MultiArray`, `[left_m, right_m]`,
+  NaN for no return). The controller computes
+  `clamp(backoff_target_m - max(left, right), min_step, max_step)` and passes it
+  to `DetourPlanner.set_backoff_step()`; the trace records the chosen step.
+- `config/mission_adaptive.yaml` (`make adaptive`) uses the phase-4 barrier world,
+  a 6.0 m floor and a 6.0 m target, with `detour_backoff_m: 0.0`: without the
+  measured step it would hold.
+- The recorder logs `left_m`, `right_m` per row.
+- One run: stop at 18.9 s, left 3.20 m / right 2.32 m, computed step **2.00 m**,
+  2.02 m of travel, left after it, 3.566 m lateral leg, 7.5 m forward, final
+  target error **0.618 m**, landing 0.572 m `success=True`, minimum clearance
+  **0.47 m**, **0** contacts, 1001 depth frames, 66.6 s.
+
+### Why
+
+A fixed step is still a guess about how far the obstacle reaches. The depth node
+already measures both sides; using the better one to size the retreat is the
+smallest closed-loop improvement. It is open-loop between steps (the 1:1 growth
+assumption), and this flight needed only one step; the loop remains the fallback.
+
 ## [0.14.0] - 2026-11-11
 
 ### Added

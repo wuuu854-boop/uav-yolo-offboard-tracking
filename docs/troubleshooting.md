@@ -462,3 +462,35 @@ masked loop in `offboard_avoidance.log`.
 
 **Source** found during v0.14.0 bring-up.
 
+---
+
+## 20. The measured back-off holds instead of moving, or overshoots
+
+**Symptom** With `detour_backoff_m: 0.0` and adaptive enabled, the trace says
+`both sides blocked: holding`; or the computed step is much larger than expected.
+
+**Cause**
+
+1. **No side-clearance data.** The controller needs
+   `/avoidance/side_clearance`; if it has never received it, both values stay
+   `NaN`, `adaptive_backoff_step()` returns `None`, and a zero configured step
+   means hold. Check `ros2 topic echo /avoidance/side_clearance`.
+2. **The target and the depth floor disagree.** The controller's
+   `backoff_target_m` and the node's `min_clear_side_m` are separate config keys.
+   If the target is above the floor, the first step can leave the label blocked
+   and a second step is needed; if the target is below the floor, the step may be
+   zero while the label is still blocked.
+3. **The 1:1 growth assumption is wrong for the geometry.** The step is open-loop
+   between measurements; the loop (`backoff_max_attempts`) is the correction.
+4. **The floor is above the ground return** (~7.3 m at 5 m altitude), so the
+   floor is a permanent obstacle.
+
+**Fix** The retained phase-7 mission uses a 6.0 m floor and a 6.0 m target, a
+0.2–2.0 m clamp and `backoff_max_attempts: 4`. It logs `left_m`/`right_m` and the
+chosen step, so a mismatch is visible in the CSV and trace.
+
+**Detected by** the trace holding with no `backing off` note, or a step outside
+the clamp in `results/adaptive_trace.csv`.
+
+**Source** found during v0.15.0 bring-up.
+

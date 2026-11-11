@@ -82,7 +82,7 @@ reached, the clearance is below 0.4 m, or either contact sensor fires.
 | The fourth position is a fresh decision | ✅ verified | each step's side is re-read; trace starts the L there |
 | The loop reaches target_0 after clearing | ✅ verified | 0.852 m final error, 0.808 m landing, 8/8 checks |
 | It does not touch the wall or barrier | ✅ verified | 0 contacts, 0.639 m clearance |
-| An adaptive step size / direction | ❌ **not implemented** | fixed 0.2 m, straight back |
+| An adaptive step size / direction | ✅ **step size phase 7**; direction still fixed | [`adaptive.md`](adaptive.md) |
 | Sweeping sideways when straight back fails | ❌ **not implemented** | only the approach axis |
 | Multiple obstacles / dynamic obstacles / global planning | ❌ **not verified** | one static barrier + wall |
 | A real depth sensor | ❌ **not verified** | ideal Gazebo float32 depth |

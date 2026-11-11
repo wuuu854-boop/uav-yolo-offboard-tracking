@@ -72,7 +72,8 @@ Check them in that order — they are listed from most to least likely.
 | `/camera/depth/image_raw` | `sensor_msgs/Image` (`32FC1`) | depth bridge → depth node | sensor data (best effort) |
 | `/avoidance/stop` | `std_msgs/Bool` | depth node → control | default (reliable, depth 10) |
 | `/avoidance/nearest_m` | `std_msgs/Float32` | depth node → recorder | default |
-| `/avoidance/clear_side` | `std_msgs/String` (`left`/`right`/`unknown`) | depth node → control | default |
+| `/avoidance/clear_side` | `std_msgs/String` (`left`/`right`/`blocked`/`unknown`) | depth node → control | default |
+| `/avoidance/side_clearance` | `std_msgs/Float32MultiArray` `[left_m, right_m]` | depth node → control/recorder | default |
 | `/detections` | `uav_interfaces/TargetArray` | detector → control | default (reliable, depth 10) |
 | `/target_pose` | `geometry_msgs/PoseStamped` | control → debug | default |
 | `/fmu/out/vehicle_odometry` | `px4_msgs/VehicleOdometry` | PX4 → control | default |
@@ -168,6 +169,12 @@ same `backoff_m` step, re-reading at every position; `stopped: backing off
 again (n/max)` is in the trace. When the budget is spent the planner holds and
 does not resume on a gate that is merely clear because of the retreat. See
 [`backoff-sweep.md`](backoff-sweep.md).
+
+Phase 7 adds the measurement: `/avoidance/side_clearance` carries the two strip
+distances, and the controller sizes the next step as
+`clamp(target − max(left, right), 0.2, 2.0)` through
+`DetourPlanner.set_backoff_step()`. The configured `backoff_m` is only the
+fallback. See [`adaptive.md`](adaptive.md).
 
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a
