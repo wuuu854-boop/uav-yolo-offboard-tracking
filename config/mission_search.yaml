@@ -1,10 +1,10 @@
 # Mission used by the phase-8 side-search flight (`make search`).
 #
-# Phase 8 uses target_tracking_search.sdf: two 6 m pillars at (-1.5, +/-1.5) make
-# both side strips read blocked at the 4.0 m floor. No back-off: the planner
-# side-steps 2 m toward the freer side directly from the stop, re-reads, and
-# takes a second 2 m step if still blocked. The forward leg is 7.5 m so the L
-# starts northeast of the pillars.
+# Phase 8 uses target_tracking_search.sdf: two 6 m pillars at (-1.5, -1.0) and
+# (-1.5, +1.5) make both side strips read blocked during the side-step at the
+# 4.0 m floor. No back-off: the planner side-steps 2 m toward the freer side
+# directly from the stop, re-reads, and takes a second 2 m step if still blocked.
+# The forward leg is 7.5 m so the L starts northeast of the pillars.
 takeoff_altitude_m: 5.0
 spawn_offset_enu: [-7.5, 0.0]
 reach_tolerance_m: 1.0

@@ -7,6 +7,31 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.16.1] - 2026-11-11
+
+### Fixed
+
+- The right search pillar moved from `(-1.5, -1.5)` to `(-1.5, -1.0)`, putting it
+  inside the left side strip at the stop. The blocked frame now reads
+  **L 2.61 m / R 1.98 m**, both inside the 4.0 m floor (the earlier frame read
+  L 9.47 / R 2.05).
+- The recorder saves a frame whenever the depth label becomes `blocked` and
+  draws the two side strips on it, so the search trigger is visible.
+
+### Evidence
+
+One run: stop at 17.6 s, `side-search left` → `search found a side`, 1.95 m
+search step, 3.31 m lateral leg, final target error **0.381 m**, landing 0.506 m
+`success=True`, minimum clearance **0.836 m**, **0** contacts, 1181 depth frames,
+78.6 s.
+
+### Caveat
+
+The both-blocked frame is captured **during** the search; the first stopped rows
+still read left 7.66 / right 2.47, so the search starts from the latched
+`blocked` label rather than a stable both-blocked stop. A stop that is blocked on
+both sides for several frames remains unverified.
+
 ## [0.16.0] - 2026-11-11
 
 ### Added

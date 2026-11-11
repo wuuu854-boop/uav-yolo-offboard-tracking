@@ -249,20 +249,20 @@ Phase 8 adds the other local degree of freedom: when a stop is still blocked,
 shift sideways 2 m toward the freer side, re-read the strips, and start the L
 from there. `make search` uses a wall with two 6 m side pillars.
 
-One run: stop at 17.9 s, **`side-search right` → `search found a side`**, 2.1 m
-search step, 3.0 m lateral leg, final target error **0.537 m** (landing 0.652 m,
-`success=True`), minimum clearance **1.221 m**, **0** contacts, 1072 depth
-frames, 74.4 s.
+One run: stop at 17.6 s, **`side-search left` → `search found a side`**, 1.95 m
+search step, 3.31 m lateral leg, final target error **0.381 m** (landing 0.506 m,
+`success=True`), minimum clearance **0.836 m**, **0** contacts, 1181 depth
+frames, 78.6 s.
 
-![Stop frame with the left/right strip overlay](results/search_depth_frame.png)
+![Blocked frame with the left/right strip overlay](results/search_depth_frame.png)
 
-**Caveat:** the stop frame reads L 9.47 m / R 2.05 m, so only the right strip
-was blocked; the `blocked` label that started the search arrived 0.7 s after the
-stop. The run verifies the SEARCH transition and recovery, **not** a stop with
-both strips simultaneously below the floor. That scenario is still unverified.
+**Caveat:** the blocked frame reads L 2.61 m / R 1.98 m, both inside the 4.0 m
+floor, but it is captured **during** the search. The first stopped rows read
+L 7.66 / R 2.47, so the search still starts from the latched `blocked` label, not
+from a stable both-blocked stop. That last scenario remains unverified.
 
 Limits: one side, fixed 2 m step, bounded attempts; no alternating/2-D search;
-the true both-blocked trigger remains open. See [`docs/search.md`](docs/search.md).
+the stable both-blocked stop is still open. See [`docs/search.md`](docs/search.md).
 
 **Version provenance.** The table is the nine-trial set measured with **v0.1.0**.
 v0.2.0 changes safety behaviour only — a geofence, a mission timeout and a
@@ -298,7 +298,7 @@ Gazebo rendered headless through WSL2.
 | Both sides blocked → back off and recover | ✅ **verified** | 1.63 m back-off, left side at the back-off point, 3.254 m lateral, target 0.831 m, 0 contacts; [`results/backoff_summary.json`](results/backoff_summary.json) |
 | Both sides blocked → repeat the back-off | ✅ **verified** | four 0.2 m steps, left at the last step, 3.772 m lateral, target 0.852 m, 0 contacts; [`results/sweep_summary.json`](results/sweep_summary.json) |
 | Both sides blocked → size the back-off from depth | ✅ **verified** | left 3.20 / right 2.32 m at the stop → computed 2.00 m step, target 0.618 m, 0 contacts; [`results/adaptive_summary.json`](results/adaptive_summary.json) |
-| Side-step search recovery after a blocked stop | ✅ **verified with caveat** | `side-search right` → `search found a side`; target 0.537 m, 0 contacts. Caveat: the stop frame has L 9.47 / R 2.05, so both-strips-blocked at the stop is not proven; [`results/search_summary.json`](results/search_summary.json) |
+| Side-step search recovery after a blocked stop | ✅ **verified with caveat** | `side-search left` → `search found a side`; target 0.381 m, 0 contacts, blocked frame L2.61/R1.98. Caveat: the blocked frame is during the search; the first stopped rows are L7.66/R2.47, so a stable both-blocked stop is not proven; [`results/search_summary.json`](results/search_summary.json) |
 | Contact sensor can report a contact | ✅ **checked positively** | a 0.5 kg box dropped on the wall produced 4632 messages; [`results/contact_sensor_check.txt`](results/contact_sensor_check.txt) |
 | Depth-sensor noise, holes, real hardware | ❌ **not verified** | Gazebo returns ideal float32 depth; there is no real depth camera, no multipath, no missing-return model |
 | Dynamic obstacles / global planning | ❌ **not implemented** | local stop + one detour + one hold; no obstacle track, no global planner |

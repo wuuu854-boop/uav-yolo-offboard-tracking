@@ -148,6 +148,10 @@ class AvoidanceRecorder(Node):
         side = str(msg.data).strip().lower()
         if side in ("left", "right", "blocked", "unknown"):
             self.clear_side = side
+            if side == "blocked" and self.args.frame_out:
+                # The both-strips-blocked frame is the evidence for the search
+                # trigger; save it as well as the stop frame.
+                self._save_pending = True
 
     def on_side_clearance(self, msg: Float32MultiArray) -> None:
         values = [float(value) for value in msg.data]
@@ -225,6 +229,42 @@ class AvoidanceRecorder(Node):
         label = "nearest: n/a" if nearest is None else f"nearest: {nearest:.2f} m"
         cv2.putText(
             colour, label, (12, 32), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA
+        )
+        band = roi_bounds(
+            depth.shape[1],
+            depth.shape[0],
+            width_fraction=1.0,
+            height_fraction=float(self.args.roi_height_fraction),
+        )
+        strip = max(1, int(round(depth.shape[1] * 0.2)))
+        for x0, x1, text in ((0, strip, "L"), (depth.shape[1] - strip, depth.shape[1], "R")):
+            cv2.rectangle(
+                colour,
+                (x0, band.top),
+                (x1 - 1, band.top + band.height - 1),
+                (255, 0, 255),
+                2,
+            )
+            cv2.putText(
+                colour,
+                text,
+                (x0 + 4, band.top + 20),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.6,
+                (255, 0, 255),
+                2,
+                cv2.LINE_AA,
+            )
+        sides = f"L {self.left_m:.2f}  R {self.right_m:.2f}"
+        cv2.putText(
+            colour,
+            sides,
+            (12, depth.shape[0] - 12),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.6,
+            (255, 255, 255),
+            2,
+            cv2.LINE_AA,
         )
         Path(self.args.frame_out).parent.mkdir(parents=True, exist_ok=True)
         cv2.imwrite(self.args.frame_out, colour)

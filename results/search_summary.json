@@ -30,7 +30,7 @@
     "model": "search_right",
     "centre_enu": [
       -1.5,
-      -1.5,
+      -1.0,
       3.0
     ],
     "size_m": [
@@ -40,44 +40,44 @@
     ]
   },
   "metrics": {
-    "rows": 745,
-    "duration_s": 74.4,
+    "rows": 787,
+    "duration_s": 78.6,
     "stop_engaged": true,
-    "stop_start_s": 17.901,
-    "stop_end_s": 36.0,
-    "stop_hold_s": 18.1,
-    "stop_drift_m": 5.648,
-    "stop_advance_m": 1.768,
-    "stop_retreat_m": 0.09,
-    "settled_drift_m": 3.422,
+    "stop_start_s": 17.6,
+    "stop_end_s": 30.0,
+    "stop_hold_s": 12.4,
+    "stop_drift_m": 1.982,
+    "stop_advance_m": 0.393,
+    "stop_retreat_m": 0.231,
+    "settled_drift_m": 0.743,
     "gate_released": true,
     "clear_side_mode": "right",
     "clear_side_at_stop": "left",
-    "max_north_m": 1.267,
-    "min_north_m": -5.317,
-    "max_abs_north_m": 5.317,
-    "final_error_m": 0.537,
-    "min_clearance_m": 1.221,
-    "min_clearance_at_s": 73.4,
-    "final_east_m": 8.037,
-    "max_east_m": 12.029,
-    "max_altitude_m": 5.055,
+    "max_north_m": 5.063,
+    "min_north_m": -0.254,
+    "max_abs_north_m": 5.063,
+    "final_error_m": 0.381,
+    "min_clearance_m": 0.836,
+    "min_clearance_at_s": 72.8,
+    "final_east_m": 7.781,
+    "max_east_m": 11.184,
+    "max_altitude_m": 5.068,
     "contacts_total": 0,
-    "depth_frames": 1072,
-    "min_nearest_m": 0.25
+    "depth_frames": 1181,
+    "min_nearest_m": 0.251
   },
   "checks": {
     "stop_engaged": {
       "ok": true,
-      "detail": "stop_start_s=17.901"
+      "detail": "stop_start_s=17.6"
     },
     "detour_started": {
       "ok": true,
-      "detail": "trace_note=True, max_abs_north_m=5.317"
+      "detail": "trace_note=True, max_abs_north_m=5.063"
     },
     "lateral_leg_at_least_min": {
       "ok": true,
-      "detail": "max_abs_north_m=5.317 >= 3.0"
+      "detail": "max_abs_north_m=5.063 >= 3.0"
     },
     "gate_released": {
       "ok": true,
@@ -85,11 +85,11 @@
     },
     "target_reached": {
       "ok": true,
-      "detail": "final_error_m=0.537 <= 1.5"
+      "detail": "final_error_m=0.381 <= 1.5"
     },
     "clearance_at_least_min": {
       "ok": true,
-      "detail": "min_clearance_m=1.221 >= 0.4 (the target is closer to the wall than the phase-1 stop point)"
+      "detail": "min_clearance_m=0.836 >= 0.4 (the target is closer to the wall than the phase-1 stop point)"
     },
     "no_contact": {
       "ok": true,
@@ -97,7 +97,7 @@
     },
     "depth_frames_seen": {
       "ok": true,
-      "detail": "depth_frames=1072"
+      "detail": "depth_frames=1181"
     }
   },
   "mode": "detour",

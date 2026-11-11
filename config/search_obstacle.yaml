@@ -1,14 +1,14 @@
 # Side pillars in target_tracking_search.sdf (phase 8).
 #
-# Two 0.8 x 0.8 x 6.0 m pillars at (-1.5, +/-1.5), clear of the wall. The gate
-# stops on the wall; both side strips read a pillar at about 2.8 m, inside the
-# 4.0 m floor. A 2 m side-step toward the freer side clears the strips.
+# Two 0.8 x 0.8 x 6.0 m pillars at (-1.5, -1.0) and (-1.5, +1.5), clear of the
+# wall. The gate stops on the wall; both side strips read a pillar at about
+# 2.5 m, inside the 4.0 m floor. A 2 m side-step toward the freer side clears.
 model: search_right
-pose_enu: [-1.5, -1.5, 3.0]
+pose_enu: [-1.5, -1.0, 3.0]
 size_m: [0.8, 0.8, 6.0]
 right_block:
   model: search_right
-  pose_enu: [-1.5, -1.5, 3.0]
+  pose_enu: [-1.5, -1.0, 3.0]
   size_m: [0.8, 0.8, 6.0]
 left_block:
   model: search_left

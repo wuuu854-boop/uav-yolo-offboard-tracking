@@ -522,3 +522,30 @@ columns.
 
 **Source** found during v0.16.0 bring-up.
 
+---
+
+## 22. The blocked frame is captured during the search, not at the stop
+
+**Symptom** `search_depth_frame.png` shows both strips blocked (`L 2.61`,
+`R 1.98`) but the first stopped CSV rows are `L 7.66 / R 2.47`; the trace's
+`side-search` starts before the both-blocked frame.
+
+**Cause** The recorder saves a frame whenever the depth label becomes `blocked`,
+and the both-blocked state in this geometry happens **during** the side-step, not
+on the first stopped frame. The first stop has one strip open; the search starts
+from the latched `blocked` label during the settle.
+
+**What changed from v0.16.0** The right pillar was moved from `(-1.5, -1.5)` to
+`(-1.5, -1.0)`, putting it inside the left strip. The earlier frame read
+`L 9.47 / R 2.05`; now a blocked frame reads `L 2.61 / R 1.98`. That verifies
+both strips can be inside the floor, but only during the search.
+
+**Still open** A stop where both strips are inside the floor for several frames
+**at** the stop. The search trigger is still the settle latch. Do not describe
+the frame as a "both-blocked stop" in prose; say "both-blocked frame captured
+during the search".
+
+**Detected by** comparing the frame's L/R values with the stop rows' timestamps.
+
+**Source** found during v0.16.1 bring-up.
+

@@ -18,7 +18,7 @@
 | [experiment-protocol](experiment-protocol.md) | How a trial is run, what each metric means, spawn poses |
 | [scenario](scenario.md) | Camera maths, range budget, why the targets are 20 m apart |
 | [adoption](adoption.md) | What to change for your own target, camera or scene |
-| [troubleshooting](troubleshooting.md) | Twenty-one failures with the upstream source of each |
+| [troubleshooting](troubleshooting.md) | Twenty-two failures with the upstream source of each |
 | [verification-log](verification-log.md) | What each non-obvious claim was checked against |
 | [prior-art](prior-art.md) | The existing projects, what they lack, and the gap |
 | [market](market.md) | Job requirements mapped to files in this repository |
