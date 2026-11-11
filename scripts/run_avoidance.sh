@@ -147,7 +147,7 @@ if ! gz topic -l 2>/dev/null | grep -qx "/depth_camera"; then
   exit 1
 fi
 
-CONTACT_TOPIC="$(gz topic -l 2>/dev/null | grep -E '/(obstacle_wall|side_block|left_block|barrier|search_left|search_right|rotated_pillar|gate_lower|gate_upper)/.*/contact/contact$' | paste -sd, -)"
+CONTACT_TOPIC="$(gz topic -l 2>/dev/null | grep -E '/(obstacle_wall|side_block|left_block|barrier|search_left|search_right|rotated_pillar|gate_lower|gate_upper|gate2_lower|gate2_upper)/.*/contact/contact$' | paste -sd, -)"
 echo "contact topic(s): ${CONTACT_TOPIC:-<none; contact count will stay 0>}"
 
 echo "== starting nodes =="

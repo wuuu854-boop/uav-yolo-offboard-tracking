@@ -208,6 +208,9 @@ target_1 at (20, 0), so the route threads the gap and then turns to target_1. Th
 report takes `--target-id` so it measures target_1. See
 [`gate-target1.md`](gate-target1.md).
 
+Phase 15 chains two offset gates (north gap at x = 1.2, south gap at x = 12.2)
+before target_1. See [`gate-double.md`](gate-double.md).
+
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a
 single missed frame ends the mission.

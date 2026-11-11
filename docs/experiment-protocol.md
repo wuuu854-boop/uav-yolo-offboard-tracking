@@ -110,6 +110,12 @@ The offset-doorway task uses `target_tracking_gate_target1.sdf`,
 is at x = 9.2 with the gap at y = 2.4 and the target is target_1 at (20, 0); the
 report uses `--target-id 1`.
 
+The double-doorway task uses `target_tracking_gate_double.sdf`,
+`config/mission_gate_double.yaml` and `make gate-double`; its landing row is
+`results/gate_double_landing.csv` and is a success (0.404 m target 1). Gate 1 is
+north, gate 2 is south, and the target is target_1; the report uses
+`--target-id 1`.
+
 Restart the simulation between targets; do not teleport a running vehicle.
 
 ## Trial procedure

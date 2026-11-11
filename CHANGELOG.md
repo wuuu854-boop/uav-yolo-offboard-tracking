@@ -7,6 +7,26 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.24.0] - 2026-11-11
+
+### Added
+
+- **Two doorways before target_1.** `target_tracking_gate_double.sdf` adds a
+  second gate at world x = 12.2 with its 2.4 m gap on the south side; gate 1 stays
+  at x = 1.2 with its gap on the north. `config/mission_gate_double.yaml` gives
+  the planner four segments and `make gate-double` runs the north/south zigzag to
+  target_1.
+- One run: **5 waypoints around 4 segments**, final target error **0.082 m**,
+  landing **0.404 m** target 1 `success=True`, clearance **0.45 m**, **0**
+  contacts on all four segments, 934 depth frames, 74.5 s.
+
+### Why
+
+A single doorway is a local detour; two offset doorways force a real multi-leg
+route (north through gate 1, south through gate 2, then to the target). The first
+attempt with 0.5 m inflation and 0.2 m waypoint tolerance clipped a corner (1
+contact); the retained mission uses 0.8 m and 0.1 m.
+
 ## [0.23.0] - 2026-11-11
 
 ### Added

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "uav-tracking"
-version = "0.23.0"
+version = "0.24.0"
 description = "PX4 + Gazebo + ROS 2 closed-loop UAV vision pipeline"
 readme = "README.md"
 requires-python = ">=3.10"

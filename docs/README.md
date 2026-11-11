@@ -17,6 +17,7 @@
 | [rotated-multi](rotated-multi.md) | Two rotated boxes, two contact sensors, one route |
 | [gate](gate.md) | A real doorway landing on target_0, and the aligned-gap limit |
 | [gate-target1](gate-target1.md) | Offset gap, turn, target_1; why target_0 could not do this |
+| [gate-double](gate-double.md) | Two offset gates in sequence, and the inflation that makes it safe |
 | [model](model.md) | The YOLO detector: dataset, training, the decoder bug it exposed, and how it was made to fly |
 | [deployment](deployment.md) | Detector throughput per input size and thread count, and what it does not measure |
 | [market](market.md) | What UAV-autonomy postings ask for, where this project stands, what to build next |

@@ -168,6 +168,10 @@ gap and lands on target_0 itself.
 at y ∈ [1.2, 3.6], well before target_1 at (20, 0). `make gate-target1` threads
 the offset gap, turns, and lands on target_1.
 
+`target_tracking_gate_double.sdf` keeps gate 1 at x = 1.2 (north gap) and adds
+gate 2 at x = 12.2 (south gap). `make gate-double` threads both gaps before
+target_1.
+
 The wall's pose and size are duplicated in `config/obstacle.yaml`, the pillar's
 in `config/side_obstacle.yaml`; `check_world_targets.py` fails when a world and
 its config disagree, because the clearance metric is computed from them. Both

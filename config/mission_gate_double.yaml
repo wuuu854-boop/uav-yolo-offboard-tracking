@@ -1,0 +1,46 @@
+# Double doorway before target_1 (`make gate-double`).
+#
+# Gate 1 at world x=1.2, 2.4 m gap at y ∈ [1.2, 3.6] (north).
+# Gate 2 at world x=12.2, 2.4 m gap at y ∈ [-3.2, -0.8] (south).
+# target_1 is at (20, 0). The route goes north through gate 1, south through
+# gate 2, then turns to target_1.
+takeoff_altitude_m: 5.0
+spawn_offset_enu: [-7.5, 0.0]
+reach_tolerance_m: 0.1
+max_speed_mps: 0.8
+hover_duration_s: 3.0
+
+target_loss_hover_s: 2.0
+setpoint_jump_limit_m: 3.0
+land_after_hover: true
+max_mission_s: 70.0
+
+confirm_frames: 3
+geofence_radius_m: 35.0
+control_rate_hz: 50.0
+
+heading_yaw_deg: 90.0
+
+patrol_waypoints:
+  - [27.5, 0.0]
+
+target_selection: nearest_centre
+search_after_s: 8.0
+search_area_m: 20.0
+search_spacing_m: 8.9
+
+avoidance_timeout_s: 1.0
+avoidance_stop_enabled: false
+detour_enabled: false
+
+global_planning: true
+global_bounds: [-10.0, 32.0, -10.0, 10.0]
+global_obstacles:
+  - [8.7, -1.9, 0.2, 6.2]
+  - [8.7, 4.3, 0.2, 1.4]
+  - [19.7, -4.1, 0.2, 1.8]
+  - [19.7, 2.1, 0.2, 5.8]
+global_resolution_m: 0.2
+global_inflation_m: 0.8
+global_waypoint_tolerance_m: 0.1
+global_min_clearance_m: 0.4
