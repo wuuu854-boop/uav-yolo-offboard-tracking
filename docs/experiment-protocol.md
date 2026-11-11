@@ -58,6 +58,11 @@ The phase-5 back-off run uses the same world and a 4.0 m side floor,
 `results/backoff_landing.csv` and is a success (0.684 m). Details:
 [`backoff.md`](backoff.md).
 
+The phase-6 repeated back-off uses the same world with a 6.0 m floor and 0.2 m
+steps, `config/mission_backoff_sweep.yaml` and `make backoff-sweep`; its landing
+row is `results/sweep_landing.csv` and is a success (0.808 m). Details:
+[`backoff-sweep.md`](backoff-sweep.md).
+
 Restart the simulation between targets; do not teleport a running vehicle.
 
 ## Trial procedure

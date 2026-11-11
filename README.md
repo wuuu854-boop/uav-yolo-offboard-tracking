@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/v/release/wuuu854-boop/uav-yolo-offboard-tracking?include_prereleases&sort=semver)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-393-brightgreen)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-399-brightgreen)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ci.yml)
 
 **UAV vision in the loop, measured.** Detection → pixel-to-ground projection → PX4 Offboard approach in Gazebo SITL, plus a forward depth camera that stops the approach before a wall — with a trial harness that turns every run into a CSV row and an environment doctor that diagnoses this stack's setup failures.
 
@@ -209,6 +209,23 @@ barrier's north end.*
 Limits: one fixed back-off distance, one retry, no search loop, one static
 barrier; if no side clears it holds. See [`docs/backoff.md`](docs/backoff.md).
 
+### Repeating the back-off
+
+Phase 6 repeats that step until a budget is spent (`backoff_max_attempts`), making
+a fresh side decision at each new position. `make backoff-sweep` uses 0.2 m steps
+and a 6.0 m side floor, so the barrier's strips stay blocked for several steps.
+
+One run: stop at 17.9 s, **four back-off attempts** (`2/4` … `4/4` in the trace),
+**0.62 m** of back-off travel, **left** at the last step, 3.772 m lateral leg,
+6 m forward, final target error **0.852 m** (landing 0.808 m, `success=True`),
+minimum clearance **0.639 m**, **0** contacts, 1212 depth frames, 80.6 s.
+
+![Four small back-off steps, then around the barrier](results/sweep_run.png)
+
+Limits: fixed 0.2 m step straight back, budget 4, no adaptive distance or
+sideways sweep; if the budget runs out it holds. See
+[`docs/backoff-sweep.md`](docs/backoff-sweep.md).
+
 **Version provenance.** The table is the nine-trial set measured with **v0.1.0**.
 v0.2.0 changes safety behaviour only — a geofence, a mission timeout and a
 requirement that a target be seen for consecutive frames before the mission acts
@@ -225,7 +242,7 @@ Gazebo rendered headless through WSL2.
 
 | Layer | Status | Evidence |
 |---|---|---|
-| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (393 tests) + `make demo` || YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
+| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (399 tests) + `make demo` || YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
 | Cross-frame identity (`track_id`) | ✅ verified | `tests/test_tracking.py` (12 tests) + a ROS test that the id survives two frames |
 | ROS 2 packages build, both nodes run | ✅ verified in CI | `ROS build` workflow on `ros:humble`: detector against synthetic images, controller against fake PX4 traffic |
 | Version matrix, world structure, camera intrinsics | ✅ checked | `make doctor`, `check_world_targets.py` in CI |
@@ -241,6 +258,7 @@ Gazebo rendered headless through WSL2.
 | Depth-based choice of detour side | ✅ **verified** | `clear_side_at_stop=left`, 4.181 m lateral, target 0.714 m, 0 contacts; [`results/autod_summary.json`](results/autod_summary.json) |
 | Both sides blocked → hold, not guess | ✅ **verified** | `blocked` label latched, 35.0 s hold, 0.129 m settled drift, 0 contacts, mission timeout lands at 4.032 m (`success=False`, expected); [`results/blocked_summary.json`](results/blocked_summary.json) |
 | Both sides blocked → back off and recover | ✅ **verified** | 1.63 m back-off, left side at the back-off point, 3.254 m lateral, target 0.831 m, 0 contacts; [`results/backoff_summary.json`](results/backoff_summary.json) |
+| Both sides blocked → repeat the back-off | ✅ **verified** | four 0.2 m steps, left at the last step, 3.772 m lateral, target 0.852 m, 0 contacts; [`results/sweep_summary.json`](results/sweep_summary.json) |
 | Contact sensor can report a contact | ✅ **checked positively** | a 0.5 kg box dropped on the wall produced 4632 messages; [`results/contact_sensor_check.txt`](results/contact_sensor_check.txt) |
 | Depth-sensor noise, holes, real hardware | ❌ **not verified** | Gazebo returns ideal float32 depth; there is no real depth camera, no multipath, no missing-return model |
 | Dynamic obstacles / global planning | ❌ **not implemented** | local stop + one detour + one hold; no obstacle track, no global planner |
@@ -323,6 +341,7 @@ make detour                    # 深度相机：停住 → 固定右侧 L 形绕
 make auto-detour               # 深度相机：左右条带选较空的一侧 → L 形绕墙 → 回到目标
 make blocked                   # 深度相机：两侧都堵 → 保持不动，不猜方向（任务超时降落）
 make backoff                   # 深度相机：两侧都堵 → 后退 2 m 重看 → 选边绕行
+make backoff-sweep             # 深度相机：一次后退不够 → 0.2 m 步进重看，直到有空侧
 ```
 
 > **Windows 用户**：PX4 SITL 只能跑在 Linux 上。用 WSL2 + Ubuntu 22.04（Windows 11
@@ -403,11 +422,12 @@ Failure modes this system actually produced, each with the check that catches it
 - 单目标；多目标跟踪属于 v0.2.0 范围。
 - 搜索是固定方形草坪扫描（20 m、间距 8.9 m），不含重规划，也不覆盖大面积区域。
 - 避障验证了「停住」、固定右侧 L 形绕墙、用左右深度条带选择绕行方向、两侧都堵时
-  拒绝猜方向并保持，以及两侧都堵时后退 2 m 重看后再绕行：静态障碍、理想深度图、
-  0.6 m/s、各一次飞行；仍没有全局规划、动态障碍、多障碍、循环后退/搜索、
-  真实深度相机的噪声/空洞（见 [`docs/avoidance.md`](docs/avoidance.md)、
-  [`docs/detour.md`](docs/detour.md)、[`docs/side-selection.md`](docs/side-selection.md)、
-  [`docs/blocked.md`](docs/blocked.md)、[`docs/backoff.md`](docs/backoff.md)）。
+  拒绝猜方向并保持、两侧都堵时后退重看后再绕行，以及一次不够时按 0.2 m 步进重复后退：
+  静态障碍、理想深度图、0.6 m/s、各一次飞行；仍没有全局规划、动态障碍、多障碍、
+  自适应步长/横向搜索、真实深度相机的噪声/空洞（见
+  [`docs/avoidance.md`](docs/avoidance.md)、[`docs/detour.md`](docs/detour.md)、
+  [`docs/side-selection.md`](docs/side-selection.md)、[`docs/blocked.md`](docs/blocked.md)、
+  [`docs/backoff.md`](docs/backoff.md)、[`docs/backoff-sweep.md`](docs/backoff-sweep.md)）。
 - 默认 world 是合成彩色方块，COCO 预训练 YOLO 对其**零样本检测率为 0**，
   因此闭环演示使用 `backend: baseline`，YOLO 只用于延迟/部署基准；
   用 Gazebo 渲染帧自动标注并微调是 v0.2.0 的任务（见 `sim/README.md`）。

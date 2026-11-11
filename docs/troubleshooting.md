@@ -433,3 +433,32 @@ phase-5 report.
 
 **Source** found during v0.13.0 bring-up.
 
+---
+
+## 19. The repeated back-off never clears, or holds forever
+
+**Symptom** The trace shows `still blocked: backing off again (n/max)` until the
+budget is spent, then a hold; or the vehicle resumes as soon as the gate reads
+clear and drives straight back into the obstacle.
+
+**Cause** Three things:
+
+1. **The floor is above the ground return.** At 5 m altitude the lower part of a
+   side strip sees the floor at roughly 7 m. An 8 m side floor counts the floor as
+   a permanent obstacle, so no amount of backing off clears it.
+2. **The step is larger than the distance to the first clear point.** A 1 m step
+   can pass the first clear position; the next decision is made past it. The
+   loop only helps if the step is small enough to sample the gap.
+3. **Gate-clear is not path-clear.** After the budget is spent, `HOLDING` must not
+   reset on a clear gate: backing away makes the gate clear while the obstacle is
+   still in front. `_backoff_hold` keeps the hold until a side clears.
+
+**Fix** The retained phase-6 scenario uses a 6.0 m floor, 0.2 m steps, a 0.05 m
+reach tolerance and `backoff_max_attempts: 4`. The trace shows `(2/4)`…`(4/4)`
+before the lateral leg.
+
+**Detected by** the sweep trace reaching `HOLDING` without a lateral leg, or the
+masked loop in `offboard_avoidance.log`.
+
+**Source** found during v0.14.0 bring-up.
+

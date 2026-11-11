@@ -286,6 +286,72 @@ def test_backoff_zero_keeps_the_hold_instead_of_moving():
     assert decision.note == "both sides blocked: holding"
 
 
+def test_a_second_backoff_step_extends_the_sweep():
+    planner = _planner(backoff_m=2.0, backoff_max_attempts=2)
+    planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+
+    decision = planner.update((-2.0, 0.0), (10.0, 0.0), stop=True, now_s=1.0, side="blocked")
+
+    assert decision.active is True
+    assert decision.phase is DetourPhase.BACKOFF
+    assert decision.waypoint == pytest.approx((-4.0, 0.0))
+    assert "backing off again (2/2)" in decision.note
+
+
+def test_the_sweep_stops_at_its_attempt_budget():
+    planner = _planner(backoff_m=2.0, backoff_max_attempts=2)
+    planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+    planner.update((-2.0, 0.0), (10.0, 0.0), stop=True, now_s=1.0, side="blocked")
+
+    decision = planner.update((-4.0, 0.0), (10.0, 0.0), stop=True, now_s=2.0, side="blocked")
+
+    assert decision.active is True
+    assert decision.phase is DetourPhase.HOLDING
+    assert "still blocked" in decision.note
+
+
+def test_a_side_that_clears_at_the_second_step_starts_the_lateral_leg():
+    planner = _planner(backoff_m=2.0, backoff_max_attempts=2)
+    planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+    planner.update((-2.0, 0.0), (10.0, 0.0), stop=True, now_s=1.0, side="blocked")
+
+    decision = planner.update((-4.0, 0.0), (10.0, 0.0), stop=True, now_s=2.0, side="left")
+
+    assert decision.active is True
+    assert decision.phase is DetourPhase.LATERAL
+    assert decision.side == "left"
+    assert decision.waypoint == pytest.approx((-4.0, 3.0))
+
+
+def test_an_exhausted_backoff_does_not_resume_just_because_the_gate_cleared():
+    planner = _planner(backoff_m=2.0, backoff_max_attempts=1)
+    planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+    planner.update((-2.0, 0.0), (10.0, 0.0), stop=True, now_s=1.0, side="blocked")
+
+    decision = planner.update((-2.0, 0.0), (10.0, 0.0), stop=False, now_s=2.0, side="blocked")
+
+    assert decision.active is True
+    assert decision.phase is DetourPhase.HOLDING
+    assert "backoff exhausted" in decision.note
+
+
+def test_an_exhausted_backoff_still_recovers_if_a_side_clears():
+    planner = _planner(backoff_m=2.0, backoff_max_attempts=1)
+    planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+    planner.update((-2.0, 0.0), (10.0, 0.0), stop=True, now_s=1.0, side="blocked")
+
+    decision = planner.update((-2.0, 0.0), (10.0, 0.0), stop=True, now_s=2.0, side="left")
+
+    assert decision.active is True
+    assert decision.phase is DetourPhase.LATERAL
+    assert decision.side == "left"
+
+
+def test_the_backoff_attempt_budget_cannot_be_zero():
+    with pytest.raises(ValueError, match="backoff_max_attempts"):
+        DetourConfig(backoff_max_attempts=0)
+
+
 def test_the_backoff_cannot_be_negative():
     with pytest.raises(ValueError, match="backoff_m"):
         DetourConfig(backoff_m=-0.1)

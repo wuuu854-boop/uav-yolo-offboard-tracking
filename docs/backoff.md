@@ -3,7 +3,8 @@
 Phase 4 held when both side strips were blocked. Phase 5 adds one recovery move:
 back straight away from the obstacle, re-read the strips, and if a side is now
 free, fly the L from there. If no side clears, it holds. It is still not a
-search: one back-off distance, one retry, no map.
+search: one back-off distance, one retry, no map. Phase 6 adds a bounded repeat
+of the same step; see [`backoff-sweep.md`](backoff-sweep.md).
 
 ![After backing off, the left strip clears and the L goes around the barrier](../results/backoff_run.png)
 
@@ -21,7 +22,8 @@ leg; the blue path goes around the barrier's north end to target_0.*
 4. It starts the lateral leg from the back-off point (3.5 m), flies 7 m forward
    past the barrier, waits for the gate to clear and resumes target_0.
 5. If both strips are still blocked at the back-off point, the planner enters
-   `HOLDING` and does not repeat the back-off. It recovers only if a side clears
+   `HOLDING` and does not repeat the back-off in this phase-5 mission (the
+   phase-6 sweep repeats it up to a budget). It recovers only if a side clears
    later.
 
 The back-off distance is measured along the **approach axis**, not toward the
@@ -88,7 +90,7 @@ the clearance is below 0.4 m, or either contact sensor fires.
 | A free side reappears after backing off | ✅ verified | `clear_side=left` at the back-off point |
 | The L from the back-off point reaches target_0 | ✅ verified | 0.831 m final error, 0.684 m landing, 8/8 checks |
 | It does not touch the wall or barrier | ✅ verified | 0 contacts, 0.595 m clearance |
-| Repeating the back-off until a side appears | ❌ **not implemented** | one 2 m back-off; then hold |
+| Repeating the back-off until a side appears | ✅ **phase 6** | bounded sweep, 0.2 m steps; see [`backoff-sweep.md`](backoff-sweep.md) |
 | Choosing a different back-off distance | ❌ **not implemented** | fixed `backoff_m` in the mission |
 | Multiple obstacles / dynamic obstacles / global planning | ❌ **not verified** | one static barrier + wall |
 | A real depth sensor | ❌ **not verified** | ideal Gazebo float32 depth |

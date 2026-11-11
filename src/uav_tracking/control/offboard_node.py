@@ -168,6 +168,7 @@ class OffboardNode(Node):
                 max_attempts=mission_cfg.detour_max_attempts,
                 start_delay_s=mission_cfg.detour_start_delay_s,
                 backoff_m=mission_cfg.detour_backoff_m,
+                backoff_max_attempts=mission_cfg.detour_backoff_max_attempts,
             )
         )
         self._detour_phase = DetourPhase.INACTIVE
@@ -654,6 +655,7 @@ def main() -> int:
         detour_max_attempts=int(mission_raw.get("detour_max_attempts", 2)),
         detour_start_delay_s=float(mission_raw.get("detour_start_delay_s", 0.0)),
         detour_backoff_m=float(mission_raw.get("detour_backoff_m", 0.0)),
+        detour_backoff_max_attempts=int(mission_raw.get("detour_backoff_max_attempts", 1)),
         patrol_waypoints=tuple(
             (float(pair[0]), float(pair[1])) for pair in mission_raw.get("patrol_waypoints", ())
         ),

@@ -163,6 +163,12 @@ Phase 5 adds one recovery move: with `backoff_m` set, `blocked` starts a
 point. A free side starts the normal L from there; otherwise the planner holds
 and does not repeat. See [`backoff.md`](backoff.md).
 
+Phase 6 makes the back-off a bounded loop: `backoff_max_attempts` repeats the
+same `backoff_m` step, re-reading at every position; `stopped: backing off
+again (n/max)` is in the trace. When the budget is spent the planner holds and
+does not resume on a gate that is merely clear because of the retreat. See
+[`backoff-sweep.md`](backoff-sweep.md).
+
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a
 single missed frame ends the mission.

@@ -135,7 +135,9 @@ regardless. `make blocked` uses it with the 3.0 m side floor in
 `config/depth_blocked.yaml`; the controller holds and the mission times out.
 `make backoff` uses the same world with the 4.0 m floor in
 `config/depth_backoff.yaml`: the vehicle backs 2 m, the barrier's edges leave the
-strips, and the L goes around its north end.
+strips, and the L goes around its north end. `make backoff-sweep` uses a 6.0 m
+floor and 0.2 m steps in `config/depth_backoff_sweep.yaml`: the barrier stays
+blocked for four small steps, then clears.
 
 The wall's pose and size are duplicated in `config/obstacle.yaml`, the pillar's
 in `config/side_obstacle.yaml`; `check_world_targets.py` fails when a world and

@@ -88,7 +88,7 @@ target wall, or if either contact sensor fires.
 | The controller refuses to guess | ✅ verified | trace has no detour; it holds 35.3 s |
 | It does not touch the wall or barrier | ✅ verified | 0 contacts, 2.758 m to the wall |
 | The transient label cannot start a detour | ✅ verified | 1 s start delay + blocked latch; `tests/test_detour.py` |
-| Backing off / searching for another gap | ❌ **not implemented** | the vehicle holds and lands |
+| Backing off / searching for another gap | ✅ **back off phases 5–6** | one 2 m step, or a bounded 0.2 m sweep; no 2-D search |
 | A path when both sides are blocked | ❌ **not implemented** | no local search, no global planner |
 | Dynamic obstacles, multiple obstacles | ❌ **not verified** | one static barrier + wall |
 | A real depth sensor | ❌ **not verified** | ideal Gazebo float32 depth |

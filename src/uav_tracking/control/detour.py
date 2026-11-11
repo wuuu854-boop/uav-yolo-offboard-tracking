@@ -49,6 +49,9 @@ class DetourConfig:
     # If both side strips are blocked, back away from the obstacle by this much
     # and re-evaluate. 0 keeps the phase-4 behaviour (hold without moving).
     backoff_m: float = 0.0
+    # How many backoff_m steps to try before holding. 1 is the phase-5 single
+    # retry; 2+ is the phase-6 distance sweep.
+    backoff_max_attempts: int = 1
 
     def __post_init__(self) -> None:
         side = str(self.side).lower()
@@ -75,6 +78,8 @@ class DetourConfig:
         backoff = float(self.backoff_m)
         if not math.isfinite(backoff) or backoff < 0.0:
             raise ValueError(f"backoff_m must be finite and non-negative, got {backoff!r}")
+        if int(self.backoff_max_attempts) < 1:
+            raise ValueError("backoff_max_attempts must be at least 1")
         if int(self.max_attempts) < 1:
             raise ValueError("max_attempts must be at least 1")
 
@@ -85,6 +90,7 @@ class DetourConfig:
         object.__setattr__(self, "wait_timeout_s", wait)
         object.__setattr__(self, "start_delay_s", delay)
         object.__setattr__(self, "backoff_m", backoff)
+        object.__setattr__(self, "backoff_max_attempts", int(self.backoff_max_attempts))
         object.__setattr__(self, "max_attempts", int(self.max_attempts))
 
 
@@ -132,6 +138,8 @@ class DetourPlanner:
         self._clear_since: float | None = None
         self._wait_since: float | None = None
         self._stop_since: float | None = None
+        self._backoff_attempts = 0
+        self._backoff_hold = False
 
     @property
     def enabled(self) -> bool:
@@ -149,6 +157,8 @@ class DetourPlanner:
         self._clear_since = None
         self._wait_since = None
         self._stop_since = None
+        self._backoff_attempts = 0
+        self._backoff_hold = False
 
     def update(
         self,
@@ -213,9 +223,20 @@ class DetourPlanner:
                 if side in ("left", "right"):
                     self._start(here, side)
                     return self._active("backoff done: lateral leg")
+                if self._backoff_attempts < self.config.backoff_max_attempts:
+                    self._backoff_attempts += 1
+                    self._waypoint = (
+                        here[0] - self.config.backoff_m * self._approach[0],
+                        here[1] - self.config.backoff_m * self._approach[1],
+                    )
+                    return self._active(
+                        "still blocked: backing off again "
+                        f"({self._backoff_attempts}/{self.config.backoff_max_attempts})"
+                    )
                 self.phase = DetourPhase.HOLDING
                 self._waypoint = here
                 self._clear_since = None
+                self._backoff_hold = True
                 return self._active("backoff done: both sides still blocked, holding")
             return self._active("backing off from blocked sides")
         if self.phase is DetourPhase.LATERAL:
@@ -259,6 +280,12 @@ class DetourPlanner:
         if self.side is None and stop and side in ("left", "right"):
             self._start(here, side)
             return self._active("detour recovered after backoff: lateral leg")
+        if self._backoff_hold:
+            # The gate can read clear simply because the vehicle backed away;
+            # resuming the approach would drive it straight back into the same
+            # obstacle. Hold until a side clears or the mission times out.
+            self._waypoint = here
+            return self._active("backoff exhausted: holding")
         clear_for = self._update_clear_since(stop, now)
         if clear_for >= self.config.clear_hold_s:
             self.reset()
@@ -289,6 +316,8 @@ class DetourPlanner:
         self._lateral = _perpendicular(self._approach, self.config.side)
         self.phase = DetourPhase.BACKOFF
         self.attempts = 1
+        self._backoff_attempts = 1
+        self._backoff_hold = False
         self._wait_since = None
         self._clear_since = None
         self._waypoint = (

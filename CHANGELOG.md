@@ -7,6 +7,30 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-11-11
+
+### Added
+
+- **The back-off can repeat until a side clears.** `backoff_max_attempts` keeps
+  stepping `backoff_m` straight back, re-reading the strips at each new position;
+  the trace says `still blocked: backing off again (n/max)`. If the budget runs
+  out, the planner holds. `HOLDING` after a back-off no longer resumes just
+  because the gate reads clear: backing away makes the gate clear while the
+  obstacle is still in front.
+- `config/mission_backoff_sweep.yaml` (`make backoff-sweep`) uses the phase-4
+  barrier world, a 6.0 m side floor and 0.2 m steps with a 0.05 m reach tolerance.
+- One run: stop at 17.9 s, four back-off attempts (`2/4`…`4/4`), 0.62 m of
+  back-off travel, **left** at the last step, 3.772 m lateral leg, 6 m forward,
+  final target error **0.852 m**, landing 0.808 m `success=True`, minimum
+  clearance **0.639 m**, **0** contacts, 1212 depth frames, 80.6 s.
+
+### Why
+
+A single fixed back-off distance is still a guess. Repeating the same small step
+and making a fresh decision at each position is the smallest loop that can find a
+clear side at an unknown distance — and the budget stops it from reversing
+forever. It is still a straight-back sweep, not a search in two dimensions.
+
 ## [0.13.0] - 2026-11-11
 
 ### Added
