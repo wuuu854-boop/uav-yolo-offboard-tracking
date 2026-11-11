@@ -6,13 +6,32 @@ import math
 
 import pytest
 
-from uav_tracking.planning.global_planner import Box, plan_path
+from uav_tracking.planning.global_planner import Box, obstacle_box_from_measurement, plan_path
 
 
 def _outside(path, obstacles, inflation):
     for x, y in path:
         for box in obstacles:
             assert not box.contains(x, y, inflation), (x, y, box)
+
+
+def test_a_depth_measurement_becomes_a_conservative_box():
+    box = obstacle_box_from_measurement((0.0, 0.0), 2.0, 0.0, 4.0, 0.4)
+
+    assert (box.centre_x, box.centre_y) == pytest.approx((2.0, 0.0))
+    assert (box.size_x, box.size_y) == pytest.approx((0.4, 4.0))
+
+
+def test_a_rotated_measurement_uses_the_axis_aligned_bound():
+    box = obstacle_box_from_measurement((0.0, 0.0), 2.0, math.pi / 2, 4.0, 0.4)
+
+    assert (box.centre_x, box.centre_y) == pytest.approx((0.0, 2.0))
+    assert (box.size_x, box.size_y) == pytest.approx((4.0, 0.4))
+
+
+def test_a_measurement_with_a_bad_distance_is_rejected():
+    with pytest.raises(ValueError, match="distance_m"):
+        obstacle_box_from_measurement((0.0, 0.0), 0.0, 0.0, 4.0, 0.4)
 
 
 def test_an_empty_map_plans_straight_to_the_goal():

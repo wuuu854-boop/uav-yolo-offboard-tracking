@@ -186,6 +186,12 @@ axis-aligned boxes and smooths the result; the offboard plans once per goal,
 follows the waypoints, and takes the final target. The mission supplies the map
 and may disable the reactive stop explicitly. See [`global.md`](global.md).
 
+Phase 10 adds a one-shot perception handoff: with `global_perception`, the first
+cruise stop (`nearest_m` plus pose and yaw) becomes one conservative box, the
+planner replans around it, and the reactive stop is ignored for the rest of the
+mission. It is one range and one replan, not an occupancy map. See
+[`perception-planning.md`](perception-planning.md).
+
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a
 single missed frame ends the mission.

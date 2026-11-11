@@ -12,6 +12,7 @@
 | [adaptive](adaptive.md) | Sizing the back-off from the measured side clearance, and why one step was enough |
 | [search](search.md) | Side-stepping after a blocked stop, and the frame that shows the both-block evidence |
 | [global](global.md) | Known-map A* around the wall, the stand-off, and why the reactive stop is off |
+| [perception-planning](perception-planning.md) | One depth stop becomes one box, one replan; what that is not |
 | [model](model.md) | The YOLO detector: dataset, training, the decoder bug it exposed, and how it was made to fly |
 | [deployment](deployment.md) | Detector throughput per input size and thread count, and what it does not measure |
 | [market](market.md) | What UAV-autonomy postings ask for, where this project stands, what to build next |
@@ -19,7 +20,7 @@
 | [experiment-protocol](experiment-protocol.md) | How a trial is run, what each metric means, spawn poses |
 | [scenario](scenario.md) | Camera maths, range budget, why the targets are 20 m apart |
 | [adoption](adoption.md) | What to change for your own target, camera or scene |
-| [troubleshooting](troubleshooting.md) | Twenty-three failures with the upstream source of each |
+| [troubleshooting](troubleshooting.md) | Twenty-four failures with the upstream source of each |
 | [verification-log](verification-log.md) | What each non-obvious claim was checked against |
 | [prior-art](prior-art.md) | The existing projects, what they lack, and the gap |
 | [market](market.md) | Job requirements mapped to files in this repository |

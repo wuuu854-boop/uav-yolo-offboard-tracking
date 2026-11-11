@@ -1,0 +1,11 @@
+t_s,state,note,east_m,north_m,altitude_m
+1794393985.15,IDLE,waiting for arming,0.0,0.0,0.0
+1794393987.19,TAKEOFF,climb to 5.0 m,0.18,0.21,0.49
+1794393987.21,TAKEOFF,,0.18,0.21,0.49
+1794393994.73,GOTO,takeoff altitude reached,0.17,0.29,4.7
+1794393994.75,GOTO,confirming 1/3,0.17,0.29,4.71
+1794393994.77,GOTO,confirming 2/3,0.17,0.29,4.71
+1794393994.79,GOTO,,0.17,0.29,4.71
+1794394016.59,HOVER,arrived,8.16,-0.08,4.96
+1794394019.59,LAND,patrol complete,8.63,-0.05,5.02
+1794394019.61,LAND,,8.63,-0.05,5.02

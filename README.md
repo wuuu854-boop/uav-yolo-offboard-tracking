@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/v/release/wuuu854-boop/uav-yolo-offboard-tracking?include_prereleases&sort=semver)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-426-brightgreen)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-429-brightgreen)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ci.yml)
 
 **UAV vision in the loop, measured.** Detection → pixel-to-ground projection → PX4 Offboard approach in Gazebo SITL, plus a forward depth camera that stops the approach before a wall — with a trial harness that turns every run into a CSV row and an environment doctor that diagnoses this stack's setup failures.
 
@@ -288,6 +288,24 @@ pillars). One run: **3 waypoints around 3 obstacles**, target **0.616 m**,
 landing 1.001 m `success=True`, minimum clearance **0.959 m**, **0** contacts,
 686 depth frames, 46.2 s.
 
+### Perception-to-planning
+
+`make global-perception` starts with an **empty map**. The vehicle flies the
+straight plan, the depth gate stops on the wall at **2.46 m**, and that measured
+range plus pose becomes one conservative box `(6.57, 0.17)`, `0.40 × 4.00 m`.
+The planner then makes **3 waypoints around 1 obstacle**; the reactive stop is
+ignored after the handoff.
+
+One run: target **0.777 m**, landing **1.13 m** `success=True`, minimum clearance
+**0.732 m**, **0** contacts, 698 depth frames, 46.4 s. This is one range and one
+replan, not an occupancy map.
+
+![Initial straight plan, stop, and replanned path around the measured box](results/global_perception_run.png)
+
+Limits: one-shot box, conservative 4 m width, no map accumulation, no replanning
+after the handoff, no dynamic/3-D obstacles. See
+[`docs/perception-planning.md`](docs/perception-planning.md).
+
 **Version provenance.** The table is the nine-trial set measured with **v0.1.0**.
 v0.2.0 changes safety behaviour only — a geofence, a mission timeout and a
 requirement that a target be seen for consecutive frames before the mission acts
@@ -304,7 +322,7 @@ Gazebo rendered headless through WSL2.
 
 | Layer | Status | Evidence |
 |---|---|---|
-| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (426 tests) + `make demo` || YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
+| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (429 tests) + `make demo` || YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
 | Cross-frame identity (`track_id`) | ✅ verified | `tests/test_tracking.py` (12 tests) + a ROS test that the id survives two frames |
 | ROS 2 packages build, both nodes run | ✅ verified in CI | `ROS build` workflow on `ros:humble`: detector against synthetic images, controller against fake PX4 traffic |
 | Version matrix, world structure, camera intrinsics | ✅ checked | `make doctor`, `check_world_targets.py` in CI |
@@ -325,6 +343,7 @@ Gazebo rendered headless through WSL2.
 | Side-step search recovery after a blocked stop | ✅ **verified** | every stopped row `blocked` (L2.75/R1.91), `side-search left` → `search found a side`, target 0.669 m, landing 0.663 m, 0 contacts; [`results/search_summary.json`](results/search_summary.json) |
 | Known-map global path around the wall | ✅ **verified (known map)** | 3 waypoints, target 0.24 m, landing 0.216 m, clearance 0.554 m, 0 contacts; reactive stop disabled; [`results/global_summary.json`](results/global_summary.json) |
 | Multi-obstacle known-map path | ✅ **verified (known map)** | 3 waypoints around 3 boxes, target 0.616 m, landing 1.001 m, clearance 0.959 m, 0 contacts; [`results/global_multi_summary.json`](results/global_multi_summary.json) |
+| Depth stop → box → replan | ✅ **verified (one-shot)** | empty initial map, 2.46 m stop → box `(6.57, 0.17)`, 3-waypoint replan, target 0.777 m, 0 contacts; [`results/global_perception_summary.json`](results/global_perception_summary.json) |
 | Contact sensor can report a contact | ✅ **checked positively** | a 0.5 kg box dropped on the wall produced 4632 messages; [`results/contact_sensor_check.txt`](results/contact_sensor_check.txt) |
 | Depth-sensor noise, holes, real hardware | ❌ **not verified** | Gazebo returns ideal float32 depth; there is no real depth camera, no multipath, no missing-return model |
 | Dynamic obstacles / global planning | ❌ **not implemented** | local stop + one detour + one hold; no obstacle track, no global planner |
@@ -412,6 +431,7 @@ make adaptive                  # 深度相机：按左右实测距离计算后�
 make search                    # 深度相机：停住后侧移 2 m 重看，找到空侧再绕行
 make global                    # 已知地图 A*：先规划绕墙路径，再飞（关闭反应式停障）
 make global-multi              # 已知地图 A*：墙 + 两根侧柱的多障碍路径
+make global-perception         # 深度停障 → 一个实测障碍框 → 重规划绕过
 ```
 
 > **Windows 用户**：PX4 SITL 只能跑在 Linux 上。用 WSL2 + Ubuntu 22.04（Windows 11
@@ -493,15 +513,15 @@ Failure modes this system actually produced, each with the check that catches it
 - 搜索是固定方形草坪扫描（20 m、间距 8.9 m），不含重规划，也不覆盖大面积区域。
 - 避障验证了「停住」、固定右侧 L 形绕墙、用左右深度条带选择绕行方向、两侧都堵时
   拒绝猜方向并保持、后退重看、0.2 m 步进重复后退、按实测距离计算后退量，以及停住后
-  侧移 2 m 重新读条带并恢复，以及已知地图 A* 先规划绕墙路径：静态障碍、理想深度图、
-  0.6 m/s、各一次飞行；已验证停点双侧 blocked 的正例；
-  仍没有感知驱动的全局规划、边飞边重规划/动态/3D 障碍、交替/二维搜索、自适应方向、
-  多障碍、真实深度相机的噪声/空洞（见
+  侧移 2 m 重新读条带并恢复、已知地图 A* 单/多障碍绕墙，以及一次深度停障→单框→
+  重规划：静态障碍、理想深度图、0.6 m/s、各一次飞行；已验证停点双侧 blocked 的正例；
+  仍没有占据栅格/持续重规划、动态/3D 障碍、交替/二维搜索、自适应方向、
+  真实深度相机的噪声/空洞（见
   [`docs/avoidance.md`](docs/avoidance.md)、[`docs/detour.md`](docs/detour.md)、
   [`docs/side-selection.md`](docs/side-selection.md)、[`docs/blocked.md`](docs/blocked.md)、
   [`docs/backoff.md`](docs/backoff.md)、[`docs/backoff-sweep.md`](docs/backoff-sweep.md)、
   [`docs/adaptive.md`](docs/adaptive.md)、[`docs/search.md`](docs/search.md)、
-  [`docs/global.md`](docs/global.md)）。
+  [`docs/global.md`](docs/global.md)、[`docs/perception-planning.md`](docs/perception-planning.md)）。
 - 默认 world 是合成彩色方块，COCO 预训练 YOLO 对其**零样本检测率为 0**，
   因此闭环演示使用 `backend: baseline`，YOLO 只用于延迟/部署基准；
   用 Gazebo 渲染帧自动标注并微调是 v0.2.0 的任务（见 `sim/README.md`）。

@@ -149,6 +149,8 @@ both-blocked start.
 `make global` uses `target_tracking_obstacle.sdf` itself: the wall at local
 `(6.7, 0)` is passed to the known-map planner as a box. The map is hand-entered,
 not read from the world file, and the reactive stop is disabled for that run.
+`make global-perception` uses the same world with an empty map; the wall is not
+hand-entered, one depth stop becomes a box at runtime and the planner replans.
 
 The wall's pose and size are duplicated in `config/obstacle.yaml`, the pillar's
 in `config/side_obstacle.yaml`; `check_world_targets.py` fails when a world and

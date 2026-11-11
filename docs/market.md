@@ -39,7 +39,7 @@ frequencies.
 | Real-time performance | "real-time cognitive cycle" | 8.1 ms / 119 FPS at 320 px, 4 threads; end-to-end 143 ms | `docs/deployment.md` |
 | Simulation first, SITL → real | "simulation first (Gazebo, SITL and HITL), then real flight" | **Gazebo Harmonic SITL**, 9+6 closed-loop trials, reproducible patch | `docs/experiment-protocol.md` |
 | State estimation, EKF, VIO | "EKF tuning … GPS-denied navigation" | **PX4's EKF only**, no tuning, no VIO | — |
-| Obstacle avoidance, LiDAR/depth | "path planning and obstacle avoidance with ROS 2" | **Reactive stop + L detour + depth side choice + back-off/search + known-map A\*** (v0.9–v0.17); the global demo uses a hand-entered static map and disables the reactive stop; no perception-driven planner, no dynamics, no 3-D | `docs/avoidance.md`, `docs/detour.md`, `docs/side-selection.md`, `docs/blocked.md`, `docs/backoff.md`, `docs/backoff-sweep.md`, `docs/adaptive.md`, `docs/search.md`, `docs/global.md` |
+| Obstacle avoidance, LiDAR/depth | "path planning and obstacle avoidance with ROS 2" | **Reactive stop + L detour + depth side choice + back-off/search + known-map A\* + one-shot depth-to-box replan** (v0.9–v0.19); no occupancy map or perception-driven multi-obstacle planning, no dynamics, no 3-D | `docs/avoidance.md`, `docs/detour.md`, `docs/side-selection.md`, `docs/blocked.md`, `docs/backoff.md`, `docs/backoff-sweep.md`, `docs/adaptive.md`, `docs/search.md`, `docs/global.md`, `docs/perception-planning.md` |
 | Multi-target / counter-drone | "detection, tracking and classification of airborne targets" | Single target per run | `control/selection.py` |
 | Dataset + labelling pipeline | not named, but implied by "model deployment" | **Geometry-based auto-labelling** on real frames | `scripts/label_real_frames.py` |
 
@@ -80,9 +80,10 @@ Ordered by (market weight × what is feasible without hardware we do not have):
    recovery from a genuine both-blocked stop (0.669 m target error, zero
    contacts) and a known-map A* path around the wall (0.24 m target error, zero
    contacts; reactive stop disabled, map hand-entered) plus a three-box
-   multi-obstacle A* run (0.616 m target error, zero contacts). Still missing:
-   perception-driven planning, replanning/dynamic or 3-D obstacles, multiple
-   obstacle **perception**, and a real sensor.
+   multi-obstacle A* run (0.616 m target error, zero contacts) plus a one-shot
+   depth-to-box replan (0.777 m target error, zero contacts). Still missing:
+   occupancy-map perception, replanning after the handoff, dynamic or 3-D
+   obstacles, and a real sensor.
 
 ## What we deliberately stop pretending
 

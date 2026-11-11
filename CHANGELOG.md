@@ -7,6 +7,28 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-11-11
+
+### Added
+
+- **One-shot perception-to-planning.** `global_perception` starts the map empty;
+  when the depth gate stops in cruise, the offboard turns `nearest_m` plus the
+  current pose and yaw into one conservative axis-aligned box
+  (`global_perception_width_m`, `global_perception_thickness_m`), replans, and
+  ignores the reactive stop for the rest of the mission.
+- `config/mission_global_perception.yaml` (`make global-perception`).
+- One run: initial plan 1 waypoint / 0 obstacles; stop at 20.2 s at 2.46 m; box at
+  `(6.57, 0.17)`, 0.40 × 4.00 m; replan 3 waypoints around 1 obstacle; target
+  **0.777 m**, landing 1.13 m `success=True`, minimum clearance **0.732 m**,
+  **0** contacts, 698 depth frames, 46.4 s.
+
+### Why
+
+The known-map demos had the boxes by hand. This is the smallest honest
+perception-to-planning step: one measured range, one box, one replan. It proves
+the handoff without claiming an occupancy map or replanning after the handoff;
+the next step is accumulating depth points instead of one range.
+
 ## [0.18.0] - 2026-11-11
 
 ### Added

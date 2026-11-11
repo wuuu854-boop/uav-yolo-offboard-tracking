@@ -41,7 +41,7 @@ from px4_msgs.msg import (  # noqa: E402
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node  # noqa: E402
 from rclpy.qos import qos_profile_sensor_data  # noqa: E402
-from std_msgs.msg import Bool, Float32MultiArray, String  # noqa: E402
+from std_msgs.msg import Bool, Float32, Float32MultiArray, String  # noqa: E402
 
 from uav_interfaces.msg import TargetArray  # noqa: E402
 from uav_tracking.control.arming import ArmingSequencer  # noqa: E402
@@ -74,7 +74,11 @@ from uav_tracking.control.state_machine import (  # noqa: E402
 from uav_tracking.control.trace import StateTrace  # noqa: E402
 from uav_tracking.perception.depth import StopWatchdog  # noqa: E402
 from uav_tracking.perception.projection import estimate_target_enu  # noqa: E402
-from uav_tracking.planning.global_planner import Box, plan_path  # noqa: E402
+from uav_tracking.planning.global_planner import (  # noqa: E402
+    Box,
+    obstacle_box_from_measurement,
+    plan_path,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -181,6 +185,9 @@ class OffboardNode(Node):
         self.clear_side = "unknown"
         self.global_path: list[tuple[float, float]] = []
         self._global_goal: tuple[float, float] | None = None
+        self.nearest_m = math.nan
+        self._perception_box: tuple[float, float, float, float] | None = None
+        self._perception_done = False
         self.side_left_m = math.nan
         self.side_right_m = math.nan
         # Once a side has been blocked during a stop, hold for the rest of that
@@ -199,6 +206,7 @@ class OffboardNode(Node):
         self.create_subscription(VehicleStatus, "/fmu/out/vehicle_status", self.on_status, px4_qos)
         self.create_subscription(TargetArray, "/detections", self.on_detections, 10)
         self.create_subscription(Bool, "/avoidance/stop", self.on_avoidance_stop, 10)
+        self.create_subscription(Float32, "/avoidance/nearest_m", self.on_nearest, 10)
         self.create_subscription(String, "/avoidance/clear_side", self.on_clear_side, 10)
         self.create_subscription(
             Float32MultiArray, "/avoidance/side_clearance", self.on_side_clearance, 10
@@ -237,6 +245,9 @@ class OffboardNode(Node):
     def on_avoidance_stop(self, msg: Bool) -> None:
         now_s = self.get_clock().now().nanoseconds / 1e9
         self.avoidance.update(bool(msg.data), now_s)
+
+    def on_nearest(self, msg: Float32) -> None:
+        self.nearest_m = float(msg.data)
 
     def on_clear_side(self, msg: String) -> None:
         side = str(msg.data).strip().lower()
@@ -330,6 +341,34 @@ class OffboardNode(Node):
         rewritten by every frame.
         """
         now_s = self.get_clock().now().nanoseconds / 1e9
+        # One-shot perception-to-planning: the first cruise stop that is not the
+        # takeoff ground gives a measured obstacle in front. Turn it into a
+        # conservative box, replan, then ignore the reactive stop for this
+        # mission so the planned path can fly.
+        if (
+            self.cfg.global_perception
+            and not self._perception_done
+            and self.altitude >= 4.0
+            and self.avoidance.active(now_s)
+            and math.isfinite(self.nearest_m)
+            and 0.5 < self.nearest_m < 4.0
+        ):
+            box = obstacle_box_from_measurement(
+                (self.east, self.north),
+                self.nearest_m,
+                self.yaw,
+                self.cfg.global_perception_width_m,
+                self.cfg.global_perception_thickness_m,
+            )
+            self._perception_box = (box.centre_x, box.centre_y, box.size_x, box.size_y)
+            self._perception_done = True
+            self._global_goal = None
+            self.get_logger().info(
+                "perception obstacle: "
+                f"nearest {self.nearest_m:.2f} m -> box at "
+                f"({box.centre_x:.2f}, {box.centre_y:.2f}) "
+                f"{box.size_x:.2f} x {box.size_y:.2f} m; replanning"
+            )
         estimate = None if self._target_is_stale() else self._project_best_detection()
         # Patrol legs are waypoint-driven on purpose. The first version let a
         # detection override the goal, and the vehicle kept turning back to the
@@ -341,6 +380,8 @@ class OffboardNode(Node):
             goal = (float(target[0]), float(target[1]))
             if self._global_goal != goal:
                 obstacles = [Box(*spec) for spec in self.cfg.global_obstacles]
+                if self._perception_box is not None:
+                    obstacles.append(Box(*self._perception_box))
                 plan_goal = self.cfg.global_pre_goal or goal
                 try:
                     self.global_path = plan_path(
@@ -419,7 +460,10 @@ class OffboardNode(Node):
         # The gate overrides horizontal cruise only. Takeoff, hover and landing
         # keep their commands: refusing to climb or refusing to land because a
         # wall is in front would turn an obstacle into a different incident.
-        avoiding = self.cfg.avoidance_stop_enabled and self.avoidance.active(now_s)
+        stop_enabled = self.cfg.avoidance_stop_enabled and not (
+            self.cfg.global_perception and self._perception_done
+        )
+        avoiding = stop_enabled and self.avoidance.active(now_s)
         if not avoiding:
             self._blocked_seen = False
         elif self.detour.phase is DetourPhase.INACTIVE and self.clear_side == "blocked":
@@ -745,6 +789,9 @@ def main() -> int:
             if mission_raw.get("global_pre_goal")
             else None
         ),
+        global_perception=bool(mission_raw.get("global_perception", False)),
+        global_perception_width_m=float(mission_raw.get("global_perception_width_m", 4.0)),
+        global_perception_thickness_m=float(mission_raw.get("global_perception_thickness_m", 0.4)),
         patrol_waypoints=tuple(
             (float(pair[0]), float(pair[1])) for pair in mission_raw.get("patrol_waypoints", ())
         ),

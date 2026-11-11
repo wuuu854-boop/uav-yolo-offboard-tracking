@@ -73,6 +73,43 @@ def _simplify(
     return kept
 
 
+def obstacle_box_from_measurement(
+    position: tuple[float, float],
+    distance_m: float,
+    heading_rad: float,
+    width_m: float,
+    thickness_m: float,
+) -> Box:
+    """Turn one depth stop into a conservative axis-aligned box.
+
+    ``heading_rad`` is the ENU yaw (0 = east, counter-clockwise). The box is
+    centred ``distance_m`` ahead; its thickness is along the heading and its
+    width across it. The returned box is the axis-aligned bound, so it is never
+    smaller than the rotated rectangle.
+    """
+    for name, value in (
+        ("distance_m", distance_m),
+        ("heading_rad", heading_rad),
+        ("width_m", width_m),
+        ("thickness_m", thickness_m),
+    ):
+        if not math.isfinite(float(value)):
+            raise ValueError(f"{name} must be finite, got {value!r}")
+    if float(distance_m) <= 0.0:
+        raise ValueError(f"distance_m must be positive, got {distance_m!r}")
+    if float(width_m) <= 0.0 or float(thickness_m) <= 0.0:
+        raise ValueError("width_m and thickness_m must be positive")
+    x, y = float(position[0]), float(position[1])
+    heading = float(heading_rad)
+    centre_x = x + float(distance_m) * math.cos(heading)
+    centre_y = y + float(distance_m) * math.sin(heading)
+    cos_h = abs(math.cos(heading))
+    sin_h = abs(math.sin(heading))
+    size_x = cos_h * float(thickness_m) + sin_h * float(width_m)
+    size_y = sin_h * float(thickness_m) + cos_h * float(width_m)
+    return Box(centre_x, centre_y, size_x, size_y)
+
+
 def plan_path(
     start: tuple[float, float],
     goal: tuple[float, float],

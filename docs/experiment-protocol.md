@@ -84,6 +84,11 @@ The multi-obstacle variant uses `target_tracking_search.sdf`,
 `results/global_multi_landing.csv` and is a success (1.001 m). The map has three
 hand-entered boxes and the reactive stop is disabled.
 
+The one-shot perception variant uses `target_tracking_obstacle.sdf`,
+`config/mission_global_perception.yaml` and `make global-perception`; its landing
+row is `results/global_perception_landing.csv` and is a success (1.13 m). The
+initial map is empty; one depth stop becomes one box, then the planner replans.
+
 Restart the simulation between targets; do not teleport a running vehicle.
 
 ## Trial procedure

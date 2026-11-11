@@ -109,6 +109,9 @@ class MissionConfig:
     # segment from that side. The target can sit too close to the wall for the
     # inflated grid to accept it directly.
     global_pre_goal: tuple[float, float] | None = None
+    global_perception: bool = False
+    global_perception_width_m: float = 4.0
+    global_perception_thickness_m: float = 0.4
 
     # Empty unless the mission is a patrol: local ENU (east, north) waypoints
     # visited in order, with a hover at each and a landing after the last.

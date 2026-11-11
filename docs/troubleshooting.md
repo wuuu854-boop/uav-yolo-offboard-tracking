@@ -574,3 +574,34 @@ the plan-failure log.
 
 **Source** found during v0.17.0 bring-up.
 
+---
+
+## 24. The one-shot perception box is offset, or the vehicle ignores the wall after the handoff
+
+**Symptom** The log's box is not centred on the wall, or after the replan the
+vehicle flies a path close to the wall with the depth stop still publishing
+`stop` but no hold.
+
+**Cause**
+
+1. **Depth z is not horizontal range.** `nearest_m` is along the camera's optical
+   axis (tilted 30° down), not the horizontal distance. Using it directly as the
+   along-heading distance moves the box slightly; the conservative 4 m width and
+   0.4 m thickness cover the error for this wall.
+2. **The lateral offset comes from the vehicle.** The box's y centre is the
+   vehicle's lateral position at the stop (0.17 m here), not a measured wall
+   centre.
+3. **The stop is deliberately ignored after the handoff.** `_perception_done`
+   makes `avoiding` false for the rest of the mission. If the box or path is
+   wrong, there is no reactive safety net; the clearance/contact report is the
+   guard.
+
+**Fix / decision** Keep the one-shot handoff and document it as one range, one
+box, one replan. Do not call it an occupancy map. A full map/replanning loop is
+the next step.
+
+**Detected by** the offboard's `perception obstacle: ...` line, the reported
+clearance, and the contact count.
+
+**Source** found during v0.19.0 bring-up.
+
