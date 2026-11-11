@@ -140,6 +140,11 @@ floor and 0.2 m steps in `config/depth_backoff_sweep.yaml`: the barrier stays
 blocked for four small steps, then clears. `make adaptive` uses the 6.0 m floor
 in `config/depth_adaptive.yaml` and sizes the step from the two strip distances.
 
+`target_tracking_search.sdf` is `target_tracking_obstacle.sdf` plus two 6 m
+pillars at `(-1.5, +/-1.5)` with contact sensors, for the phase-8 side-step
+search. The stop frame shows the left pillar outside the left strip; the search
+still runs and recovers, but the both-strip-block trigger is not proven.
+
 The wall's pose and size are duplicated in `config/obstacle.yaml`, the pillar's
 in `config/side_obstacle.yaml`; `check_world_targets.py` fails when a world and
 its config disagree, because the clearance metric is computed from them. Both

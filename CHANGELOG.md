@@ -7,6 +7,32 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-11-11
+
+### Added
+
+- **A blocked stop can side-step and re-read.** A `SEARCH` phase shifts
+  `search_step_m` (2 m) toward the freer side, re-reads, and starts the L from
+  the searched position if a side is free; bounded by `search_max_attempts`.
+- `target_tracking_search.sdf` adds two 6 m side pillars with contact sensors;
+  `config/mission_search.yaml` (`make search`) uses a 4.0 m floor and no back-off.
+- One run: stop at 17.9 s, `side-search right` → `search found a side`, 2.1 m
+  search step, 3.0 m lateral leg, final target error **0.537 m**, landing
+  0.652 m `success=True`, minimum clearance **1.221 m**, **0** contacts, 1072
+  depth frames, 74.4 s.
+- The recorder can save an indexed frame per stop with the side-strip overlay;
+  the retained `search_depth_frame.png` documents the caveat.
+
+### Why
+
+The back-off moves along the approach only. A lateral shift is the other local
+degree of freedom, and it is enough when the obstacle ends just beyond the side
+strip. The retained run proves the SEARCH transition and recovery; it does **not**
+prove a stop where both strips are simultaneously below the floor. At the stop
+frame the left strip reads 9.47 m and the right 2.05 m; the `blocked` label that
+started the search arrived 0.7 s after the stop. That caveat is in the README and
+`docs/search.md` rather than hidden.
+
 ## [0.15.0] - 2026-11-11
 
 ### Added

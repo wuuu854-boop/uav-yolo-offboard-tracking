@@ -68,6 +68,12 @@ and `config/mission_adaptive.yaml`; its landing row is
 `results/adaptive_landing.csv` and is a success (0.572 m). Details:
 [`adaptive.md`](adaptive.md).
 
+The phase-8 side-step search uses `target_tracking_search.sdf` with two side
+pillars, `config/mission_search.yaml` and `make search`; its landing row is
+`results/search_landing.csv` and is a success (0.652 m). Details:
+[`search.md`](search.md). Its stop frame has one strip open, so the
+both-strips-blocked trigger is not proven.
+
 Restart the simulation between targets; do not teleport a running vehicle.
 
 ## Trial procedure

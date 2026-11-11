@@ -39,7 +39,7 @@ frequencies.
 | Real-time performance | "real-time cognitive cycle" | 8.1 ms / 119 FPS at 320 px, 4 threads; end-to-end 143 ms | `docs/deployment.md` |
 | Simulation first, SITL → real | "simulation first (Gazebo, SITL and HITL), then real flight" | **Gazebo Harmonic SITL**, 9+6 closed-loop trials, reproducible patch | `docs/experiment-protocol.md` |
 | State estimation, EKF, VIO | "EKF tuning … GPS-denied navigation" | **PX4's EKF only**, no tuning, no VIO | — |
-| Obstacle avoidance, LiDAR/depth | "path planning and obstacle avoidance with ROS 2" | **Reactive stop + L detour + depth-based side choice + both-blocked hold/back-off + measured step sizing** (v0.9–v0.15); no global planner, no multi-obstacle reasoning, no dynamic obstacles, no adaptive direction/2-D search | `docs/avoidance.md`, `docs/detour.md`, `docs/side-selection.md`, `docs/blocked.md`, `docs/backoff.md`, `docs/backoff-sweep.md`, `docs/adaptive.md` |
+| Obstacle avoidance, LiDAR/depth | "path planning and obstacle avoidance with ROS 2" | **Reactive stop + L detour + depth-based side choice + both-blocked hold/back-off + measured step + side-step search** (v0.9–v0.16); no global planner, no multi-obstacle reasoning, no dynamic obstacles, no verified simultaneous both-strip block, no 2-D search | `docs/avoidance.md`, `docs/detour.md`, `docs/side-selection.md`, `docs/blocked.md`, `docs/backoff.md`, `docs/backoff-sweep.md`, `docs/adaptive.md`, `docs/search.md` |
 | Multi-target / counter-drone | "detection, tracking and classification of airborne targets" | Single target per run | `control/selection.py` |
 | Dataset + labelling pipeline | not named, but implied by "model deployment" | **Geometry-based auto-labelling** on real frames | `scripts/label_real_frames.py` |
 
@@ -70,15 +70,17 @@ Ordered by (market weight × what is feasible without hardware we do not have):
    `pymavlink`. *Feasible now, medium value.*
 4. **EKF/estimator work** — real value, but it is PX4-internal tuning and needs
    flight data to mean anything. *Needs a vehicle.*
-5. **Obstacle avoidance** — *phases 1–7 delivered*: a forward depth camera, a
+5. **Obstacle avoidance** — *phases 1–8 delivered*: a forward depth camera, a
    latched stop (2.204 m clearance, zero contacts), a fixed-side L detour
    (0.527 m target error), a depth-based side choice (left chosen at the stop,
    0.714 m target error, zero contacts), a both-sides-blocked hold (35.0 s hold,
-   zero contacts, mission timeout), one 2 m back-off that recovers a free side
-   (0.831 m target error, zero contacts), a bounded 0.2 m back-off sweep
-   (0.852 m target error, zero contacts) and a measured 2.0 m back-off
-   (0.618 m target error, zero contacts). Still missing: adaptive direction/2-D
-   search, multiple obstacles, a global planner and a real sensor.
+   zero contacts, mission timeout), one 2 m back-off (0.831 m target error,
+   zero contacts), a bounded 0.2 m back-off sweep (0.852 m target error), a
+   measured 2.0 m back-off (0.618 m target error) and a side-step search
+   recovery (0.537 m target error, zero contacts; both-strip block at the stop
+   not proven). Still missing: a verified simultaneous both-strip stop,
+   alternating/2-D search, multiple obstacles, a global planner and a real
+   sensor.
 
 ## What we deliberately stop pretending
 

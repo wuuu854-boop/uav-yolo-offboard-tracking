@@ -1,0 +1,24 @@
+# Depth gate for the phase-8 side-search scenario (`make search`).
+#
+# 4.0 m floor: the two side pillars at (-2.5, +/-1.5) block both strips at the
+# stop at about 2 m. The side-search moves 2 m at a time; after one step the
+# searched side clears. The floor is far below the lower-strip ground return.
+stop_distance_m: 2.5
+clear_distance_m: 3.2
+
+roi_width_fraction: 0.6
+roi_height_fraction: 0.5
+roi_center_x: 0.5
+roi_center_y: 0.5
+
+min_valid_m: 0.25
+max_valid_m: 12.0
+
+side_width_fraction: 0.2
+side_margin_m: 0.5
+min_clear_side_m: 4.0
+
+stale_timeout_s: 0.5
+fail_safe_on_stale: true
+
+publish_rate_hz: 10.0

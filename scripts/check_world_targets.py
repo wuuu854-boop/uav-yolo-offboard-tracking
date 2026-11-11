@@ -29,6 +29,8 @@ TARGETS = REPO_ROOT / "config" / "targets.yaml"
 OBSTACLE = REPO_ROOT / "config" / "obstacle.yaml"
 SIDE_OBSTACLE = REPO_ROOT / "config" / "side_obstacle.yaml"
 BLOCKED_OBSTACLE = REPO_ROOT / "config" / "blocked_obstacle.yaml"
+SEARCH_WORLD = REPO_ROOT / "sim" / "worlds" / "target_tracking_search.sdf"
+SEARCH_OBSTACLE = REPO_ROOT / "config" / "search_obstacle.yaml"
 VEHICLE_MODEL = REPO_ROOT / "sim" / "models" / "x500_mono_cam_down" / "model.sdf"
 TOLERANCE_M = 1e-6
 
@@ -217,6 +219,41 @@ def blocked_world_problems(
     return problems
 
 
+def search_world_problems(world: Path = SEARCH_WORLD, config: Path = SEARCH_OBSTACLE) -> list[str]:
+    """The search world's two side pillars must match their config and be sensed."""
+    if not world.exists():
+        return [f"{world.name} is missing"]
+    if not config.exists():
+        return [f"{config.name} is missing"]
+
+    problems = obstacle_problems(world, OBSTACLE)
+    data = yaml.safe_load(config.read_text(encoding="utf-8"))
+    root = ET.parse(world).getroot()
+    for key in ("right_block", "left_block"):
+        spec = data.get(key)
+        if not spec:
+            problems.append(f"{config.name} has no {key} section")
+            continue
+        pose, size = obstacle_geometry(world, spec["model"])
+        expected_pose = [float(v) for v in spec["pose_enu"]]
+        expected_size = [float(v) for v in spec["size_m"]]
+        for axis, (actual, expected) in enumerate(zip(pose, expected_pose, strict=False)):
+            if abs(actual - expected) > TOLERANCE_M:
+                problems.append(f"{key} pose[{axis}] {actual} != config {expected}")
+        for axis, (actual, expected) in enumerate(zip(size, expected_size, strict=False)):
+            if abs(actual - expected) > TOLERANCE_M:
+                problems.append(f"{key} size[{axis}] {actual} != config {expected}")
+        model = next(
+            (item for item in root.iter("model") if item.get("name") == spec["model"]),
+            None,
+        )
+        if model is None:
+            problems.append(f"model {spec['model']!r} not found in {world}")
+        elif not any(sensor.get("type") == "contact" for sensor in model.iter("sensor")):
+            problems.append(f"{key} has no contact sensor: 'no contact' would be unmeasured")
+    return problems
+
+
 def vehicle_model_problems(path: Path = VEHICLE_MODEL) -> list[str]:
     """The installed vehicle model must carry the forward depth camera."""
     if not path.exists():
@@ -242,11 +279,11 @@ def vehicle_model_problems(path: Path = VEHICLE_MODEL) -> list[str]:
 def main() -> int:
     problems: list[str] = []
 
-    for world in (WORLD, OBSTACLE_WORLD, DETOUR_WORLD, BLOCKED_WORLD):
+    for world in (WORLD, OBSTACLE_WORLD, DETOUR_WORLD, BLOCKED_WORLD, SEARCH_WORLD):
         problems.extend(f"{world.name}: {problem}" for problem in structure_problems(world))
 
     truth = yaml_poses(TARGETS)
-    for world in (WORLD, OBSTACLE_WORLD, DETOUR_WORLD, BLOCKED_WORLD):
+    for world in (WORLD, OBSTACLE_WORLD, DETOUR_WORLD, BLOCKED_WORLD, SEARCH_WORLD):
         poses = world_poses(world)
         if not poses:
             problems.append(f"no target_* models found in {world}")
@@ -264,6 +301,7 @@ def main() -> int:
     problems.extend(obstacle_problems())
     problems.extend(detour_side_block_problems())
     problems.extend(blocked_world_problems())
+    problems.extend(search_world_problems())
     problems.extend(vehicle_model_problems())
 
     if problems:
@@ -273,8 +311,8 @@ def main() -> int:
         return 1
 
     print(
-        f"OK: {len(world_poses(WORLD))} targets agree in four worlds, "
-        "the wall, the side block and the barrier match their configs, "
+        f"OK: {len(world_poses(WORLD))} targets agree in five worlds, "
+        "the wall, side blocks and search pillars match their configs, "
         "the vehicle model has the depth camera"
     )
     return 0

@@ -91,6 +91,8 @@ class MissionConfig:
     detour_backoff_target_m: float = 0.0
     detour_backoff_min_step_m: float = 0.2
     detour_backoff_max_step_m: float = 2.0
+    detour_search_step_m: float = 0.0
+    detour_search_max_attempts: int = 0
 
     # Empty unless the mission is a patrol: local ENU (east, north) waypoints
     # visited in order, with a hover at each and a landing after the last.

@@ -24,6 +24,7 @@ from enum import Enum
 class DetourPhase(str, Enum):
     INACTIVE = "INACTIVE"
     BACKOFF = "BACKOFF"
+    SEARCH = "SEARCH"
     LATERAL = "LATERAL"
     FORWARD = "FORWARD"
     WAITING = "WAITING"
@@ -52,6 +53,10 @@ class DetourConfig:
     # How many backoff_m steps to try before holding. 1 is the phase-5 single
     # retry; 2+ is the phase-6 distance sweep.
     backoff_max_attempts: int = 1
+    # After the back-off budget is spent, shift sideways by this much and look
+    # again. 0 keeps the phase-5/6 behaviour (hold once the back-off is spent).
+    search_step_m: float = 0.0
+    search_max_attempts: int = 0
 
     def __post_init__(self) -> None:
         side = str(self.side).lower()
@@ -80,6 +85,11 @@ class DetourConfig:
             raise ValueError(f"backoff_m must be finite and non-negative, got {backoff!r}")
         if int(self.backoff_max_attempts) < 1:
             raise ValueError("backoff_max_attempts must be at least 1")
+        search_step = float(self.search_step_m)
+        if not math.isfinite(search_step) or search_step < 0.0:
+            raise ValueError(f"search_step_m must be non-negative and finite, got {search_step!r}")
+        if int(self.search_max_attempts) < 0:
+            raise ValueError("search_max_attempts must be non-negative")
         if int(self.max_attempts) < 1:
             raise ValueError("max_attempts must be at least 1")
 
@@ -91,6 +101,8 @@ class DetourConfig:
         object.__setattr__(self, "start_delay_s", delay)
         object.__setattr__(self, "backoff_m", backoff)
         object.__setattr__(self, "backoff_max_attempts", int(self.backoff_max_attempts))
+        object.__setattr__(self, "search_step_m", search_step)
+        object.__setattr__(self, "search_max_attempts", int(self.search_max_attempts))
         object.__setattr__(self, "max_attempts", int(self.max_attempts))
 
 
@@ -172,6 +184,8 @@ class DetourPlanner:
         self._backoff_attempts = 0
         self._backoff_hold = False
         self._backoff_step = None
+        self._search_attempts = 0
+        self._search_side = None
 
     @property
     def enabled(self) -> bool:
@@ -192,6 +206,8 @@ class DetourPlanner:
         self._backoff_attempts = 0
         self._backoff_hold = False
         self._backoff_step = None
+        self._search_attempts = 0
+        self._search_side = None
 
     def set_backoff_step(self, step_m: float | None) -> None:
         """Set the next back-off distance; ``None`` uses ``config.backoff_m``."""
@@ -210,15 +226,21 @@ class DetourPlanner:
         stop: bool,
         now_s: float,
         side: str | None = None,
+        search_side: str | None = None,
     ) -> DetourDecision:
         """Feed one control tick; get the detour waypoint or an inactive decision.
 
         ``side`` is the free-space choice from the depth node (``left``/``right``/
         ``unknown``). It is used only when a detour starts; ``unknown`` and any
-        other value fall back to ``config.side``.
+        other value fall back to ``config.side``. ``search_side`` is the freer
+        side to try after the back-off budget is spent.
         """
         if not self.enabled:
             return DetourDecision(False, DetourPhase.INACTIVE, None, "detour disabled")
+        if search_side is not None:
+            search_side = str(search_side).lower()
+            if search_side not in ("left", "right"):
+                raise ValueError(f"search_side must be 'left' or 'right', got {search_side!r}")
 
         now = float(now_s)
         if not math.isfinite(now):
@@ -251,6 +273,13 @@ class DetourPlanner:
                 if step > 0.0:
                     self._start_backoff(here)
                     return self._active(f"both sides blocked: backing off {step:.2f} m")
+                if self.config.search_step_m > 0.0 and self.config.search_max_attempts > 0:
+                    chosen_search = (
+                        search_side if search_side in ("left", "right") else self.config.side
+                    )
+                    self._approach = self._direction
+                    self._start_search(here, chosen_search)
+                    return self._active(f"both sides blocked: side-search {chosen_search}")
                 return DetourDecision(
                     False,
                     DetourPhase.INACTIVE,
@@ -279,12 +308,38 @@ class DetourPlanner:
                         f"({self._backoff_attempts}/{self.config.backoff_max_attempts}) "
                         f"by {step:.2f} m"
                     )
+                if self.config.search_step_m > 0.0 and self.config.search_max_attempts > 0:
+                    chosen_search = (
+                        search_side if search_side in ("left", "right") else self.config.side
+                    )
+                    self._start_search(here, chosen_search)
+                    return self._active(f"backoff exhausted: side-search {chosen_search}")
                 self.phase = DetourPhase.HOLDING
                 self._waypoint = here
                 self._clear_since = None
                 self._backoff_hold = True
                 return self._active("backoff done: both sides still blocked, holding")
             return self._active("backing off from blocked sides")
+        if self.phase is DetourPhase.SEARCH:
+            if self._reached(here):
+                if side in ("left", "right"):
+                    self._start(here, side)
+                    return self._active("search found a side: lateral leg")
+                if self._search_attempts < self.config.search_max_attempts:
+                    self._search_attempts += 1
+                    self._waypoint = (
+                        here[0] + self.config.search_step_m * self._lateral[0],
+                        here[1] + self.config.search_step_m * self._lateral[1],
+                    )
+                    return self._active(
+                        "still blocked: side-search again "
+                        f"({self._search_attempts}/{self.config.search_max_attempts})"
+                    )
+                self.phase = DetourPhase.HOLDING
+                self._waypoint = here
+                self._backoff_hold = True
+                return self._active("side-search exhausted, holding")
+            return self._active(f"side-search {self._search_side}")
         if self.phase is DetourPhase.LATERAL:
             if self._reached(here):
                 self._begin_forward(here)
@@ -375,6 +430,18 @@ class DetourPlanner:
         self._waypoint = (
             position[0] - step * self._approach[0],
             position[1] - step * self._approach[1],
+        )
+
+    def _start_search(self, position: tuple[float, float], side: str) -> None:
+        self.side = None
+        self._search_side = side
+        self._search_attempts = 1
+        self._lateral = _perpendicular(self._approach, side)
+        self.phase = DetourPhase.SEARCH
+        self._backoff_hold = False
+        self._waypoint = (
+            position[0] + self.config.search_step_m * self._lateral[0],
+            position[1] + self.config.search_step_m * self._lateral[1],
         )
 
     def _start(self, position: tuple[float, float], side: str) -> None:

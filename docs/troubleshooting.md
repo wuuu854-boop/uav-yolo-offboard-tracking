@@ -494,3 +494,31 @@ the clamp in `results/adaptive_trace.csv`.
 
 **Source** found during v0.15.0 bring-up.
 
+---
+
+## 21. The side search starts although the stop frame shows a free side
+
+**Symptom** `search_run.csv` and `search_depth_frame.png` show one strip open
+(left 9.47 m, right 2.05 m) yet the trace says `both sides blocked: side-search
+right`.
+
+**Cause** The controller latches `blocked` during the settle and uses the
+**latest** side-clearance topic values at the search start, not the stop frame.
+The label arrives about 0.7 s after the stop; the values also change as the
+vehicle pitches. The search is therefore a recovery from a transient/latched
+block, not proof that both strips were simultaneously below the floor.
+
+**Decision** Keep the run: it verifies the SEARCH transition, the 2.1 m step, the
+re-read and the recovery to target_0 with 0 contacts. Document the caveat in the
+README and [`search.md`](search.md); do **not** claim a simultaneous both-strip
+block.
+
+**Fix for the missing case** Needs a geometry where both strips stay inside the
+floor at the stop for several frames. The retained two-pillar world does not: the
+left pillar is outside the left strip's view at the stop.
+
+**Detected by** the strip overlay on the stop frame and the `left_m`/`right_m`
+columns.
+
+**Source** found during v0.16.0 bring-up.
+

@@ -10,6 +10,8 @@ from scripts.check_world_targets import (
     DETOUR_WORLD,
     OBSTACLE,
     OBSTACLE_WORLD,
+    SEARCH_OBSTACLE,
+    SEARCH_WORLD,
     SIDE_OBSTACLE,
     TARGETS,
     VEHICLE_MODEL,
@@ -17,6 +19,7 @@ from scripts.check_world_targets import (
     blocked_world_problems,
     detour_side_block_problems,
     obstacle_problems,
+    search_world_problems,
     structure_problems,
     vehicle_model_problems,
     world_poses,
@@ -40,17 +43,23 @@ def test_repository_blocked_world_has_no_structural_problems():
     assert structure_problems(BLOCKED_WORLD) == []
 
 
+def test_repository_search_world_has_no_structural_problems():
+    assert structure_problems(SEARCH_WORLD) == []
+
+
 def test_repository_targets_match_the_ground_truth_yaml():
     assert world_poses(WORLD) == yaml_poses(TARGETS)
     assert world_poses(OBSTACLE_WORLD) == yaml_poses(TARGETS)
     assert world_poses(DETOUR_WORLD) == yaml_poses(TARGETS)
     assert world_poses(BLOCKED_WORLD) == yaml_poses(TARGETS)
+    assert world_poses(SEARCH_WORLD) == yaml_poses(TARGETS)
 
 
 def test_the_obstacle_and_the_vehicle_model_match_their_configs():
     assert obstacle_problems() == []
     assert detour_side_block_problems() == []
     assert blocked_world_problems() == []
+    assert search_world_problems() == []
     assert vehicle_model_problems() == []
 
 
@@ -87,6 +96,18 @@ def test_a_barrier_moved_in_only_the_world_is_reported(tmp_path):
     problems = blocked_world_problems(world, BLOCKED_OBSTACLE)
 
     assert any("barrier pose[2]" in problem for problem in problems)
+
+
+def test_a_search_pillar_moved_in_only_the_world_is_reported(tmp_path):
+    world = tmp_path / "search.sdf"
+    shutil.copy(SEARCH_WORLD, world)
+    text = world.read_text(encoding="utf-8")
+    text = text.replace("<pose>-1.5 1.5 3.0 0 0 0</pose>", "<pose>-1.5 3.5 3.0 0 0 0</pose>")
+    world.write_text(text)
+
+    problems = search_world_problems(world, SEARCH_OBSTACLE)
+
+    assert any("left_block pose[1]" in problem for problem in problems)
 
 
 def test_a_missing_contact_system_is_reported(tmp_path):

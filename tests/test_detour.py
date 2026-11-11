@@ -401,6 +401,143 @@ def test_a_bad_adaptive_step_is_rejected():
         planner.set_backoff_step(0.0)
 
 
+def test_a_spent_backoff_can_side_step_and_recover():
+    planner = _planner(
+        backoff_m=0.2,
+        backoff_max_attempts=1,
+        search_step_m=1.5,
+        search_max_attempts=1,
+    )
+    planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+    planner.update(
+        (-0.2, 0.0), (10.0, 0.0), stop=True, now_s=1.0, side="blocked", search_side="left"
+    )
+
+    decision = planner.update(
+        (-0.2, 1.5), (10.0, 0.0), stop=True, now_s=2.0, side="left", search_side="left"
+    )
+
+    assert decision.active is True
+    assert decision.phase is DetourPhase.LATERAL
+    assert decision.side == "left"
+
+
+def test_the_side_step_starts_after_the_backoff_budget():
+    planner = _planner(
+        backoff_m=0.2,
+        backoff_max_attempts=1,
+        search_step_m=1.5,
+        search_max_attempts=1,
+    )
+    planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+
+    decision = planner.update(
+        (-0.2, 0.0), (10.0, 0.0), stop=True, now_s=1.0, side="blocked", search_side="left"
+    )
+
+    assert decision.phase is DetourPhase.SEARCH
+    assert decision.waypoint == pytest.approx((-0.2, 1.5))
+    assert "side-search left" in decision.note
+
+
+def test_a_spent_side_search_holds():
+    planner = _planner(
+        backoff_m=0.2,
+        backoff_max_attempts=1,
+        search_step_m=1.5,
+        search_max_attempts=1,
+    )
+    planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+    planner.update(
+        (-0.2, 0.0), (10.0, 0.0), stop=True, now_s=1.0, side="blocked", search_side="left"
+    )
+
+    decision = planner.update(
+        (-0.2, 1.5), (10.0, 0.0), stop=True, now_s=2.0, side="blocked", search_side="left"
+    )
+
+    assert decision.phase is DetourPhase.HOLDING
+    assert "side-search exhausted" in decision.note
+
+
+def test_search_is_disabled_by_default_and_holds_after_the_backoff():
+    planner = _planner(backoff_m=0.2, backoff_max_attempts=1)
+    planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+
+    decision = planner.update((-0.2, 0.0), (10.0, 0.0), stop=True, now_s=1.0, side="blocked")
+
+    assert decision.phase is DetourPhase.HOLDING
+    assert "still blocked" in decision.note
+
+
+def test_blocked_with_no_backoff_can_side_step_directly():
+    planner = _planner(backoff_m=0.0, search_step_m=2.0, search_max_attempts=2)
+
+    decision = planner.update(
+        (0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked", search_side="left"
+    )
+
+    assert decision.phase is DetourPhase.SEARCH
+    assert decision.waypoint == pytest.approx((0.0, 2.0))
+    assert "side-search left" in decision.note
+
+
+def test_a_side_step_not_yet_reached_keeps_searching():
+    planner = _planner(
+        backoff_m=0.2,
+        backoff_max_attempts=1,
+        search_step_m=1.5,
+        search_max_attempts=1,
+    )
+    planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+    planner.update(
+        (-0.2, 0.0), (10.0, 0.0), stop=True, now_s=1.0, side="blocked", search_side="left"
+    )
+
+    decision = planner.update(
+        (-0.2, 0.5), (10.0, 0.0), stop=True, now_s=2.0, side="blocked", search_side="left"
+    )
+
+    assert decision.phase is DetourPhase.SEARCH
+    assert "side-search left" in decision.note
+
+
+def test_a_second_side_step_extends_the_search():
+    planner = _planner(
+        backoff_m=0.2,
+        backoff_max_attempts=1,
+        search_step_m=1.5,
+        search_max_attempts=2,
+    )
+    planner.update((0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked")
+    planner.update(
+        (-0.2, 0.0), (10.0, 0.0), stop=True, now_s=1.0, side="blocked", search_side="left"
+    )
+
+    decision = planner.update(
+        (-0.2, 1.5), (10.0, 0.0), stop=True, now_s=2.0, side="blocked", search_side="left"
+    )
+
+    assert decision.phase is DetourPhase.SEARCH
+    assert decision.waypoint == pytest.approx((-0.2, 3.0))
+    assert "again (2/2)" in decision.note
+
+
+def test_a_bad_search_side_is_rejected():
+    planner = _planner()
+    with pytest.raises(ValueError, match="search_side"):
+        planner.update(
+            (0.0, 0.0), (10.0, 0.0), stop=True, now_s=0.0, side="blocked", search_side="up"
+        )
+
+
+def test_negative_search_settings_are_rejected():
+    with pytest.raises(ValueError, match="search_step_m"):
+        DetourConfig(search_step_m=-0.1)
+    with pytest.raises(ValueError, match="search_max_attempts"):
+        DetourConfig(search_max_attempts=-1)
+
+
 def test_the_backoff_cannot_be_negative():
     with pytest.raises(ValueError, match="backoff_m"):
         DetourConfig(backoff_m=-0.1)

@@ -176,6 +176,10 @@ distances, and the controller sizes the next step as
 `DetourPlanner.set_backoff_step()`. The configured `backoff_m` is only the
 fallback. See [`adaptive.md`](adaptive.md).
 
+Phase 8 adds a `SEARCH` phase: a blocked stop shifts `search_step_m` sideways
+toward the freer side, re-reads, and starts the lateral leg from there; bounded
+by `search_max_attempts`, then holds. See [`search.md`](search.md).
+
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a
 single missed frame ends the mission.

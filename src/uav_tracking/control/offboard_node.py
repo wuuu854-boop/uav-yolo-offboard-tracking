@@ -170,6 +170,8 @@ class OffboardNode(Node):
                 start_delay_s=mission_cfg.detour_start_delay_s,
                 backoff_m=mission_cfg.detour_backoff_m,
                 backoff_max_attempts=mission_cfg.detour_backoff_max_attempts,
+                search_step_m=mission_cfg.detour_search_step_m,
+                search_max_attempts=mission_cfg.detour_search_max_attempts,
             )
         )
         self._detour_phase = DetourPhase.INACTIVE
@@ -401,6 +403,9 @@ class OffboardNode(Node):
             self.detour.set_backoff_step(step)
         else:
             self.detour.set_backoff_step(None)
+        search_side = None
+        if math.isfinite(self.side_left_m) and math.isfinite(self.side_right_m):
+            search_side = "left" if self.side_left_m >= self.side_right_m else "right"
         detour = DetourDecision(False, DetourPhase.INACTIVE)
         if decision.command == "goto" and target is not None:
             detour = self.detour.update(
@@ -409,6 +414,7 @@ class OffboardNode(Node):
                 avoiding,
                 now_s,
                 side=side_for_planner,
+                search_side=search_side,
             )
         else:
             self.detour.reset()
@@ -682,6 +688,8 @@ def main() -> int:
         detour_backoff_target_m=float(mission_raw.get("detour_backoff_target_m", 0.0)),
         detour_backoff_min_step_m=float(mission_raw.get("detour_backoff_min_step_m", 0.2)),
         detour_backoff_max_step_m=float(mission_raw.get("detour_backoff_max_step_m", 2.0)),
+        detour_search_step_m=float(mission_raw.get("detour_search_step_m", 0.0)),
+        detour_search_max_attempts=int(mission_raw.get("detour_search_max_attempts", 0)),
         patrol_waypoints=tuple(
             (float(pair[0]), float(pair[1])) for pair in mission_raw.get("patrol_waypoints", ())
         ),
