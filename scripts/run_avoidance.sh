@@ -7,6 +7,9 @@
 #
 #   make avoid
 #   # or: bash scripts/run_avoidance.sh --duration 120
+#   # phase 2:
+#   MISSION=config/mission_detour.yaml PREFIX=detour MODE=detour \
+#     bash scripts/run_avoidance.sh
 #
 # The world and the wall are in sim/worlds/target_tracking_obstacle.sdf; the
 # mission is config/mission_avoidance.yaml. The run is deliberately headless:
@@ -22,10 +25,18 @@ PX4_BUILD="$PX4_DIR/build/px4_sitl_default"
 WORLD="${WORLD:-target_tracking_obstacle}"
 POSITION="${POSITION:--7.5,0,0.05,0,0,1.5708}"
 DURATION=120
-RESULTS="results/avoidance_landing.csv"
-RECORD="results/avoidance_run.csv"
-FRAME="results/avoidance_depth_frame.png"
-MISSION="config/mission_avoidance.yaml"
+# One script runs both behaviours: `hold` (phase 1) and `detour` (phase 2). The
+# prefix keeps their CSVs, traces and frames separate so a later run cannot
+# overwrite the evidence a release quotes.
+MISSION="${MISSION:-config/mission_avoidance.yaml}"
+PREFIX="${PREFIX:-avoidance}"
+MODE="${MODE:-hold}"
+RESULTS="results/${PREFIX}_landing.csv"
+RECORD="results/${PREFIX}_run.csv"
+FRAME="results/${PREFIX}_depth_frame.png"
+TRACE="results/${PREFIX}_trace.csv"
+SUMMARY="results/${PREFIX}_summary.json"
+PLOT="results/${PREFIX}_run.png"
 DEPTH_CONFIG="config/depth.yaml"
 
 usage() {
@@ -58,7 +69,7 @@ command -v MicroXRCEAgent >/dev/null || { echo "MicroXRCEAgent not found" >&2; e
 mkdir -p log results
 # Each avoidance run is one piece of evidence, not a trial series: stale rows
 # from a previous attempt would make the trace and the landing row ambiguous.
-rm -f "$RESULTS" results/avoidance_trace.csv
+rm -f "$RESULTS" "$TRACE"
 set +u
 # shellcheck disable=SC1091
 source /opt/ros/humble/setup.bash
@@ -156,7 +167,7 @@ RECORDER_PID=$!
 sleep 3
 
 python3 src/uav_tracking/control/offboard_node.py --mission "$MISSION" \
-  --results "$RESULTS" --trace results/avoidance_trace.csv \
+  --results "$RESULTS" --trace "$TRACE" \
   > log/offboard_avoidance.log 2>&1 &
 OFFBOARD_PID=$!
 sleep 2
@@ -201,14 +212,14 @@ RECORDER_PID=""
 DEPTH_NODE_PID=""
 
 echo "== stop trace =="
-grep -E 'avoidance|STOP|CLEAR|trial ' log/offboard_avoidance.log log/depth_node.log | tail -20 || true
+grep -E 'avoidance|detour|STOP|CLEAR|trial ' log/offboard_avoidance.log log/depth_node.log | tail -20 || true
 
 cleanup
 trap - EXIT
 
 echo "== report =="
-python3 scripts/avoidance_report.py --csv "$RECORD" \
-  --summary results/avoidance_summary.json --plot results/avoidance_run.png \
+python3 scripts/avoidance_report.py --mode "$MODE" --csv "$RECORD" \
+  --summary "$SUMMARY" --plot "$PLOT" --trace "$TRACE" \
   --obstacle config/obstacle.yaml --mission "$MISSION"
 REPORT_RC=$?
 

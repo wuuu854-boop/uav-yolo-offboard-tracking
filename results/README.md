@@ -25,6 +25,12 @@ README and in the resume, so they are written by scripts, never by hand.
 | `avoidance_run.png` | `scripts/avoidance_report.py` | flight path with the wall, and the depth gate against its thresholds |
 | `avoidance_depth_frame.png` / `.npy` | `scripts/record_avoidance.py` | the frame that stopped the vehicle, nearest 2.45 m; PNG for humans, float32 array for re-analysis |
 | `contact_sensor_check.txt` | manual positive test of the wall contact sensor | a 0.5 kg box on the wall produced 4632 messages |
+| `detour_run.csv` | `scripts/record_avoidance.py` during `make detour` | 527 rows: approach, L-shaped detour, final approach |
+| `detour_landing.csv` | `offboard_node` recorder on the same run | one row: 0.63 m from `target_0`, `success=True`, `patrol complete` |
+| `detour_trace.csv` | `src/uav_tracking/control/trace.py` | lateral and forward leg timestamps, gate release, hover, land |
+| `detour_summary.json` | `scripts/avoidance_report.py --mode detour` | PASS: 3.394 m lateral, gate released, 0.527 m target error, 0.999 m clearance, 0 contacts |
+| `detour_run.png` | the same report | L-shaped path around the wall and the depth gate |
+| `detour_depth_frame.png` / `.npy` | `scripts/record_avoidance.py` | the wall frame that started the detour |
 | `detections.geojson` | `scripts/export_geojson.py` on the moving-target capture | 88 Point features with track id, timestamp and ENU offsets — the GIS-ready deliverable an inspection operator asks for |
 | `qa_moving.json` | `scripts/qa_report.py` on the moving-target capture | the asset was 3 m from its declared position, and the report says so (association 7.1 m, FAIL) |
 | `qa_north.json` | the same report with the asset position passed in | median association drops from 4.95 m to 0.62 m when the asset is where it actually was |

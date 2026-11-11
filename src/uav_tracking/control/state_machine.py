@@ -69,6 +69,19 @@ class MissionConfig:
     # message, so missions without the avoidance node are unchanged.
     avoidance_timeout_s: float = 1.0
 
+    # Reactive lateral detour (phase 2). Disabled by default: the tracking
+    # missions must keep their exact behaviour, and the avoidance mission opts
+    # in. One fixed side, one lateral leg, no map.
+    detour_enabled: bool = False
+    detour_side: str = "right"
+    detour_offset_m: float = 3.0
+    detour_forward_m: float = 3.0
+    detour_reach_tolerance_m: float = 0.5
+    detour_min_lateral_m: float = 2.5
+    detour_clear_hold_s: float = 1.0
+    detour_wait_timeout_s: float = 5.0
+    detour_max_attempts: int = 2
+
     # Empty unless the mission is a patrol: local ENU (east, north) waypoints
     # visited in order, with a hover at each and a landing after the last.
     patrol_waypoints: tuple[tuple[float, float], ...] = ()

@@ -48,6 +48,14 @@ def read_rows(path: Path) -> list[dict]:
     return rows
 
 
+def read_trace(path: Path) -> list[str]:
+    """Return the `note` column of a StateTrace, or [] when it is absent."""
+    if not path.exists():
+        return []
+    with path.open(newline="", encoding="utf-8") as handle:
+        return [row.get("note", "") for row in csv.DictReader(handle)]
+
+
 def point_to_aabb_distance(x: float, y: float, bounds: tuple[float, float, float, float]) -> float:
     """Shortest 2-D distance from a point to an axis-aligned rectangle."""
     x_min, x_max, y_min, y_max = bounds
@@ -72,7 +80,12 @@ def longest_stop_run(rows: list[dict]) -> tuple[int, int]:
     return best
 
 
-def analyse(rows: list[dict], obstacle: dict, mission: dict) -> dict:
+def analyse(
+    rows: list[dict],
+    obstacle: dict,
+    mission: dict,
+    target: tuple[float, float] = (0.0, 0.0),
+) -> dict:
     if not rows:
         raise ValueError("the CSV has no rows; did the recorder see odometry?")
 
@@ -120,6 +133,11 @@ def analyse(rows: list[dict], obstacle: dict, mission: dict) -> dict:
         advance = None
         retreat = None
 
+    final_world = world[-1]
+    final_error = math.hypot(final_world[0] - target[0], final_world[1] - target[1])
+    max_abs_north = max(abs(north) for _, north in world)
+    gate_released = bool(stopped and any(not row["stop"] for row in rows[start:]))
+
     return {
         "obstacle": {
             "model": obstacle["model"],
@@ -128,6 +146,7 @@ def analyse(rows: list[dict], obstacle: dict, mission: dict) -> dict:
             "aabb_enu_m": [x_min, x_max, y_min, y_max],
         },
         "spawn_enu": [spawn_east, spawn_north],
+        "target_enu": [float(target[0]), float(target[1])],
         "metrics": {
             "rows": len(rows),
             "duration_s": round(rows[-1]["t_s"] - rows[0]["t_s"], 2),
@@ -139,6 +158,9 @@ def analyse(rows: list[dict], obstacle: dict, mission: dict) -> dict:
             "stop_advance_m": None if advance is None else round(advance, 3),
             "stop_retreat_m": None if retreat is None else round(retreat, 3),
             "settled_drift_m": None if settled_drift is None else round(settled_drift, 3),
+            "gate_released": gate_released,
+            "max_abs_north_m": round(max_abs_north, 3),
+            "final_error_m": round(final_error, 3),
             "min_clearance_m": round(clearances[min_index], 3),
             "min_clearance_at_s": rows[min_index]["t_s"],
             "final_east_m": round(rows[-1]["east_m"], 3),
@@ -157,42 +179,106 @@ def analyse(rows: list[dict], obstacle: dict, mission: dict) -> dict:
     }
 
 
-def verdict(report: dict, obstacle: dict) -> dict:
+def verdict(
+    report: dict,
+    obstacle: dict,
+    mode: str = "hold",
+    mission: dict | None = None,
+    trace_notes: list[str] | tuple[str, ...] = (),
+) -> dict:
+    """Apply the acceptance checks for one of the two behaviours.
+
+    ``hold`` is phase 1: stop and stay stopped. ``detour`` is phase 2: stop,
+    move sideways by at least the mission's minimum, release the gate, and get
+    to the target without a contact. They share the clearance, contact and
+    depth-frame checks but not the "did it stay put" ones.
+    """
     metrics = report["metrics"]
-    checks = {
-        "stop_engaged": {
-            "ok": bool(metrics["stop_engaged"]),
-            "detail": f"stop_start_s={metrics['stop_start_s']}",
-        },
-        "stop_held_at_least_3s": {
-            "ok": metrics["stop_hold_s"] >= 3.0,
-            "detail": f"stop_hold_s={metrics['stop_hold_s']}",
-        },
-        "settled_drift_under_0.3m": {
-            "ok": metrics["settled_drift_m"] is not None and metrics["settled_drift_m"] <= 0.3,
-            "detail": f"settled_drift_m={metrics['settled_drift_m']} after 10 s",
-        },
-        "advance_after_stop_under_1m": {
-            "ok": metrics["stop_advance_m"] is not None and metrics["stop_advance_m"] <= 1.0,
-            "detail": (
-                f"stop_advance_m={metrics['stop_advance_m']}, retreat_m={metrics['stop_retreat_m']}"
-            ),
-        },
-        "clearance_at_least_min": {
-            "ok": metrics["min_clearance_m"] >= float(obstacle["min_clearance_m"]),
-            "detail": (
-                f"min_clearance_m={metrics['min_clearance_m']} >= {obstacle['min_clearance_m']}"
-            ),
-        },
-        "no_contact": {
-            "ok": metrics["contacts_total"] == 0,
-            "detail": f"contacts_total={metrics['contacts_total']}",
-        },
-        "depth_frames_seen": {
-            "ok": metrics["depth_frames"] > 0,
-            "detail": f"depth_frames={metrics['depth_frames']}",
-        },
-    }
+    if mode == "hold":
+        checks = {
+            "stop_engaged": {
+                "ok": bool(metrics["stop_engaged"]),
+                "detail": f"stop_start_s={metrics['stop_start_s']}",
+            },
+            "stop_held_at_least_3s": {
+                "ok": metrics["stop_hold_s"] >= 3.0,
+                "detail": f"stop_hold_s={metrics['stop_hold_s']}",
+            },
+            "settled_drift_under_0.3m": {
+                "ok": metrics["settled_drift_m"] is not None and metrics["settled_drift_m"] <= 0.3,
+                "detail": f"settled_drift_m={metrics['settled_drift_m']} after 10 s",
+            },
+            "advance_after_stop_under_1m": {
+                "ok": metrics["stop_advance_m"] is not None and metrics["stop_advance_m"] <= 1.0,
+                "detail": (
+                    f"stop_advance_m={metrics['stop_advance_m']}, "
+                    f"retreat_m={metrics['stop_retreat_m']}"
+                ),
+            },
+            "clearance_at_least_min": {
+                "ok": metrics["min_clearance_m"] >= float(obstacle["min_clearance_m"]),
+                "detail": (
+                    f"min_clearance_m={metrics['min_clearance_m']} >= {obstacle['min_clearance_m']}"
+                ),
+            },
+            "no_contact": {
+                "ok": metrics["contacts_total"] == 0,
+                "detail": f"contacts_total={metrics['contacts_total']}",
+            },
+            "depth_frames_seen": {
+                "ok": metrics["depth_frames"] > 0,
+                "detail": f"depth_frames={metrics['depth_frames']}",
+            },
+        }
+    elif mode == "detour":
+        if mission is None:
+            raise ValueError("detour mode needs the mission config")
+        min_lateral = float(mission.get("detour_min_lateral_m", 3.0))
+        min_clearance = float(mission.get("detour_min_clearance_m", 0.4))
+        trace_started = any("detour" in note.lower() for note in trace_notes)
+        checks = {
+            "stop_engaged": {
+                "ok": bool(metrics["stop_engaged"]),
+                "detail": f"stop_start_s={metrics['stop_start_s']}",
+            },
+            "detour_started": {
+                "ok": trace_started or metrics["max_abs_north_m"] >= min_lateral,
+                "detail": (
+                    f"trace_note={trace_started}, max_abs_north_m={metrics['max_abs_north_m']}"
+                ),
+            },
+            "lateral_leg_at_least_min": {
+                "ok": metrics["max_abs_north_m"] >= min_lateral,
+                "detail": (f"max_abs_north_m={metrics['max_abs_north_m']} >= {min_lateral}"),
+            },
+            "gate_released": {
+                "ok": bool(metrics["gate_released"]),
+                "detail": f"gate_released={metrics['gate_released']}",
+            },
+            "target_reached": {
+                "ok": metrics["final_error_m"] <= 1.5,
+                "detail": f"final_error_m={metrics['final_error_m']} <= 1.5",
+            },
+            "clearance_at_least_min": {
+                "ok": metrics["min_clearance_m"] >= min_clearance,
+                "detail": (
+                    f"min_clearance_m={metrics['min_clearance_m']} >= {min_clearance} "
+                    "(the target is closer to the wall than the phase-1 stop point)"
+                ),
+            },
+            "no_contact": {
+                "ok": metrics["contacts_total"] == 0,
+                "detail": f"contacts_total={metrics['contacts_total']}",
+            },
+            "depth_frames_seen": {
+                "ok": metrics["depth_frames"] > 0,
+                "detail": f"depth_frames={metrics['depth_frames']}",
+            },
+        }
+    else:
+        raise ValueError(f"unknown report mode {mode!r}; expected 'hold' or 'detour'")
+
+    report["mode"] = mode
     report["checks"] = checks
     report["verdict"] = "PASS" if all(item["ok"] for item in checks.values()) else "FAIL"
     return report
@@ -237,7 +323,10 @@ def plot(report: dict, rows: list[dict], out: Path, stop_m: float, clear_m: floa
     )
     top.set_xlabel("east (world ENU, m)")
     top.set_ylabel("north (world ENU, m)")
-    top.set_title("avoidance flight: the wall is on the path, the stop is before it")
+    if report.get("mode") == "detour":
+        top.set_title("detour flight: around the wall and on to the target")
+    else:
+        top.set_title("avoidance flight: the wall is on the path, the stop is before it")
     top.axis("equal")
     top.grid(True, alpha=0.3)
     top.legend(loc="best")
@@ -267,6 +356,9 @@ def main() -> int:
     parser.add_argument("--obstacle", default="config/obstacle.yaml")
     parser.add_argument("--mission", default="config/mission_avoidance.yaml")
     parser.add_argument("--depth-config", default="config/depth.yaml")
+    parser.add_argument("--targets", default="config/targets.yaml")
+    parser.add_argument("--trace", default="results/avoidance_trace.csv")
+    parser.add_argument("--mode", choices=("hold", "detour"), default="hold")
     args = parser.parse_args()
 
     rows = read_rows(Path(args.csv))
@@ -276,8 +368,19 @@ def main() -> int:
         mission = yaml.safe_load(handle)
     with open(args.depth_config, encoding="utf-8") as handle:
         gate = yaml.safe_load(handle)
+    with open(args.targets, encoding="utf-8") as handle:
+        targets = yaml.safe_load(handle)
+    target = next(
+        (float(item["x"]), float(item["y"])) for item in targets["targets"] if int(item["id"]) == 0
+    )
 
-    report = verdict(analyse(rows, obstacle, mission), obstacle)
+    report = verdict(
+        analyse(rows, obstacle, mission, target),
+        obstacle,
+        mode=args.mode,
+        mission=mission,
+        trace_notes=read_trace(Path(args.trace)),
+    )
     report["gate"] = {
         "stop_distance_m": float(gate["stop_distance_m"]),
         "clear_distance_m": float(gate["clear_distance_m"]),

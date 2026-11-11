@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/v/release/wuuu854-boop/uav-yolo-offboard-tracking?include_prereleases&sort=semver)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-333-brightgreen)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-358-brightgreen)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ci.yml)
 
 **UAV vision in the loop, measured.** Detection → pixel-to-ground projection → PX4 Offboard approach in Gazebo SITL, plus a forward depth camera that stops the approach before a wall — with a trial harness that turns every run into a CSV row and an environment doctor that diagnoses this stack's setup failures.
 
@@ -127,6 +127,28 @@ interval. Bottom: the ROI's nearest z-depth crosses 2.5 m and never reaches the
 The honest limits — static wall, ideal simulated depth, no path planning, one run
 at 0.6 m/s — are in [`docs/avoidance.md`](docs/avoidance.md).
 
+### Going around it: an L-shaped detour
+
+Phase 2 is the smallest useful "go around": one fixed side, one L, one static
+wall. The vehicle stops at the wall, flies **3.5 m right**, then **5 m forward**
+past the wall's east face, and resumes `target_0` once the depth gate has been
+clear for a second. A diagonal back to the target would cut the wall's corner;
+the forward leg is why this is an L.
+
+One `make detour` run: stop at 20.2 s, 3.394 m lateral leg, gate released at
+29.8 s, final target error **0.527 m** (landing row 0.63 m, `success=True`),
+minimum wall clearance **0.999 m**, **0** contacts, 791 depth frames. The report
+passes eight checks.
+
+![L-shaped detour around the wall and on to target_0](results/detour_run.png)
+
+*The stop is red (the gate is still set while the vehicle escapes sideways), the
+lateral and forward legs are the L, and the final approach reaches the target.*
+
+Limits: fixed side, one obstacle, no map, no dynamic obstacle, one run at
+0.6 m/s; the first 3 m forward leg grazed the wall's corner and was too short.
+See [`docs/detour.md`](docs/detour.md).
+
 **Version provenance.** The table is the nine-trial set measured with **v0.1.0**.
 v0.2.0 changes safety behaviour only — a geofence, a mission timeout and a
 requirement that a target be seen for consecutive frames before the mission acts
@@ -143,7 +165,7 @@ Gazebo rendered headless through WSL2.
 
 | Layer | Status | Evidence |
 |---|---|---|
-| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (333 tests) + `make demo` || YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
+| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (358 tests) + `make demo` || YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
 | Cross-frame identity (`track_id`) | ✅ verified | `tests/test_tracking.py` (12 tests) + a ROS test that the id survives two frames |
 | ROS 2 packages build, both nodes run | ✅ verified in CI | `ROS build` workflow on `ros:humble`: detector against synthetic images, controller against fake PX4 traffic |
 | Version matrix, world structure, camera intrinsics | ✅ checked | `make doctor`, `check_world_targets.py` in CI |
@@ -155,9 +177,10 @@ Gazebo rendered headless through WSL2.
 | Moving targets | ✅ **one recorded flight** | cube moved 3 m at 0.5 m/s; the tracker held one id across 88 detections. Plain IoU was enough at that speed — the motion model's unit tests define when it is not; [`results/v07_moving_target.txt`](results/v07_moving_target.txt) |
 | Depth camera publishes real depth | ✅ **verified** | 640×480 `R_FLOAT32` frames, 822 bridged in 54.6 s; the stopped frame and its `.npy` are in [`results/avoidance_depth_frame.png`](results/avoidance_depth_frame.png) |
 | Reactive stop before an obstacle | ✅ **verified** | stop at 19.8 s, held 25.1 s, settled drift 0.124 m, min clearance 2.204 m, 0 contacts; [`results/avoidance_summary.json`](results/avoidance_summary.json) |
+| Reactive L-shaped detour | ✅ **verified** | 3.394 m lateral, gate released, target reached 0.527 m, min clearance 0.999 m, 0 contacts; [`results/detour_summary.json`](results/detour_summary.json) |
 | Contact sensor can report a contact | ✅ **checked positively** | a 0.5 kg box dropped on the wall produced 4632 messages; [`results/contact_sensor_check.txt`](results/contact_sensor_check.txt) |
 | Depth-sensor noise, holes, real hardware | ❌ **not verified** | Gazebo returns ideal float32 depth; there is no real depth camera, no multipath, no missing-return model |
-| Dynamic obstacles, going around them | ❌ **not in this phase** | the vehicle stops and waits; there is no planner or obstacle track |
+| Dynamic obstacles / global planning | ❌ **not implemented** | the detour is one fixed side around one static wall; no obstacle track, no global planner |
 | PX4 change needed for those trials | ✅ documented and patchable | [`patches/px4-v1.15-gz-magnetometer.patch`](patches/px4-v1.15-gz-magnetometer.patch) + `make patch-px4`; unpatched PX4 will not arm |
 
 The ❌ rows are the honest gaps: no Jetson deployment, no real depth sensor and
@@ -233,6 +256,7 @@ make preflight                 # 不开仿真，先查配置/依赖/目录是否
 make detect                    # 只跑检测节点，验证 /detections 有输出（终端 B）
 make e2e                       # 闭环：起飞 → 检测 → 抵近 → 悬停 → 降落
 make avoid                     # 深度相机：起飞 → 在墙前停住 → 降落（证据写入 results/）
+make detour                    # 深度相机：停住 → 固定右侧 L 形绕墙 → 回到目标
 ```
 
 > **Windows 用户**：PX4 SITL 只能跑在 Linux 上。用 WSL2 + Ubuntu 22.04（Windows 11
@@ -312,8 +336,9 @@ Failure modes this system actually produced, each with the check that catches it
 - 假设目标静止、地面水平、相机严格下视；roll/pitch 未补偿。
 - 单目标；多目标跟踪属于 v0.2.0 范围。
 - 搜索是固定方形草坪扫描（20 m、间距 8.9 m），不含重规划，也不覆盖大面积区域。
-- 避障仅验证「停住」：静态墙、理想深度图、0.6 m/s、一次飞行；没有路径规划、
-  动态障碍、真实深度相机的噪声/空洞（见 [`docs/avoidance.md`](docs/avoidance.md)）。
+- 避障验证了「停住」和「固定右侧 L 形绕墙」：静态墙、理想深度图、0.6 m/s、一次飞行；
+  仍没有全局规划、动态障碍、自由选择绕行方向、真实深度相机的噪声/空洞
+  （见 [`docs/avoidance.md`](docs/avoidance.md) 与 [`docs/detour.md`](docs/detour.md)）。
 - 默认 world 是合成彩色方块，COCO 预训练 YOLO 对其**零样本检测率为 0**，
   因此闭环演示使用 `backend: baseline`，YOLO 只用于延迟/部署基准；
   用 Gazebo 渲染帧自动标注并微调是 v0.2.0 的任务（见 `sim/README.md`）。

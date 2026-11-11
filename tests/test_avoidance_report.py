@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import math
 
+import pytest
+
 from scripts.avoidance_report import analyse, longest_stop_run, point_to_aabb_distance, verdict
 
 OBSTACLE = {
@@ -84,3 +86,87 @@ def test_a_run_that_never_stops_fails():
 
     assert report["verdict"] == "FAIL"
     assert report["checks"]["stop_engaged"]["ok"] is False
+
+
+def _detour_rows(stop_released: bool = True, contact_count: int = 0, lateral_m: float = 7.0):
+    """A synthetic path: approach, sideways leg, diagonal return to target_0."""
+    rows = []
+    for second in range(30):
+        if second < 10:
+            east, north = 0.5 * second, 0.0
+        elif second < 20:
+            east, north = 5.0, -lateral_m * (second - 9) / 10.0
+        elif second < 25:
+            east, north = 5.0 + 2.5 * (second - 19) / 5.0, -lateral_m
+        else:
+            east, north = 7.5, -lateral_m * (1.0 - (second - 24) / 5.0)
+        rows.append(
+            {
+                "t_s": float(second),
+                "east_m": east,
+                "north_m": north,
+                "altitude_m": 5.0,
+                "yaw_deg": 0.0,
+                "nearest_m": 2.3,
+                "stop": 8 <= second <= (15 if stop_released else 29),
+                "contacts_total": contact_count,
+                "depth_frames": second * 10,
+            }
+        )
+    return rows
+
+
+DETOUR_MISSION = {"detour_min_lateral_m": 6.5, "detour_min_clearance_m": 0.4}
+
+
+def test_a_detour_that_goes_around_and_reaches_the_target_passes():
+    report = verdict(
+        analyse(_detour_rows(), OBSTACLE, MISSION),
+        OBSTACLE,
+        mode="detour",
+        mission=DETOUR_MISSION,
+        trace_notes=["detour: detour started"],
+    )
+
+    assert report["verdict"] == "PASS"
+    assert report["metrics"]["max_abs_north_m"] == 7.0
+    assert report["metrics"]["final_error_m"] == 0.0
+
+
+def test_a_detour_that_never_releases_the_gate_fails():
+    report = verdict(
+        analyse(_detour_rows(stop_released=False), OBSTACLE, MISSION),
+        OBSTACLE,
+        mode="detour",
+        mission=DETOUR_MISSION,
+    )
+
+    assert report["verdict"] == "FAIL"
+    assert report["checks"]["gate_released"]["ok"] is False
+
+
+def test_a_detour_that_moves_less_than_the_minimum_lateral_distance_fails():
+    report = verdict(
+        analyse(_detour_rows(lateral_m=2.0), OBSTACLE, MISSION),
+        OBSTACLE,
+        mode="detour",
+        mission=DETOUR_MISSION,
+    )
+
+    assert report["checks"]["lateral_leg_at_least_min"]["ok"] is False
+
+
+def test_a_detour_with_a_contact_fails():
+    report = verdict(
+        analyse(_detour_rows(contact_count=1), OBSTACLE, MISSION),
+        OBSTACLE,
+        mode="detour",
+        mission=DETOUR_MISSION,
+    )
+
+    assert report["checks"]["no_contact"]["ok"] is False
+
+
+def test_an_unknown_report_mode_is_rejected():
+    with pytest.raises(ValueError, match="unknown report mode"):
+        verdict(analyse(_rows(), OBSTACLE, MISSION), OBSTACLE, mode="teleport")

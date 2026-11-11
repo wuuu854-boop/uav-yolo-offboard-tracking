@@ -37,6 +37,12 @@ The depth-camera avoidance run is a separate protocol: world
 a tracking-trial row; keep it out of the nine-trial table. Details:
 [`avoidance.md`](avoidance.md).
 
+The phase-2 detour uses the same world and pose with
+`config/mission_detour.yaml` and `make detour`. Its landing row
+(`results/detour_landing.csv`) **is** a success — the L reaches target_0 — but it
+is still a separate scenario, not one of the nine tracking trials. Details:
+[`detour.md`](detour.md).
+
 Restart the simulation between targets; do not teleport a running vehicle.
 
 ## Trial procedure

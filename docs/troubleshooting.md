@@ -331,3 +331,27 @@ make install-world
 Then rerun `make avoid`. The target calls `install-world` itself, so this only
 bites when the simulator is started by hand with `make sim`.
 
+---
+
+## 15. The L-shaped detour touches the wall's corner
+
+**Symptom** The detour reaches the target but the wall's contact sensor fires, or
+the vehicle loses altitude/yaw near the end of the detour.
+
+**Cause** The forward leg is too short. The target is only 0.8 m behind the wall,
+so the final approach must come from **east** of the wall's east face. If the
+forward leg ends at the face (or short of it), the diagonal back to the target
+cuts the corner. The first phase-2 attempt used a 3 m forward leg and did this:
+the wall's contact sensor fired and the vehicle lost altitude. The accepted
+configuration uses 3.5 m lateral and 5 m forward.
+
+**Fix** Check `detour_forward_m` and the trace: the forward waypoint must be east
+of the wall's east face (world x ≈ -0.7) by more than the airframe. The accepted
+run's forward point is local x ≈ 8.45 (world x ≈ 0.95), with the target at world
+x = 0.
+
+**Detected by** `scripts/avoidance_report.py --mode detour` fails on a contact or
+clearance below 0.4 m; the trace shows where the forward leg ended.
+
+**Source** found during v0.10.0 bring-up.
+

@@ -45,6 +45,12 @@ from std_msgs.msg import Bool  # noqa: E402
 
 from uav_interfaces.msg import TargetArray  # noqa: E402
 from uav_tracking.control.arming import ArmingSequencer  # noqa: E402
+from uav_tracking.control.detour import (  # noqa: E402
+    DetourConfig,
+    DetourDecision,
+    DetourPhase,
+    DetourPlanner,
+)
 from uav_tracking.control.frames import (  # noqa: E402
     heading_ned_to_yaw_enu,
     ned_position_to_enu,
@@ -148,6 +154,21 @@ class OffboardNode(Node):
         # vehicle position, not the setpoint: the setpoint can be a metre ahead
         # during cruise, and freezing it would let the vehicle fly to it.
         self.avoidance_hold: tuple[float, float] | None = None
+        # Phase 2: a lateral leg around a static obstacle. Disabled by default;
+        # the tracking missions must keep their exact behaviour.
+        self.detour = DetourPlanner(
+            DetourConfig(
+                enabled=mission_cfg.detour_enabled,
+                side=mission_cfg.detour_side,
+                offset_m=mission_cfg.detour_offset_m,
+                forward_m=mission_cfg.detour_forward_m,
+                reach_tolerance_m=mission_cfg.detour_reach_tolerance_m,
+                clear_hold_s=mission_cfg.detour_clear_hold_s,
+                wait_timeout_s=mission_cfg.detour_wait_timeout_s,
+                max_attempts=mission_cfg.detour_max_attempts,
+            )
+        )
+        self._detour_phase = DetourPhase.INACTIVE
 
         # PX4 publishes /fmu/out/* as best-effort (SensorDataQoS). A default
         # reliable subscription would never match and the node would sit there
@@ -330,7 +351,31 @@ class OffboardNode(Node):
         # The gate overrides horizontal cruise only. Takeoff, hover and landing
         # keep their commands: refusing to climb or refusing to land because a
         # wall is in front would turn an obstacle into a different incident.
-        holding = decision.command == "goto" and self.avoidance.active(now_s)
+        avoiding = self.avoidance.active(now_s)
+        detour = DetourDecision(False, DetourPhase.INACTIVE)
+        if decision.command == "goto" and target is not None:
+            detour = self.detour.update((self.east, self.north), target, avoiding, now_s)
+        else:
+            self.detour.reset()
+
+        if detour.active:
+            if detour.phase is not self._detour_phase:
+                if detour.phase is DetourPhase.HOLDING:
+                    self.get_logger().error(f"detour cannot clear the obstacle: {detour.note}")
+                elif detour.phase in (DetourPhase.LATERAL, DetourPhase.FORWARD):
+                    self.get_logger().warn(
+                        f"obstacle within stop threshold: {detour.note} to the "
+                        f"{self.cfg.detour_side}, waypoint {detour.waypoint}"
+                    )
+                else:
+                    self.get_logger().info(detour.note)
+            self.avoidance_hold = None
+            self.avoidance_holding = False
+        elif self._detour_phase is not DetourPhase.INACTIVE:
+            self.get_logger().info(f"detour finished: {detour.note}")
+        self._detour_phase = detour.phase
+
+        holding = decision.command == "goto" and avoiding and not detour.active
         if holding and not self.avoidance_holding:
             self.avoidance_hold = (self.east, self.north)
             self.get_logger().warn(
@@ -359,13 +404,19 @@ class OffboardNode(Node):
             self.recorder.start_trial()
 
         # One row per state change: when a trial goes wrong this is the only
-        # record of which state it was in and why it moved. A held approach is
-        # a change of reason, not of state, so it replaces the empty GOTO note.
+        # record of which state it was in and why it moved. A held approach or a
+        # detour is a change of reason, not of state, so it replaces the empty
+        # GOTO note.
+        note = decision.note
+        if detour.active:
+            note = f"detour: {detour.note}"
+        elif holding:
+            note = "avoidance stop"
         if self.trace is not None:
             self.trace.write(
                 now_s,
                 decision.state.value,
-                "avoidance stop" if holding else decision.note,
+                note,
                 position=(self.east, self.north),
                 altitude_m=self.altitude,
             )
@@ -377,7 +428,11 @@ class OffboardNode(Node):
         elif decision.command == "takeoff":
             self._move_towards(self.east, self.north, self.cfg.takeoff_altitude_m)
         elif decision.command == "goto" and target is not None:
-            if holding:
+            if detour.active and detour.waypoint is not None:
+                self._move_towards(
+                    detour.waypoint[0], detour.waypoint[1], self.cfg.takeoff_altitude_m
+                )
+            elif holding:
                 assert self.avoidance_hold is not None
                 hold_east, hold_north = self.avoidance_hold
                 self._move_towards(hold_east, hold_north, self.cfg.takeoff_altitude_m)
@@ -551,6 +606,15 @@ def main() -> int:
         confirm_frames=int(mission_raw.get("confirm_frames", 3)),
         heading_yaw_deg=float(mission_raw.get("heading_yaw_deg", 0.0)),
         avoidance_timeout_s=mission_raw.get("avoidance_timeout_s", 1.0),
+        detour_enabled=bool(mission_raw.get("detour_enabled", False)),
+        detour_side=str(mission_raw.get("detour_side", "right")),
+        detour_offset_m=float(mission_raw.get("detour_offset_m", 3.0)),
+        detour_forward_m=float(mission_raw.get("detour_forward_m", 3.0)),
+        detour_reach_tolerance_m=float(mission_raw.get("detour_reach_tolerance_m", 0.5)),
+        detour_min_lateral_m=float(mission_raw.get("detour_min_lateral_m", 2.5)),
+        detour_clear_hold_s=float(mission_raw.get("detour_clear_hold_s", 1.0)),
+        detour_wait_timeout_s=float(mission_raw.get("detour_wait_timeout_s", 5.0)),
+        detour_max_attempts=int(mission_raw.get("detour_max_attempts", 2)),
         patrol_waypoints=tuple(
             (float(pair[0]), float(pair[1])) for pair in mission_raw.get("patrol_waypoints", ())
         ),

@@ -7,6 +7,34 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-11-11
+
+### Added
+
+- **An L-shaped detour around the wall.** Phase 2 of avoidance: when the depth
+  gate stops the approach, the vehicle flies 3.5 m to a fixed side, 5 m forward
+  past the wall's face, and resumes the waypoint once the gate has been clear for
+  a second. The forward leg is not decoration: the target is 0.8 m behind the
+  wall, and a diagonal back from the lateral point cuts the corner. The pure
+  planner is `src/uav_tracking/control/detour.py`, with 20 unit tests; it extends
+  the forward leg once and holds if the gate never clears.
+- `config/mission_detour.yaml`, `make detour`, and `avoidance_report.py --mode
+  detour`: the same orchestration produces either the phase-1 hold or the phase-2
+  detour, with separate `detour_*` evidence files. The report checks eight
+  things: stop, detour started, lateral distance, gate release, target reached,
+  clearance, zero contacts and depth frames.
+- The accepted run reaches target_0 with a **0.527 m** final error and lands
+  `success=True` at 0.63 m, with **0.999 m** minimum wall clearance and **0**
+  contacts in 791 depth frames. The first attempt used a 3 m forward leg, grazed
+  the wall's corner and registered contacts; the forward leg is 5 m.
+
+### Why
+
+Stopping is safe but not useful: the mission has not reached its target. The
+smallest step that is still honest is a fixed-side L around one known obstacle,
+not a planner. The report refuses a run that touches the wall, misses the target
+or never releases the gate, so the number in the README cannot be a lucky one.
+
 ## [0.9.0] - 2026-11-10
 
 ### Added

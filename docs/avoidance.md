@@ -2,8 +2,9 @@
 
 Phase 1 of the obstacle-avoidance work: **one forward depth camera, one reactive
 stop, one SITL flight**. It is deliberately not path planning, not mapping and
-not a claim about a real depth sensor. The next phases are in
-[`market.md`](market.md); this document only states what was built and measured.
+not a claim about a real depth sensor. Phase 2 (a fixed-side L-shaped detour) is
+in [`detour.md`](detour.md); this document only states what phase 1 built and
+measured.
 
 ![The wall filling the depth camera's centre window at the stop, nearest 2.45 m](../results/avoidance_depth_frame.png)
 
@@ -143,6 +144,7 @@ repeated by `make avoid`.
 | Dynamic or moving obstacles | ❌ **not verified** | the wall is static; no tracking of an obstacle |
 | Path planning around an obstacle | ❌ **not in this phase** | the vehicle stops and waits; it does not go around |
 | Higher speed / shorter stop distance | ❌ **not verified** | 0.6 m/s was chosen for this geometry; 1.0 m/s overshot the trigger by ~0.6 m |
+| Going around the obstacle | ✅ **phase 2** | fixed-side L-shaped detour, [`detour.md`](detour.md); it is not a planner |
 | A negative control (fly into the wall) | ❌ **not run** | the wall is on the approach line and the contact sensor works, but no deliberate collision was flown |
 
 ## Known artifacts in the logs

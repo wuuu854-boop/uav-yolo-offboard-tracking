@@ -138,6 +138,13 @@ hover and landing ignore the gate. A watchdog turns a depth stream that stops
 arriving into a stop; before the first message it is inactive, so missions that
 do not run the depth node are unchanged. See [`avoidance.md`](avoidance.md).
 
+The phase-2 detour is the same pattern: `GOTO` plus an L-shaped modifier with
+`LATERAL → FORWARD → WAITING` phases. The gate starts the detour but is ignored
+during the two legs, because flying sideways is the escape; it is consulted at
+the forward point before turning back. The planner never becomes a mission state,
+and a mission with `detour_enabled: false` behaves exactly as before. See
+[`detour.md`](detour.md).
+
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a
 single missed frame ends the mission.
@@ -164,3 +171,5 @@ single missed frame ends the mission.
 | No `/depth_camera` topic | depth-camera model not installed, or PX4 started with another model | `make install-world`, `gz topic -l \| grep depth` |
 | Depth gate stops on the ground at takeoff | near clip / low altitude; the controller ignores stop outside `GOTO` | `log/depth_node.log`, `stop_events` |
 | Vehicle flies past the wall | wrong `heading_yaw_deg`, so the forward camera was not pointed at it | `config/mission_avoidance.yaml`, yaw in `avoidance_run.csv` |
+| Detour touches the wall's corner | forward leg too short for a target close to the wall | `results/detour_trace.csv`, `docs/detour.md` |
+| Detour never releases the gate | the forward extension budget is spent or the gate is stale | `detour_summary.json`, `detour_trace.csv` |
