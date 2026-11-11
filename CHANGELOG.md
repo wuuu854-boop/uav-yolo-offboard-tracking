@@ -7,15 +7,15 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
-## [0.27.1] - 2026-11-11
+## [0.27.2] - 2026-11-11
 
 ### Fixed
 
-- CI's Docker image and ROS job add the Ubuntu `universe` component before
-  installing `python3-pip`/`libgl1`. On 2026-11-11 both jobs failed with
-  "Package 'python3-pip' has no installation candidate" even though
-  `apt-get update` succeeded; the test job passed. This is an apt-source fix,
-  not a code change.
+- **Reverted the v0.27.1 apt-universe workaround.** The docker/ROS job logs show
+  `Could not resolve 'archive.ubuntu.com'` / `security.ubuntu.com`, not a missing
+  package component. The test job was green. Adding `software-properties-common`
+  made the same DNS failure fail earlier. CI's docker image and ROS apt install
+  remain blocked by that external DNS outage; the repository change is reverted.
 
 ## [0.27.0] - 2026-11-11
 

@@ -9,9 +9,6 @@ RUN set -eux; \
       echo "apt update failed (attempt $attempt), retrying"; \
       sleep 20; \
     done; \
-    apt-get install -y --no-install-recommends software-properties-common; \
-    add-apt-repository -y universe; \
-    apt-get update; \
     apt-get install -y --no-install-recommends -o Acquire::Retries=8 python3-pip; \
     rm -rf /var/lib/apt/lists/*
 
