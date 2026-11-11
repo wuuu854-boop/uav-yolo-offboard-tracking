@@ -192,6 +192,11 @@ planner replans around it, and the reactive stop is ignored for the rest of the
 mission. It is one range and one replan, not an occupancy map. See
 [`perception-planning.md`](perception-planning.md).
 
+Phase 11 adds a fifth `Box` field, `angle_rad`; `contains()` rotates the query
+point into the box frame, so grid A*, inflation and line-of-sight work for a
+rotated wall. The report measures the exact rotated shape. See
+[`rotated.md`](rotated.md).
+
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a
 single missed frame ends the mission.

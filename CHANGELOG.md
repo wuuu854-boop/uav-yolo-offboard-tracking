@@ -7,6 +7,28 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-11-11
+
+### Added
+
+- **Rotated-box planning.** `Box` gains `angle_rad`; `contains()` rotates the
+  query point into the box frame, so grid A*, inflation and line-of-sight work
+  for a wall rotated about z. The report gains `point_to_box_distance()` and
+  measures the exact rotated shape instead of an axis-aligned bound.
+- `sim/worlds/target_tracking_rotated.sdf` (30° wall),
+  `config/mission_global_rotated.yaml`, `config/rotated_obstacle.yaml`, and
+  `make global-rotated`.
+- One run: **2 waypoints around 1 rotated obstacle**, final target error
+  **0.218 m**, landing **0.391 m** `success=True`, exact clearance **0.509 m**,
+  **0** contacts, 580 depth frames, 42.6 s.
+
+### Why
+
+The global planner could only represent axis-aligned boxes, so a wall at an
+angle had to be approximated. Rotating the point into the box frame is a small,
+testable change that makes the planner exact for this case while keeping the rest
+of the stack unchanged.
+
 ## [0.19.0] - 2026-11-11
 
 ### Added

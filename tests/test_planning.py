@@ -34,6 +34,28 @@ def test_a_measurement_with_a_bad_distance_is_rejected():
         obstacle_box_from_measurement((0.0, 0.0), 0.0, 0.0, 4.0, 0.4)
 
 
+def test_a_rotated_box_is_honoured():
+    box = Box(0.0, 0.0, 2.0, 0.6, math.pi / 2.0)
+
+    assert box.contains(0.0, 0.9) is True
+    assert box.contains(0.9, 0.0) is False
+    assert box.contains(0.0, 0.9, 0.2) is True
+
+
+def test_a_rotated_box_forces_a_path_around_it():
+    box = Box(1.5, 0.0, 0.2, 3.0, math.pi / 4.0)
+    path = plan_path(
+        (0.0, 0.0),
+        (3.0, 0.0),
+        [box],
+        (-5.0, 5.0, -5.0, 5.0),
+        inflation_m=0.5,
+    )
+
+    assert path[-1] == pytest.approx((3.0, 0.0))
+    _outside(path, [box], 0.5)
+
+
 def test_an_empty_map_plans_straight_to_the_goal():
     path = plan_path((0.0, 0.0), (3.0, 0.0), [], (-5.0, 5.0, -5.0, 5.0))
 

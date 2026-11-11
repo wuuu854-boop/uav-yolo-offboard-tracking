@@ -66,6 +66,27 @@ def point_to_aabb_distance(x: float, y: float, bounds: tuple[float, float, float
     return math.hypot(dx, dy)
 
 
+def point_to_box_distance(
+    x: float,
+    y: float,
+    centre: tuple[float, float],
+    size: tuple[float, float],
+    angle_deg: float,
+) -> float:
+    """Shortest 2-D distance from a point to a box rotated about z."""
+    dx = x - float(centre[0])
+    dy = y - float(centre[1])
+    angle = math.radians(float(angle_deg))
+    cos_a, sin_a = math.cos(angle), math.sin(angle)
+    local_x = cos_a * dx + sin_a * dy
+    local_y = -sin_a * dx + cos_a * dy
+    half_x = float(size[0]) / 2.0
+    half_y = float(size[1]) / 2.0
+    gap_x = max(abs(local_x) - half_x, 0.0)
+    gap_y = max(abs(local_y) - half_y, 0.0)
+    return math.hypot(gap_x, gap_y)
+
+
 def longest_stop_run(rows: list[dict]) -> tuple[int, int]:
     """Indices of the longest consecutive stopped interval."""
     best = (-1, -1)
@@ -100,7 +121,19 @@ def analyse(
     bounds = (x_min, x_max, y_min, y_max)
 
     world = [(spawn_east + row["east_m"], spawn_north + row["north_m"]) for row in rows]
-    clearances = [point_to_aabb_distance(x, y, bounds) for x, y in world]
+    if obstacle.get("angle_deg") is not None:
+        clearances = [
+            point_to_box_distance(
+                x,
+                y,
+                (obstacle["pose_enu"][0], obstacle["pose_enu"][1]),
+                (obstacle["size_m"][0], obstacle["size_m"][1]),
+                obstacle["angle_deg"],
+            )
+            for x, y in world
+        ]
+    else:
+        clearances = [point_to_aabb_distance(x, y, bounds) for x, y in world]
     min_index = min(range(len(clearances)), key=clearances.__getitem__)
 
     start, end = longest_stop_run(rows)

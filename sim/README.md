@@ -152,6 +152,11 @@ not read from the world file, and the reactive stop is disabled for that run.
 `make global-perception` uses the same world with an empty map; the wall is not
 hand-entered, one depth stop becomes a box at runtime and the planner replans.
 
+`target_tracking_rotated.sdf` is another copy of the obstacle world: the wall's
+yaw is 30° and the world is renamed `target_tracking_rotated`. `make
+global-rotated` passes one rotated box to the planner; the report measures the
+exact rotated shape.
+
 The wall's pose and size are duplicated in `config/obstacle.yaml`, the pillar's
 in `config/side_obstacle.yaml`; `check_world_targets.py` fails when a world and
 its config disagree, because the clearance metric is computed from them. Both

@@ -11,7 +11,13 @@ import math
 
 import pytest
 
-from scripts.avoidance_report import analyse, longest_stop_run, point_to_aabb_distance, verdict
+from scripts.avoidance_report import (
+    analyse,
+    longest_stop_run,
+    point_to_aabb_distance,
+    point_to_box_distance,
+    verdict,
+)
 
 OBSTACLE = {
     "model": "obstacle_wall",
@@ -33,6 +39,13 @@ def test_distance_to_a_face_is_the_perpendicular_gap():
 
 def test_distance_to_a_corner_includes_both_axes():
     assert point_to_aabb_distance(-2.9, 2.5, BOUNDS) == math.hypot(2.0, 1.0)
+
+
+def test_distance_to_a_rotated_box():
+    # A 2 x 0.2 box rotated 90 degrees is long on y, so (0, 2) is inside and
+    # (2, 0) is 1.9 m away.
+    assert point_to_box_distance(0.0, 0.5, (0.0, 0.0), (2.0, 0.2), 90.0) == 0.0
+    assert point_to_box_distance(2.0, 0.0, (0.0, 0.0), (2.0, 0.2), 90.0) == pytest.approx(1.9)
 
 
 def test_longest_stop_run_picks_the_longest_of_several():

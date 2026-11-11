@@ -89,6 +89,11 @@ The one-shot perception variant uses `target_tracking_obstacle.sdf`,
 row is `results/global_perception_landing.csv` and is a success (1.13 m). The
 initial map is empty; one depth stop becomes one box, then the planner replans.
 
+The rotated-wall variant uses `target_tracking_rotated.sdf`,
+`config/mission_global_rotated.yaml` and `make global-rotated`; its landing row is
+`results/global_rotated_landing.csv` and is a success (0.391 m). The wall is
+rotated 30° about z and the report uses the exact rotated distance.
+
 Restart the simulation between targets; do not teleport a running vehicle.
 
 ## Trial procedure

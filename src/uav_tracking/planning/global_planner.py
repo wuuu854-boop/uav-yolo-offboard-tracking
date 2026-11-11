@@ -17,17 +17,24 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Box:
-    """Axis-aligned obstacle in world ENU metres."""
+    """Obstacle in world ENU metres; ``angle_rad`` rotates it about z."""
 
     centre_x: float
     centre_y: float
     size_x: float
     size_y: float
+    angle_rad: float = 0.0
 
     def contains(self, x: float, y: float, inflation_m: float = 0.0) -> bool:
         half_x = self.size_x / 2.0 + float(inflation_m)
         half_y = self.size_y / 2.0 + float(inflation_m)
-        return abs(x - self.centre_x) <= half_x and abs(y - self.centre_y) <= half_y
+        dx = x - self.centre_x
+        dy = y - self.centre_y
+        cos_a = math.cos(self.angle_rad)
+        sin_a = math.sin(self.angle_rad)
+        local_x = cos_a * dx + sin_a * dy
+        local_y = -sin_a * dx + cos_a * dy
+        return abs(local_x) <= half_x and abs(local_y) <= half_y
 
 
 def _blocked(x: float, y: float, obstacles: list[Box], inflation_m: float) -> bool:

@@ -605,3 +605,30 @@ clearance, and the contact count.
 
 **Source** found during v0.19.0 bring-up.
 
+---
+
+## 25. The rotated-wall run reports zero clearance, or the contact topic names the wrong world
+
+**Symptom** The flight has 0 contacts and looks clean, but `min_clearance_m` is
+`0.0`; or the run log says `contact topic(s): /world/target_tracking_obstacle/...`
+even though `WORLD=target_tracking_rotated`.
+
+**Cause**
+
+1. **AABB report.** The report first used the axis-aligned bound of the rotated
+   wall. The path can clip the empty corner of that bound while staying outside
+   the real wall, so the bound reports 0.0. Fixed by
+   `point_to_box_distance()` and `angle_deg` in
+   `config/rotated_obstacle.yaml`: the reported clearance is now exact for the
+   rotated 0.2 × 3.0 m wall (0.509 m in the retained run).
+2. **Copied SDF keeps its world name.** The rotated world was copied from the
+   obstacle world, so `<world name="target_tracking_obstacle">` stayed inside
+   the new file. Gazebo then scoped the contact topic under the old world name.
+   Fixed by renaming the world to `target_tracking_rotated`; the run now prints
+   the rotated world's contact topic.
+
+**Detected by** the `min_clearance_m` value, the plot, or the contact-topic line
+at run start.
+
+**Source** found during v0.20.0 bring-up.
+

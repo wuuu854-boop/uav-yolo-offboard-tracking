@@ -1,0 +1,7 @@
+# Exact rotated wall of sim/worlds/target_tracking_rotated.sdf. The report uses
+# point_to_box_distance with this angle; there is no AABB approximation.
+model: obstacle_wall
+pose_enu: [-0.8, 0.0, 3.0]
+size_m: [0.2, 3.0, 6.0]
+angle_deg: 30.0
+min_clearance_m: 0.4

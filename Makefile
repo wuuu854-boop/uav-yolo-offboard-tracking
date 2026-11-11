@@ -7,14 +7,14 @@ PX4_DIR  ?= $(HOME)/PX4-Autopilot
 WORLD    ?= target_tracking
 # Both worlds are installed: the tracking trials must keep the unobstructed one,
 # and the avoidance flight needs the wall. See sim/worlds/target_tracking_obstacle.sdf.
-WORLDS   := target_tracking target_tracking_obstacle target_tracking_detour target_tracking_blocked target_tracking_search
+WORLDS   := target_tracking target_tracking_obstacle target_tracking_detour target_tracking_blocked target_tracking_search target_tracking_rotated
 # Forward-looking `x500_mono_cam` would break the nadir projection: use _down.
 PX4_MODEL ?= gz_x500_mono_cam_down
 # Spawn 3.5 m west of target_0 so it is the only target in view at takeoff.
 # Per-target poses are listed in docs/experiment-protocol.md.
 POSE     ?= -3.5,0,0.05
 
-.PHONY: help setup doctor demo trials qa shots pipeline patch-px4 install-world sim detect e2e avoid detour auto-detour blocked backoff backoff-sweep adaptive search global global-multi global-perception preflight test lint fmt lock bench check clean
+.PHONY: help setup doctor demo trials qa shots pipeline patch-px4 install-world sim detect e2e avoid detour auto-detour blocked backoff backoff-sweep adaptive search global global-multi global-perception global-rotated preflight test lint fmt lock bench check clean
 
 help: ## show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-8s\033[0m %s\n", $$1, $$2}'
@@ -106,6 +106,9 @@ global-multi: install-world ## known-map A* around the wall and two side pillars
 
 global-perception: install-world ## depth stop -> one measured box -> replan around it
 	MISSION=config/mission_global_perception.yaml WORLD=target_tracking_obstacle PREFIX=global_perception MODE=global bash scripts/run_avoidance.sh
+
+global-rotated: install-world ## known-map A* around a wall rotated 30 degrees
+	MISSION=config/mission_global_rotated.yaml WORLD=target_tracking_rotated PREFIX=global_rotated MODE=global OBSTACLE=config/rotated_obstacle.yaml bash scripts/run_avoidance.sh
 
 trials: ## run N closed-loop trials (N=3 default), restarting the sim each time
 	bash scripts/run_trials.sh --count $(or $(N),3)
