@@ -164,6 +164,10 @@ its own contact sensor. `make global-rotated-multi` passes both rotated boxes.
 gap at y ∈ [-1.2, 1.2], each with a contact sensor. `make gate` flies through the
 gap and lands on target_0 itself.
 
+`target_tracking_gate_target1.sdf` moves the gate to x = 9.2 with its 2.4 m gap
+at y ∈ [1.2, 3.6], well before target_1 at (20, 0). `make gate-target1` threads
+the offset gap, turns, and lands on target_1.
+
 The wall's pose and size are duplicated in `config/obstacle.yaml`, the pillar's
 in `config/side_obstacle.yaml`; `check_world_targets.py` fails when a world and
 its config disagree, because the clearance metric is computed from them. Both

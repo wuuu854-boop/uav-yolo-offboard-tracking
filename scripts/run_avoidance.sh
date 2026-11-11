@@ -42,6 +42,7 @@ SUMMARY="results/${PREFIX}_summary.json"
 PLOT="results/${PREFIX}_run.png"
 DEPTH_CONFIG="${DEPTH_CONFIG:-config/depth.yaml}"
 OBSTACLE="${OBSTACLE:-config/obstacle.yaml}"
+TARGET_ID="${TARGET_ID:-0}"
 
 usage() {
   cat <<'EOF'
@@ -244,7 +245,7 @@ if [[ -n "${SIDE_OBSTACLE:-}" ]]; then
 fi
 python3 scripts/avoidance_report.py --mode "$MODE" --csv "$RECORD" \
   --summary "$SUMMARY" --plot "$PLOT" --trace "$TRACE" \
-  --obstacle "$OBSTACLE" --mission "$MISSION" \
+  --obstacle "$OBSTACLE" --mission "$MISSION" --target-id "$TARGET_ID" \
   --depth-config "$DEPTH_CONFIG" "${REPORT_ARGS[@]}"
 REPORT_RC=$?
 

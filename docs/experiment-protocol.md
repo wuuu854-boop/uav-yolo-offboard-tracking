@@ -104,6 +104,12 @@ The doorway task uses `target_tracking_gate.sdf`,
 `results/gate_landing.csv` and is a success (0.275 m). The wall is split into two
 segments with a 2.4 m gap and the goal is target_0 itself.
 
+The offset-doorway task uses `target_tracking_gate_target1.sdf`,
+`config/mission_gate_target1.yaml` and `make gate-target1`; its landing row is
+`results/gate_target1_landing.csv` and is a success (0.425 m target 1). The gate
+is at x = 9.2 with the gap at y = 2.4 and the target is target_1 at (20, 0); the
+report uses `--target-id 1`.
+
 Restart the simulation between targets; do not teleport a running vehicle.
 
 ## Trial procedure

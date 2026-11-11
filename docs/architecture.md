@@ -203,6 +203,11 @@ contact sensors. See [`rotated-multi.md`](rotated-multi.md).
 Phase 13 adds a real doorway task: two gate segments with a 2.4 m gap, goal at
 target_0 itself, landing through the gap. See [`gate.md`](gate.md).
 
+Phase 14 moves the gate away from the target: an offset 2.4 m gap at x = 9.2 and
+target_1 at (20, 0), so the route threads the gap and then turns to target_1. The
+report takes `--target-id` so it measures target_1. See
+[`gate-target1.md`](gate-target1.md).
+
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a
 single missed frame ends the mission.

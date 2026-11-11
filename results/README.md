@@ -92,6 +92,11 @@ README and in the resume, so they are written by scripts, never by hand.
 | `gate_trace.csv` | `src/uav_tracking/control/trace.py` | takeoff, GOTO, hover, land |
 | `gate_summary.json` | `scripts/avoidance_report.py --mode global` | PASS: 0.49 m target error, 1.17 m clearance, 0 contacts |
 | `gate_run.png` | the same report | the path through the 2.4 m gap |
+| `gate_target1_run.csv` | `scripts/record_avoidance.py` during `make gate-target1` | 625 rows: offset gap, turn, target_1 |
+| `gate_target1_landing.csv` | `offboard_node` recorder on the same run | one row: 0.425 m from target_1, target 1, `success=True` |
+| `gate_target1_trace.csv` | `src/uav_tracking/control/trace.py` | takeoff, GOTO, hover, land |
+| `gate_target1_summary.json` | `scripts/avoidance_report.py --mode global --target-id 1` | PASS: 0.277 m target error, 0.42 m clearance, 0 contacts |
+| `gate_target1_run.png` | the same report | the three-waypoint offset-gap route |
 | `detections.geojson` | `scripts/export_geojson.py` on the moving-target capture | 88 Point features with track id, timestamp and ENU offsets — the GIS-ready deliverable an inspection operator asks for |
 | `qa_moving.json` | `scripts/qa_report.py` on the moving-target capture | the asset was 3 m from its declared position, and the report says so (association 7.1 m, FAIL) |
 | `qa_north.json` | the same report with the asset position passed in | median association drops from 4.95 m to 0.62 m when the asset is where it actually was |

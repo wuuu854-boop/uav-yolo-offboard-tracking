@@ -7,6 +7,27 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.23.0] - 2026-11-11
+
+### Added
+
+- **Offset doorway before target_1.** `target_tracking_gate_target1.sdf` places
+  the 2.4 m gate at world x = 9.2 with its gap centred at y = 2.4; target_1 is
+  at (20, 0). `config/mission_gate_target1.yaml` gives the planner both segments
+  and the goal at target_1, and `make gate-target1` runs it.
+- `scripts/avoidance_report.py --target-id` lets the report measure target_1
+  instead of target_0; `scripts/run_avoidance.sh` passes `TARGET_ID`.
+- One run: **3 waypoints through the offset gap, then a turn to target_1**,
+  target error **0.277 m**, landing **0.425 m** target 1 `success=True`,
+  clearance **0.42 m**, **0** contacts, 822 depth frames, 62.4 s.
+
+### Why
+
+The offset-doorway idea failed for target_0 because target_0 sat behind the
+lower segment, 0.7 m from its face. Moving the gate away from a far target
+(target_1 at 20, 0) gives the same turn-through-a-gap task with a clean landing.
+The report can now measure a non-zero target id.
+
 ## [0.22.0] - 2026-11-11
 
 ### Added

@@ -486,6 +486,7 @@ def main() -> int:
     parser.add_argument("--mission", default="config/mission_avoidance.yaml")
     parser.add_argument("--depth-config", default="config/depth.yaml")
     parser.add_argument("--targets", default="config/targets.yaml")
+    parser.add_argument("--target-id", type=int, default=0)
     parser.add_argument("--trace", default="results/avoidance_trace.csv")
     parser.add_argument("--mode", choices=("hold", "detour", "global"), default="hold")
     parser.add_argument("--expect-side", choices=("left", "right"), default=None)
@@ -505,7 +506,9 @@ def main() -> int:
     with open(args.targets, encoding="utf-8") as handle:
         targets = yaml.safe_load(handle)
     target = next(
-        (float(item["x"]), float(item["y"])) for item in targets["targets"] if int(item["id"]) == 0
+        (float(item["x"]), float(item["y"]))
+        for item in targets["targets"]
+        if int(item["id"]) == args.target_id
     )
 
     report = verdict(

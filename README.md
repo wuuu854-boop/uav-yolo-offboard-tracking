@@ -334,6 +334,12 @@ then lands on target_0 itself instead of a stand-off: **1 waypoint through the
 gap**, target **0.49 m**, landing **0.275 m** `success=True`, clearance
 **1.17 m**, **0** contacts on either segment, 639 depth frames, 42.4 s.
 
+`make gate-target1` is the offset version: gate at x = 9.2 with the gap centred at
+y = 2.4, target_1 far east at (20, 0). The planner makes **3 waypoints** through
+the gap, then turns to target_1: target **0.277 m**, landing **0.425 m**
+`success=True`, clearance **0.42 m**, **0** contacts, 822 depth frames, 62.4 s.
+The report measures target_1 (`--target-id 1`).
+
 ![One waypoint through the doorway and landing on target_0](results/gate_run.png)
 
 Limits: one aligned 2.4 m doorway, hand-entered; no narrower/cluttered doorway,
@@ -380,6 +386,7 @@ Gazebo rendered headless through WSL2.
 | Rotated-box known-map path | ✅ **verified (one static box)** | 30° wall, 2 waypoints, target 0.218 m, landing 0.391 m, exact clearance 0.509 m, 0 contacts; [`results/global_rotated_summary.json`](results/global_rotated_summary.json) |
 | Two rotated obstacles | ✅ **verified (two static boxes)** | 3 waypoints, target 0.586 m, landing 0.439 m, clearance 0.698 m, 0 contacts on wall and pillar; [`results/global_rotated_multi_summary.json`](results/global_rotated_multi_summary.json) |
 | Doorway traversal and target landing | ✅ **verified (one static gate)** | 1 waypoint through a 2.4 m gap, target 0.49 m, landing 0.275 m, clearance 1.17 m, 0 contacts on both segments; [`results/gate_summary.json`](results/gate_summary.json) |
+| Offset doorway, then turn to target_1 | ✅ **verified (one static gate)** | 3 waypoints, target_1 0.277 m, landing 0.425 m, clearance 0.42 m, 0 contacts on both segments; [`results/gate_target1_summary.json`](results/gate_target1_summary.json) |
 | Contact sensor can report a contact | ✅ **checked positively** | a 0.5 kg box dropped on the wall produced 4632 messages; [`results/contact_sensor_check.txt`](results/contact_sensor_check.txt) |
 | Depth-sensor noise, holes, real hardware | ❌ **not verified** | Gazebo returns ideal float32 depth; there is no real depth camera, no multipath, no missing-return model |
 | Dynamic obstacles / global planning | ❌ **not implemented** | local stop + one detour + one hold; no obstacle track, no global planner |
@@ -471,6 +478,7 @@ make global-perception         # 深度停障 → 一个实测障碍框 → 重�
 make global-rotated            # 已知地图 A*：绕 30° 旋转墙
 make global-rotated-multi      # 已知地图 A*：绕旋转墙 + 45° 旋转柱
 make gate                      # 穿 2.4 m 门洞并降落在 target_0 上
+make gate-target1              # 偏置门洞穿过后转弯飞向 target_1
 ```
 
 > **Windows 用户**：PX4 SITL 只能跑在 Linux 上。用 WSL2 + Ubuntu 22.04（Windows 11
@@ -553,17 +561,17 @@ Failure modes this system actually produced, each with the check that catches it
 - 避障验证了「停住」、固定右侧 L 形绕墙、用左右深度条带选择绕行方向、两侧都堵时
   拒绝猜方向并保持、后退重看、0.2 m 步进重复后退、按实测距离计算后退量，以及停住后
   侧移 2 m 重新读条带并恢复、已知地图 A* 单/多障碍绕墙、30° 旋转墙与双旋转障碍、
-  2.4 m 门洞穿行并降落在 target_0，以及一次深度停障→单框→重规划：静态障碍、
-  理想深度图、0.6 m/s、各一次飞行；已验证停点双侧 blocked 的正例；
-  仍没有占据栅格/持续重规划、动态/3D 障碍、交替/二维搜索、自适应方向、
-  真实深度相机的噪声/空洞（见
+  2.4 m 门洞穿行并降落在 target_0、偏置门洞穿过后转弯降落在 target_1，以及一次
+  深度停障→单框→重规划：静态障碍、理想深度图、0.6–0.8 m/s、各一次飞行；
+  已验证停点双侧 blocked 的正例；仍没有占据栅格/持续重规划、动态/3D 障碍、
+  交替/二维搜索、自适应方向、真实深度相机的噪声/空洞（见
   [`docs/avoidance.md`](docs/avoidance.md)、[`docs/detour.md`](docs/detour.md)、
   [`docs/side-selection.md`](docs/side-selection.md)、[`docs/blocked.md`](docs/blocked.md)、
   [`docs/backoff.md`](docs/backoff.md)、[`docs/backoff-sweep.md`](docs/backoff-sweep.md)、
   [`docs/adaptive.md`](docs/adaptive.md)、[`docs/search.md`](docs/search.md)、
   [`docs/global.md`](docs/global.md)、[`docs/perception-planning.md`](docs/perception-planning.md)、
   [`docs/rotated.md`](docs/rotated.md)、[`docs/rotated-multi.md`](docs/rotated-multi.md)、
-  [`docs/gate.md`](docs/gate.md)）。
+  [`docs/gate.md`](docs/gate.md)、[`docs/gate-target1.md`](docs/gate-target1.md)）。
 - 默认 world 是合成彩色方块，COCO 预训练 YOLO 对其**零样本检测率为 0**，
   因此闭环演示使用 `backend: baseline`，YOLO 只用于延迟/部署基准；
   用 Gazebo 渲染帧自动标注并微调是 v0.2.0 的任务（见 `sim/README.md`）。
