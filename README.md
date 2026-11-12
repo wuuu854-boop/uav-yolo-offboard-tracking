@@ -357,13 +357,14 @@ gate-target1 margin mission. The aggregate is:
 | gate-double | **5/5** | 0.260 | 0.544 | 0 |
 | gate-target1, original 0.5 m / 0.2 m | **0/3** | 0.393 | 0.018 | 4 |
 | gate-target1, fixed 0.8 m / 0.1 m | **9/10** | 0.287 | 0.667 | 1 |
-| gate-target1, retained 1.0 m / 0.05 m | **10/10** | 0.307 | 0.786 | 0 |
+| gate-target1, margin 1.0 m / 0.05 m | **16/20** | 1.191 | 0.469 | **186** |
 
 The original gate-target1 single pass was not repeatable. The 0.8/0.1 fix reached
-9/10; one contact at 0.704 m reported clearance remained. The retained mission is
-now **1.0 m inflation / 0.05 m waypoint tolerance, 10/10**, minimum clearance
-0.786 m. The 0.5/0.2 and 0.8/0.1 evidence is preserved. See
-[`docs/repeatability.md`](docs/repeatability.md).
+9/10; the 1.0/0.05 margin looked like 10/10, but **n=20 found 4 failures**:
+runs 15, 16 and 18 timed out without reaching target_1, and run 17 had a
+catastrophic gate strike (186 contacts, target error 7.19 m). The 1.0/0.05
+configuration is **not robust**; the target1 claim is downgraded. gate 5/5 and
+gate-double 5/5 remain. See [`docs/repeatability.md`](docs/repeatability.md).
 
 ![One waypoint through the doorway and landing on target_0](results/gate_run.png)
 
@@ -411,7 +412,7 @@ Gazebo rendered headless through WSL2.
 | Rotated-box known-map path | ✅ **verified (one static box)** | 30° wall, 2 waypoints, target 0.218 m, landing 0.391 m, exact clearance 0.509 m, 0 contacts; [`results/global_rotated_summary.json`](results/global_rotated_summary.json) |
 | Two rotated obstacles | ✅ **verified (two static boxes)** | 3 waypoints, target 0.586 m, landing 0.439 m, clearance 0.698 m, 0 contacts on wall and pillar; [`results/global_rotated_multi_summary.json`](results/global_rotated_multi_summary.json) |
 | Doorway traversal and target landing | ✅ **verified (5/5 repeats)** | 1 waypoint through a 2.4 m gap, target 0.49 m, landing 0.275 m, clearance 1.17 m, 0 contacts; repeat 5/5, clearance min 0.810 m; [`results/gate_summary.json`](results/gate_summary.json) |
-| Offset doorway, then turn to target_1 | ✅ **verified (retained 1.0/0.05, 10/10)** | 10/10 PASS, target 0.307 m mean, clearance min 0.786 m, 0 contacts; 0.8/0.1 was 9/10, original 0.5/0.2 0/3; [`results/repeat_report.md`](results/repeat_report.md) |
+| Offset doorway, then turn to target_1 | ⚠️ **16/20, 4 failures** | 1.0/0.05: 3 timeouts and 1 catastrophic 186-contact run; 0.8/0.1 was 9/10, original 0.5/0.2 0/3; [`results/repeat_report.md`](results/repeat_report.md) |
 | Two doorways, then target_1 | ✅ **verified (5/5 repeats)** | 5 waypoints, target_1 0.082 m, landing 0.404 m, clearance 0.45 m, 0 contacts; repeat 5/5, clearance min 0.544 m; [`results/repeat_report.md`](results/repeat_report.md) |
 | Contact sensor can report a contact | ✅ **checked positively** | a 0.5 kg box dropped on the wall produced 4632 messages; [`results/contact_sensor_check.txt`](results/contact_sensor_check.txt) |
 | Depth-sensor noise, holes, real hardware | ❌ **not verified** | Gazebo returns ideal float32 depth; there is no real depth camera, no multipath, no missing-return model |
@@ -509,6 +510,7 @@ make gate-double               # 连续两个偏置门洞，再转弯飞向 targ
 make repeat                    # gate / gate-target1 / gate-double 各重复 3 次
 make repeat5                   # 三个门洞任务各重复 5 次
 make repeat-target1-10         # 保留的 gate-target1 配置重复 10 次
+make repeat-target1-20         # 同一配置重复 20 次（当前验收样本）
 ```
 
 > **Windows 用户**：PX4 SITL 只能跑在 Linux 上。用 WSL2 + Ubuntu 22.04（Windows 11
@@ -592,7 +594,7 @@ Failure modes this system actually produced, each with the check that catches it
   拒绝猜方向并保持、后退重看、0.2 m 步进重复后退、按实测距离计算后退量，以及停住后
   侧移 2 m 重新读条带并恢复、已知地图 A* 单/多障碍绕墙、30° 旋转墙与双旋转障碍、
   2.4 m 门洞降落 target_0、偏置门洞转弯降落 target_1、连续双门洞转弯降落 target_1，
-  以及 5/10× 重复性验证（gate 5/5、gate-double 5/5、gate-target1 原配置 0/3→0.8/0.1 9/10→保留 1.0/0.05 10/10），
+  以及 5/10/20× 重复性验证（gate 5/5、gate-double 5/5、gate-target1 原配置 0/3→0.8/0.1 9/10→1.0/0.05 10/10→n=20 后 16/20，仍不稳定），
   还有一次深度停障→单框→重规划：静态障碍、理想深度图、0.6–0.8 m/s；
   已验证停点双侧 blocked 的正例；仍没有占据栅格/持续重规划、动态/3D 障碍、
   交替/二维搜索、自适应方向、真实深度相机的噪声/空洞（见

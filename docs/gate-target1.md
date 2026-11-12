@@ -48,17 +48,21 @@ configuration: **0/3 PASS**, 4 contacts, minimum clearance **0.018 m**. The path
 threaded the gap too tightly and the follower cut a corner.
 
 A 0.8 m / 0.1 m fix reached **9/10**, but one run still had a single gate contact
-at 0.704 m reported clearance. The retained mission uses **1.0 m inflation and
-0.05 m waypoint tolerance** and is **10/10 PASS**, target 0.133 / 0.307 / 0.524 m,
-minimum clearance **0.786 m**, 0 contacts. The original 0/3, the 0.8/0.1 9/10 and
-the retained 10/10 are all preserved in `results/repeat/`; none are hidden. See
+at 0.704 m reported clearance. The 1.0 m / 0.05 m margin then looked like
+**10/10**, but expanding to **n=20** found 4 failures: runs 15, 16 and 18 timed
+out without reaching target_1, and run 17 had **186 contacts** and a 6.834 m
+error. The target1 scenario is **16/20 and not robust**; the retained mission is
+still 1.0/0.05 only because it is the best observed sample, not because it is
+verified. The original 0/3, the 0.8/0.1 9/10, the first 10/10 and the full 16/20
+are all preserved in `results/repeat/`. See
 [`repeatability.md`](repeatability.md).
 
 ## What is verified, and what is not
 
 | Claim | Status | Evidence |
 |---|---|---|
-| Thread an offset 2.4 m gap, then turn to a far target | ✅ **10/10 with retained 1.0/0.05** | target mean 0.307 m, 0.786 m minimum, 0 contacts |
+| Thread an offset 2.4 m gap, then turn to a far target | ⚠️ **16/20** | 3 timeouts, 1 catastrophic 186-contact run |
+| The 1.0/0.05 margin is robust | ❌ **not robust** | 10/10 was a small-sample illusion; n=20 is 16/20 |
 | The 0.8/0.1 configuration is robust | ⚠️ **9/10** | one contact at 0.704 m reported clearance |
 | The original 0.5/0.2 configuration is robust | ❌ **not robust** | 0/3, 4 contacts, 0.018 m minimum |
 | The target is far enough for a clean landing | ✅ verified | target_1 10.8 m east of gate, 0.425 m landing |

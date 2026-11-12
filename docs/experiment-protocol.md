@@ -117,10 +117,11 @@ north, gate 2 is south, and the target is target_1; the report uses
 `--target-id 1`.
 
 Repeatability uses `make repeat5` (`scripts/repeat_scenarios.sh 5`) for gate,
-gate-target1 and gate-double five times each, plus `make repeat-target1-10` for
-ten runs of the retained gate-target1 margin mission. The aggregate is
+gate-target1 and gate-double five times each, plus `make repeat-target1-20` for
+twenty runs of the margin gate-target1 mission. The aggregate is
 `results/repeat_report.md`. The original gate-target1 0.5/0.2 was **0/3**; the
-0.8/0.1 fix was **9/10**; the retained 1.0/0.05 margin is **10/10**.
+0.8/0.1 fix was **9/10**; the 1.0/0.05 margin was 10/10 at n=10 but **16/20** at
+n=20, with 3 timeouts and 1 catastrophic 186-contact run. Target1 is not robust.
 
 Restart the simulation between targets; do not teleport a running vehicle.
 

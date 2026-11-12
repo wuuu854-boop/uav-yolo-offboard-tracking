@@ -7,6 +7,24 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.29.0] - 2026-11-12
+
+### Changed
+
+- **gate-target1 is downgraded again: n=20 is 16/20, not 10/10.** The 1.0/0.05
+  margin looked perfect at n=10, but the next ten runs produced 4 failures:
+  runs 15, 16 and 18 timed out without reaching target_1; run 17 had a
+  catastrophic gate strike (186 contacts, target error 7.19 m). The target1
+  scenario is **not robust**; README/verification are downgraded to ⚠️.
+- gate remains 5/5; gate-double remains 5/5.
+
+### Why
+
+The 10/10 margin sample was a small-sample illusion. n=20 shows two failure
+modes — timeout and catastrophic contact — that the 5/5 and 10/10 samples did
+not see. No new tuning is claimed in this release; the failures are preserved in
+`results/repeat/`. `make repeat-target1-20` reproduces the twenty-run sample.
+
 ## [0.28.0] - 2026-11-11
 
 ### Fixed

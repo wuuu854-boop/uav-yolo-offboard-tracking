@@ -76,22 +76,22 @@
     }
   },
   "gate-target1-margin": {
-    "runs": 10,
-    "passes": 10,
+    "runs": 20,
+    "passes": 16,
     "target_error_m": {
       "min": 0.133,
-      "max": 0.524,
-      "mean": 0.3073
+      "max": 7.19,
+      "mean": 1.19105
     },
     "clearance_m": {
-      "min": 0.786,
+      "min": 0.469,
       "max": 0.943
     },
-    "contacts_total": 0,
-    "landing_successes": 10,
+    "contacts_total": 186,
+    "landing_successes": 16,
     "landing_error_m": {
       "min": 0.045,
-      "max": 0.64
+      "max": 20.15
     }
   }
 }
