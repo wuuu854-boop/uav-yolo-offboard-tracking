@@ -347,26 +347,22 @@ around 4 segments**: target **0.082 m**, landing **0.404 m** target 1
 
 ### Repeatability
 
-`make repeat5` runs gate, gate-target1 and gate-double **5× each**, with a fresh
-simulator per run; `make repeat-target1-10` adds ten runs of the retained
-gate-target1 margin mission. The aggregate is:
+The acceptance suite is **20 runs per scenario**; `make repeat5` is only a quick
+sample, not evidence. The final table is:
 
 | Scenario | PASS | Target error mean (m) | Clearance min (m) | Contacts |
 |---|---:|---:|---:|---:|
-| gate | **5/5** | 0.489 | 0.810 | 0 |
-| gate-double | **5/5** | 0.260 | 0.544 | 0 |
+| gate | **17/20** | 0.551 | 0.307 | **59** |
+| gate-double | **15/20** | 0.612 | 0.265 | **5** |
 | gate-target1, original 0.5 m / 0.2 m | **0/3** | 0.393 | 0.018 | 4 |
 | gate-target1, fixed 0.8 m / 0.1 m | **9/10** | 0.287 | 0.667 | 1 |
 | gate-target1, margin 1.0 m / 0.05 m, 70 s | **16/20** | 1.191 | 0.469 | **186** |
-| gate-target1, margin + 100 s budget | **19/20** | 0.461 | 0.756 | 0 |
+| gate-target1, margin + 100 s budget | **20/20 landings / 19/20 final-row** | 0.461 | 0.756 | 0 |
 
-The original gate-target1 single pass was not repeatable. The 0.8/0.1 fix reached
-9/10; the 1.0/0.05 margin looked like 10/10, but **n=20 found 4 failures** at the
-70 s budget (3 timeouts, 1 catastrophic 186-contact run). Raising only the mission
-budget to **100 s** removes the contacts and timeouts: **20/20 successful
-landings**, 0 contacts, and **19/20 final-row** because run 16 landed at 0.285 m
-and the post-landing final CSV row drifted to 2.149 m. The landing row is the
-mission result; the final-row metric is kept as a separate caveat. See
+The first gate 5/5 and gate-double 5/5 were **small-sample illusions**: at n=20
+they are 17/20 with 59 contacts and 15/20 with 5 contacts. The target1 100 s
+budget is the best safety result: 20/20 landings and 0 contacts, with one
+post-landing final-row drift (run 16 landed at 0.285 m, final row 2.149 m). See
 [`docs/repeatability.md`](docs/repeatability.md).
 
 ![One waypoint through the doorway and landing on target_0](results/gate_run.png)
@@ -414,9 +410,9 @@ Gazebo rendered headless through WSL2.
 | Depth stop → box → replan | ✅ **verified (one-shot)** | empty initial map, 2.46 m stop → box `(6.57, 0.17)`, 3-waypoint replan, target 0.777 m, 0 contacts; [`results/global_perception_summary.json`](results/global_perception_summary.json) |
 | Rotated-box known-map path | ✅ **verified (one static box)** | 30° wall, 2 waypoints, target 0.218 m, landing 0.391 m, exact clearance 0.509 m, 0 contacts; [`results/global_rotated_summary.json`](results/global_rotated_summary.json) |
 | Two rotated obstacles | ✅ **verified (two static boxes)** | 3 waypoints, target 0.586 m, landing 0.439 m, clearance 0.698 m, 0 contacts on wall and pillar; [`results/global_rotated_multi_summary.json`](results/global_rotated_multi_summary.json) |
-| Doorway traversal and target landing | ✅ **verified (5/5 repeats)** | 1 waypoint through a 2.4 m gap, target 0.49 m, landing 0.275 m, clearance 1.17 m, 0 contacts; repeat 5/5, clearance min 0.810 m; [`results/gate_summary.json`](results/gate_summary.json) |
+| Doorway traversal and target landing | ⚠️ **17/20, 59 contacts** | target 0.551 m mean, clearance min 0.307 m, 3 failures; the first 5/5 was a small-sample illusion; [`results/repeat_report.md`](results/repeat_report.md) |
 | Offset doorway, then turn to target_1 | ✅ **20/20 landings; 19/20 final-row** | 100 s budget: landings 20/20, 0 contacts; one final-row 2.149 m drift after a 0.285 m landing; 70 s was 16/20; [`results/repeat_report.md`](results/repeat_report.md) |
-| Two doorways, then target_1 | ✅ **verified (5/5 repeats)** | 5 waypoints, target_1 0.082 m, landing 0.404 m, clearance 0.45 m, 0 contacts; repeat 5/5, clearance min 0.544 m; [`results/repeat_report.md`](results/repeat_report.md) |
+| Two doorways, then target_1 | ⚠️ **15/20, 5 contacts** | target 0.612 m mean, clearance min 0.265 m, 18/20 landings; the first 5/5 was a small-sample illusion; [`results/repeat_report.md`](results/repeat_report.md) |
 | Contact sensor can report a contact | ✅ **checked positively** | a 0.5 kg box dropped on the wall produced 4632 messages; [`results/contact_sensor_check.txt`](results/contact_sensor_check.txt) |
 | Depth-sensor noise, holes, real hardware | ❌ **not verified** | Gazebo returns ideal float32 depth; there is no real depth camera, no multipath, no missing-return model |
 | Dynamic obstacles / global planning | ❌ **not implemented** | local stop + one detour + one hold; no obstacle track, no global planner |
@@ -597,7 +593,8 @@ Failure modes this system actually produced, each with the check that catches it
   拒绝猜方向并保持、后退重看、0.2 m 步进重复后退、按实测距离计算后退量，以及停住后
   侧移 2 m 重新读条带并恢复、已知地图 A* 单/多障碍绕墙、30° 旋转墙与双旋转障碍、
   2.4 m 门洞降落 target_0、偏置门洞转弯降落 target_1、连续双门洞转弯降落 target_1，
-  以及 5/10/20× 重复性验证（gate 5/5、gate-double 5/5、gate-target1 原配置 0/3→0.8/0.1 9/10→70 s 16/20→100 s 20/20 降落；最终行 19/20，1 次降落后漂移），
+  以及 5/20× 重复性验证（gate 20 次仅 17/20、59 次接触；gate-double 20 次 15/20、5 次接触；
+  gate-target1 20/20 降落、最终行 19/20），
   还有一次深度停障→单框→重规划：静态障碍、理想深度图、0.6–0.8 m/s；
   已验证停点双侧 blocked 的正例；仍没有占据栅格/持续重规划、动态/3D 障碍、
   交替/二维搜索、自适应方向、真实深度相机的噪声/空洞（见

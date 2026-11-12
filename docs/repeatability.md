@@ -1,70 +1,73 @@
-# Repeatability of the recent doorway tasks
+# Repeatability: the 5/5 claims were small-sample illusions
 
-A single SITL pass is not evidence of robustness. The retained suite repeats the
-doorway missions, restarting the simulator between runs, and keeps every failure
-that led to a configuration change.
+The final suite repeats the three doorway missions **20 times each**. This
+overturned the earlier 5/5 results: gate and gate-double are **not robust** at
+n=20, and even the target1 100 s sample has one final-row drift.
 
 The rendered table is [`results/repeat_report.md`](../results/repeat_report.md).
 
-## Results
+## Final n=20 table
 
-| Scenario | Runs | PASS | Target error min/mean/max (m) | Clearance min/max (m) | Contacts | Landings |
-|---|---:|---:|---|---|---:|---:|
-| gate | 5 | **5/5** | 0.133 / 0.489 / 0.783 | 0.810 / 1.176 | 0 | 5/5 |
-| gate-double | 5 | **5/5** | 0.167 / 0.260 / 0.350 | 0.544 / 0.708 | 0 | 5/5 |
-| gate-target1, original 0.5 m / 0.2 m | 3 | **0/3** | 0.364 / 0.393 / 0.408 | 0.018 / 0.384 | **4** | 3/3 |
-| gate-target1, 0.8 m / 0.1 m | 10 | **9/10** | 0.043 / 0.287 / 0.612 | 0.667 / 0.776 | **1** | 10/10 |
-| gate-target1, margin 1.0 m / 0.05 m, 70 s | 20 | **16/20** | 0.133 / 1.191 / 7.190 | 0.469 / 0.943 | **186** | 16/20 |
-| gate-target1, margin + **100 s** budget | 20 | **19/20** | 0.114 / 0.461 / 2.149 | 0.756 / 1.136 | **0** | 20/20 |
+| Scenario | PASS | Target error min/mean/max (m) | Clearance min/max (m) | Contacts | Landings |
+|---|---:|---|---|---:|---:|
+| gate | **17/20** | 0.133 / 0.551 / 1.265 | 0.307 / 1.176 | **59** | 20/20 |
+| gate-double | **15/20** | 0.112 / 0.612 / 3.246 | 0.265 / 0.797 | **5** | 18/20 |
+| gate-target1, 100 s | **20/20 landings / 19/20 final-row** | 0.114 / 0.461 / 2.149 | 0.756 / 1.136 | **0** | 20/20 |
 
-The progression is the point:
+Historical samples that led to the false confidence:
 
-- **0.5/0.2** failed **0/3**: 4 contacts, minimum 0.018 m.
-- **0.8/0.1** improved to **9/10**: one contact at 0.704 m reported clearance.
-- **1.0/0.05 at 70 s** looked like **10/10**, but n=20 produced 4 failures: three
-  timeouts and one catastrophic 186-contact run.
-- **Only the time budget** was changed to 100 s (path margin unchanged). The
-  result is **20/20 successful landings, 0 contacts**, target error 0.114/0.461/
-  2.149 m. The 2.149 m is a **post-landing final-row drift** in run 16: its
-  landing row is **0.285 m**. The report keeps 19/20 final-row as a separate
-  caveat; the mission landed on target_1.
+| Scenario | Runs | Result |
+|---|---:|---|
+| gate, first sample | 5 | 5/5 |
+| gate-double, first sample | 5 | 5/5 |
+| gate-target1 original 0.5/0.2 | 3 | 0/3 |
+| gate-target1 0.8/0.1 | 10 | 9/10 |
+| gate-target1 margin 1.0/0.05, 70 s | 20 | 16/20 (3 timeouts, 186 contacts) |
+| gate-target1 margin, 100 s | 20 | 20/20 landings / 19/20 final-row |
 
-So the trace diagnosis paid off: the dominant 70 s failures were time-budget
-exhaustion, not margin. The target1 scenario is **20/20 landings / 19/20
-final-row**.
+## What this means
+
+- **gate 17/20**: the first 5/5 was not predictive. The 20-run sample has 3
+  failures and **59 contacts**; all 20 landed, but 3 were unsafe.
+- **gate-double 15/20**: 5 failures, 5 contacts, 18/20 landings. The 5/5 was also
+  a small-sample illusion.
+- **gate-target1 100 s**: 20/20 landings, 0 contacts, one final-row drift
+  (run 16 landed at 0.285 m, final row 2.149 m). This is the best safety result
+  in the suite, but final-row is 19/20.
+- The only previous claim that survives in improved form is target1 with the
+  **100 s** budget; gate and gate-double need redesign before they can be called
+  robust.
+
+No new tuning is claimed in this release. The failures are preserved; the
+earlier 3/5, 9/10, 10/10, 16/20 and 19/20 samples are not hidden.
 
 ## What is verified, and what is not
 
 | Claim | Status | Evidence |
 |---|---|---|
-| gate 5/5 repeats | ✅ verified | 0 contacts, 0.810 m minimum |
-| gate-double 5/5 repeats | ✅ verified | 0 contacts, 0.544 m minimum |
-| gate-target1 100 s, 20/20 landings | ✅ verified | 0 contacts; run 16 landing 0.285 m |
-| gate-target1 100 s, 19/20 final-row | ⚠️ **one post-landing drift** | run 16 final row 2.149 m after landing |
-| gate-target1 70 s, 16/20 | ❌ **not robust** | 3 timeouts + 186-contact run |
-| gate-target1 0.8/0.1 | ⚠️ **9/10** | one contact |
-| gate-target1 original 0.5/0.2 | ❌ **0/3** | 4 contacts |
-| 20/20 target1 | ❌ **not achieved** | one target miss remains |
+| gate robust | ❌ **17/20** | 3 failures, 59 contacts |
+| gate-double robust | ❌ **15/20** | 5 failures, 5 contacts |
+| gate-target1 100 s landing | ✅ **20/20** | 0 contacts, landing rows all success |
+| gate-target1 100 s final-row | ⚠️ **19/20** | one 2.149 m post-landing drift |
+| Any task at 20/20 final-row with 0 contacts | ❌ **not achieved** | target1 is 19/20 final-row |
 | Hardware / real sensor | ❌ **not done** | SITL, ideal depth |
 
 ## Evidence
 
-- `results/repeat_report.md` and `results/repeat_report.json` — the table above.
-- `results/repeat/<scenario>_<n>_summary.json` — 63 per-run reports (5 + 5 + 3 +
-  10 + 20 + 20).
+- `results/repeat_report.md` / `.json` — the table above.
+- `results/repeat/<scenario>_<n>_summary.json` — 93 per-run reports
+  (20 + 20 + 3 + 10 + 20 + 20).
 - `results/repeat/<scenario>_<n>_landing.csv` — per-run landing row.
-- `results/repeat/gate-target1-time_16_summary.json` — final-row 2.149 m;
-  `..._16_landing.csv` — landing 0.285 m.
+- `results/repeat/*.log` — per-run offboard/depth logs (kept locally; not all
+  copied into git).
 
 ## Reproducing it
 
 ```bash
-make repeat5             # gate, gate-target1 (100 s), gate-double 5x
-make repeat-target1-20   # twenty runs of the retained 100 s target1 mission
+make repeat5             # the old 5-run quick sample (not an acceptance run)
+make repeat-target1-20   # twenty target1 runs at 100 s
 ```
 
-The target1 mission is `config/mission_gate_target1.yaml`: 1.0 m inflation,
-0.05 m waypoint tolerance, **100 s** mission budget. The 0.8/0.1, 0.5/0.2 and
-70 s samples are historical evidence and are not regenerated by these targets.
-n=20 is still SITL-only; the one 2.149 m value is a post-landing final row, with
-the landing itself at 0.285 m.
+The gate and gate-double 20-run samples are the historical
+`repeat_scenarios.sh` runs; the per-run summaries are committed. Do not use a
+5-run sample to claim robustness: this suite is the counterexample.

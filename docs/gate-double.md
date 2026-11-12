@@ -40,9 +40,9 @@ waypoint tolerance, which makes the route thread both gaps with 0.45 m clearance
 
 | Claim | Status | Evidence |
 |---|---|---|
-| Two offset gates in sequence, target_1 | ✅ verified | 5 waypoints, 0.082 m target, 0 contacts |
-| All four gate segments monitored | ✅ verified | four contact topics, 0 contacts |
-| Threading two 2.4 m gaps is repeatable | ✅ **one run only** | 0.45 m minimum; no repeat trial |
+| Two offset gates in sequence, target_1 | ⚠️ **single run only** | 5 waypoints, 0.082 m target, 0 contacts in this run |
+| All four gate segments monitored | ✅ verified | four contact topics, 0 contacts in this run |
+| Threading two 2.4 m gaps is repeatable | ❌ **15/20, 5 contacts** | 5 failures, 18/20 landings; the first 5/5 was a small-sample illusion |
 | Gates hand-entered | ❌ **not implemented** | four boxes in the mission |
 | Narrower/cluttered/3-D/dynamic | ❌ **not verified** | two 2.4 m aligned gaps |
 

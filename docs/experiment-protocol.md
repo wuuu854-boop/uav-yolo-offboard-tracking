@@ -116,14 +116,11 @@ The double-doorway task uses `target_tracking_gate_double.sdf`,
 north, gate 2 is south, and the target is target_1; the report uses
 `--target-id 1`.
 
-Repeatability uses `make repeat5` (`scripts/repeat_scenarios.sh 5`) for gate,
-gate-target1 and gate-double five times each, plus `make repeat-target1-20` for
-twenty runs of the 100 s gate-target1 mission. The aggregate is
-`results/repeat_report.md`. The original gate-target1 0.5/0.2 was **0/3**; the
-0.8/0.1 fix was **9/10**; 1.0/0.05 at 70 s was 10/10 at n=10 but **16/20** at
-n=20; raising only the budget to **100 s** gives **20/20 successful landings**, 0
-contacts. Run 16 landed at 0.285 m but its post-landing final row drifted to
-2.149 m, so the final-row metric is 19/20.
+Repeatability uses `make repeat5` (`scripts/repeat_scenarios.sh 5`) for a quick
+sample, plus twenty-run samples for the acceptance table: gate **17/20**,
+gate-double **15/20**, and gate-target1 **20/20 landings / 19/20 final-row** at
+100 s. `make repeat-target1-20` reproduces the target1 sample. The gate and
+gate-double 5/5 samples were small-sample illusions.
 
 Restart the simulation between targets; do not teleport a running vehicle.
 

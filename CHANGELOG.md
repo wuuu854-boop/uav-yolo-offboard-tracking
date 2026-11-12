@@ -7,6 +7,23 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.32.0] - 2026-11-12
+
+### Changed
+
+- **The gate and gate-double 5/5 claims were small-sample illusions.** At n=20:
+  gate is **17/20** (3 failures, 59 contacts; 20/20 landings), gate-double is
+  **15/20** (5 failures, 5 contacts; 18/20 landings).
+- gate-target1 at 100 s remains the best safety result: **20/20 landings, 0
+  contacts, 19/20 final-row** (one post-landing drift).
+
+### Why
+
+A 5-run sample cannot distinguish a robust task from a 15–25% failure rate. The
+20-run suite overturned the two "verified" gate claims. No new tuning is claimed;
+the failures are preserved in `results/repeat/`. This is the counterexample to
+using small samples as acceptance evidence.
+
 ## [0.31.0] - 2026-11-12
 
 ### Fixed

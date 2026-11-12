@@ -1,40 +1,40 @@
 {
   "gate": {
-    "runs": 5,
-    "passes": 5,
+    "runs": 20,
+    "passes": 17,
     "target_error_m": {
       "min": 0.133,
-      "max": 0.783,
-      "mean": 0.4885999999999999
+      "max": 1.265,
+      "mean": 0.5507000000000001
     },
     "clearance_m": {
-      "min": 0.81,
+      "min": 0.307,
       "max": 1.176
     },
-    "contacts_total": 0,
-    "landing_successes": 5,
+    "contacts_total": 59,
+    "landing_successes": 20,
     "landing_error_m": {
       "min": 0.052,
-      "max": 0.637
+      "max": 1.146
     }
   },
   "gate-double": {
-    "runs": 5,
-    "passes": 5,
+    "runs": 20,
+    "passes": 15,
     "target_error_m": {
-      "min": 0.167,
-      "max": 0.35,
-      "mean": 0.26
+      "min": 0.112,
+      "max": 3.246,
+      "mean": 0.6115000000000002
     },
     "clearance_m": {
-      "min": 0.544,
-      "max": 0.708
+      "min": 0.265,
+      "max": 0.797
     },
-    "contacts_total": 0,
-    "landing_successes": 5,
+    "contacts_total": 5,
+    "landing_successes": 18,
     "landing_error_m": {
-      "min": 0.318,
-      "max": 0.361
+      "min": 0.075,
+      "max": 3.438
     }
   },
   "gate-target1": {

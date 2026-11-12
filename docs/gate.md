@@ -48,9 +48,10 @@ Report: `scripts/avoidance_report.py --mode global` → four checks, all PASS.
 
 | Claim | Status | Evidence |
 |---|---|---|
-| Fly through a 2.4 m doorway and land on target_0 | ✅ verified | 0.49 m final, 0.275 m landing, 0 contacts |
-| Both gate segments are monitored | ✅ verified | both contact topics, 0 contacts |
-| The plan clears the tighter lower segment | ✅ verified | 1.17 m |
+| Fly through a 2.4 m doorway and land on target_0 | ⚠️ **single run only** | 0.49 m final, 0.275 m landing, 0 contacts in this run |
+| Both gate segments are monitored | ✅ verified | both contact topics, 0 contacts in this run |
+| The plan clears the tighter lower segment | ⚠️ **single run only** | 1.17 m |
+| 20-run repeatability | ❌ **17/20, 59 contacts** | 3 failures; first 5/5 was a small-sample illusion |
 | The doorway is hand-entered, not perceived | ❌ **not implemented** | two boxes in the mission |
 | A narrower/cluttered doorway or 3-D | ❌ **not verified** | one 2.4 m aligned gap |
 | Dynamic obstacles / replanning | ❌ **not implemented** | static segments |
