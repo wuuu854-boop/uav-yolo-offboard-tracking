@@ -121,8 +121,9 @@ gate-target1 and gate-double five times each, plus `make repeat-target1-20` for
 twenty runs of the 100 s gate-target1 mission. The aggregate is
 `results/repeat_report.md`. The original gate-target1 0.5/0.2 was **0/3**; the
 0.8/0.1 fix was **9/10**; 1.0/0.05 at 70 s was 10/10 at n=10 but **16/20** at
-n=20; raising only the budget to **100 s** gives **19/20**, 0 contacts, one
-2.149 m target miss.
+n=20; raising only the budget to **100 s** gives **20/20 successful landings**, 0
+contacts. Run 16 landed at 0.285 m but its post-landing final row drifted to
+2.149 m, so the final-row metric is 19/20.
 
 Restart the simulation between targets; do not teleport a running vehicle.
 

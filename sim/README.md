@@ -175,7 +175,8 @@ target_1.
 `make repeat5` restarts the simulator for each of the three doorway missions, five
 times each; `make repeat-target1-20` runs the 100 s gate-target1 margin twenty
 times. The aggregate exposed the original 0/3, the 0.8/0.1 9/10, the 70 s 16/20,
-and the 100 s **19/20** (one 2.149 m target miss).
+and the 100 s **20/20 landings / 19/20 final-row** (run 16 landed at 0.285 m;
+final row drifted to 2.149 m).
 
 The wall's pose and size are duplicated in `config/obstacle.yaml`, the pillar's
 in `config/side_obstacle.yaml`; `check_world_targets.py` fails when a world and

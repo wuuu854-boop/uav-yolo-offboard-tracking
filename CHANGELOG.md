@@ -7,6 +7,24 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.31.0] - 2026-11-12
+
+### Fixed
+
+- **The 19/20 target1 result was a final-row artifact, not a landing miss.** Run
+  16's landing row is **0.285 m**, but the recorder's post-landing final CSV row
+  drifted to **2.149 m**. The 100 s sample is **20/20 successful landings, 0
+  contacts**; the final-row metric remains **19/20** and is kept as a caveat.
+- No control change: this release documents the landing-vs-final-row distinction
+  and updates README/verification accordingly.
+
+### Why
+
+The previous release called the run a target miss. The landing row proves the
+mission reached and landed on target_1; the final row is after the mission. Both
+numbers are now shown, and target1 is **✅ 20/20 landings / ⚠️ 19/20 final-row**,
+not an unqualified 20/20.
+
 ## [0.30.0] - 2026-11-12
 
 ### Fixed

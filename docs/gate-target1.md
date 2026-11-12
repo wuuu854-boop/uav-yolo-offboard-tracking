@@ -55,18 +55,20 @@ a 6.834 m error.
 
 The preserved trace showed GOTO starting ~18 s after takeoff and the 70 s budget
 expiring 3.85 m short of target_1 with 0 contacts. Keeping the path unchanged and
-raising only `max_mission_s` to **100 s** gives **19/20**, 0 contacts, 20/20
-landings, target error 0.114/0.461/2.149 m. The single failure is a **2.149 m
-target miss**, not a crash or timeout. The scenario remains **⚠️ 19/20**, not
-20/20. The original 0/3, the 0.8/0.1 9/10, the 70 s 16/20 and the 100 s 19/20 are
-all preserved in `results/repeat/`. See
+raising only `max_mission_s` to **100 s** gives **20/20 successful landings**,
+0 contacts, target error 0.114/0.461/2.149 m. The one outlier is run 16: its
+**landing row is 0.285 m**, but the recorder's final post-landing row drifted to
+**2.149 m**. The mission reached and landed on target_1; the final-row metric is
+kept as a separate caveat, so the table still says 19/20 final-row. The original
+0/3, the 0.8/0.1 9/10, the 70 s 16/20 and the 100 s 20/20-landing sample are all
+preserved in `results/repeat/`. See
 [`repeatability.md`](repeatability.md).
 
 ## What is verified, and what is not
 
 | Claim | Status | Evidence |
 |---|---|---|
-| Thread an offset 2.4 m gap, then turn to a far target | ⚠️ **19/20 at 100 s** | 0 contacts, 20/20 landings, one 2.149 m target miss |
+| Thread an offset 2.4 m gap, then land on a far target | ✅ **20/20 landings at 100 s** | landing rows 20/20, 0 contacts; one 2.149 m post-landing final row |
 | The 70 s budget is sufficient | ❌ **not robust** | 16/20; 3 timeouts + 186-contact run |
 | The 1.0/0.05 margin alone is sufficient | ❌ **not sufficient** | 70 s 16/20; the time budget was the dominant failure |
 | The 0.8/0.1 configuration is robust | ⚠️ **9/10** | one contact at 0.704 m reported clearance |

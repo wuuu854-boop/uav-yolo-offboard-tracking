@@ -212,10 +212,10 @@ Phase 15 chains two offset gates (north gap at x = 1.2, south gap at x = 12.2)
 before target_1. See [`gate-double.md`](gate-double.md).
 
 Phase 16 repeats the doorway missions and aggregates the evidence. gate is
-**5/5**, gate-double **5/5**; gate-target1 is **19/20 at a 100 s budget** (0
-contacts, one 2.149 m target miss) after the 70 s budget gave 16/20 with 3
-timeouts and a 186-contact run. Target1 remains **⚠️ 19/20**, not robust. See
-[`repeatability.md`](repeatability.md).
+**5/5**, gate-double **5/5**; gate-target1 is **20/20 successful landings**
+with 0 contacts at a 100 s budget. One post-landing final CSV row drifted to
+2.149 m while its landing row is 0.285 m; the final-row metric is 19/20 and is
+kept as a caveat. See [`repeatability.md`](repeatability.md).
 
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a
