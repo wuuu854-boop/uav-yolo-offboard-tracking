@@ -13,7 +13,7 @@ hover_duration_s: 3.0
 target_loss_hover_s: 2.0
 setpoint_jump_limit_m: 3.0
 land_after_hover: true
-max_mission_s: 70.0
+max_mission_s: 100.0
 
 confirm_frames: 3
 geofence_radius_m: 35.0

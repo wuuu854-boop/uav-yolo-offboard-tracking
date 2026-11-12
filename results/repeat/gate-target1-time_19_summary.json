@@ -1,0 +1,85 @@
+{
+  "obstacle": {
+    "model": "gate_lower",
+    "centre_enu": [
+      9.2,
+      -1.9,
+      3.0
+    ],
+    "size_m": [
+      0.2,
+      6.2,
+      6.0
+    ],
+    "aabb_enu_m": [
+      9.1,
+      9.299999999999999,
+      -5.0,
+      1.2000000000000002
+    ]
+  },
+  "spawn_enu": [
+    -7.5,
+    0.0
+  ],
+  "target_enu": [
+    20.0,
+    0.0
+  ],
+  "side_block": null,
+  "metrics": {
+    "rows": 993,
+    "duration_s": 99.2,
+    "stop_engaged": true,
+    "stop_start_s": 48.5,
+    "stop_end_s": 57.7,
+    "stop_hold_s": 9.2,
+    "stop_drift_m": 1.078,
+    "stop_advance_m": 0.001,
+    "stop_retreat_m": 0.627,
+    "settled_drift_m": null,
+    "gate_released": true,
+    "clear_side_mode": "right",
+    "clear_side_at_stop": "left",
+    "max_north_m": 2.917,
+    "min_north_m": -2.906,
+    "max_abs_north_m": 2.917,
+    "final_error_m": 0.18,
+    "min_clearance_m": 0.756,
+    "min_clearance_at_s": 51.3,
+    "final_east_m": 27.552,
+    "max_east_m": 27.552,
+    "max_altitude_m": 5.028,
+    "contacts_total": 0,
+    "depth_frames": 1383,
+    "min_nearest_m": 0.25
+  },
+  "checks": {
+    "target_reached": {
+      "ok": true,
+      "detail": "final_error_m=0.18 <= 1.5"
+    },
+    "clearance_at_least_min": {
+      "ok": true,
+      "detail": "min_clearance_m=0.756 >= 0.4"
+    },
+    "no_contact": {
+      "ok": true,
+      "detail": "contacts_total=0"
+    },
+    "depth_frames_seen": {
+      "ok": true,
+      "detail": "depth_frames=1383"
+    }
+  },
+  "mode": "global",
+  "verdict": "PASS",
+  "gate": {
+    "stop_distance_m": 2.5,
+    "clear_distance_m": 3.2,
+    "roi_width_fraction": 0.6,
+    "roi_height_fraction": 0.5,
+    "source": "config/depth.yaml"
+  },
+  "source_csv": "results/repeat_gate-target1-time_19_run.csv"
+}

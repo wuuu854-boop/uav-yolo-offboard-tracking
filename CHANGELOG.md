@@ -7,6 +7,25 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.30.0] - 2026-11-12
+
+### Fixed
+
+- **The target1 failures were a time-budget problem, not another margin
+  problem.** Keeping the 1.0/0.05 path and raising only `max_mission_s` from 70
+  to **100 s** gives **19/20**: 0 contacts, 20/20 landings, target error
+  0.114/0.461/2.149 m, clearance 0.756/1.136 m. The single failure is a 2.149 m
+  target miss, not a crash or timeout.
+- `scripts/repeat_target1.sh` now reproduces the 100 s `gate-target1-time`
+  sample.
+
+### Why
+
+The preserved trace showed GOTO starting 18 s after takeoff and the 70 s budget
+expiring 3.85 m short of target_1, with 0 contacts. The catastrophic 186-contact
+run was a separate failure, but the 100 s sample has none. This is an improvement,
+not a 20/20 claim: target1 remains ⚠️ 19/20 with one target miss.
+
 ## [0.29.0] - 2026-11-12
 
 ### Changed
