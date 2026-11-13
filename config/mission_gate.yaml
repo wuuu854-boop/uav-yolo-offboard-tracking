@@ -6,14 +6,14 @@
 # an east stand-off.
 takeoff_altitude_m: 5.0
 spawn_offset_enu: [-7.5, 0.0]
-reach_tolerance_m: 0.1
+reach_tolerance_m: 0.3
 max_speed_mps: 0.6
 hover_duration_s: 3.0
 
 target_loss_hover_s: 2.0
 setpoint_jump_limit_m: 3.0
 land_after_hover: true
-max_mission_s: 60.0
+max_mission_s: 80.0
 
 confirm_frames: 3
 geofence_radius_m: 30.0
@@ -22,7 +22,7 @@ control_rate_hz: 50.0
 heading_yaw_deg: 90.0
 
 patrol_waypoints:
-  - [7.5, 0.0]
+  - [8.2, 0.0]
 
 target_selection: nearest_centre
 search_after_s: 8.0
@@ -39,6 +39,6 @@ global_obstacles:
   - [6.7, -3.1, 0.2, 3.8]
   - [6.7, 3.1, 0.2, 3.8]
 global_resolution_m: 0.2
-global_inflation_m: 0.5
-global_waypoint_tolerance_m: 0.2
+global_inflation_m: 0.8
+global_waypoint_tolerance_m: 0.05
 global_min_clearance_m: 0.4

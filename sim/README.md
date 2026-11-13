@@ -173,9 +173,9 @@ gate 2 at x = 12.2 (south gap). `make gate-double` threads both gaps before
 target_1.
 
 `make repeat5` restarts the simulator for each of the three doorway missions, five
-times each; `make repeat-target1-20` runs the 100 s gate-target1 margin twenty
-times. At n=20 gate is **17/20** and gate-double **15/20**; target1 is **20/20
-landings / 19/20 final-row**. The 5/5 gate samples were small-sample illusions.
+times each; `make repeat-target1-20` runs the 100 s target1 twenty times. At n=20
+the retained gate-safe is **20/20** and double-safe **20/20**, both 0 contacts;
+the old gate/gate-double configs were 17/20 and 15/20.
 
 The wall's pose and size are duplicated in `config/obstacle.yaml`, the pillar's
 in `config/side_obstacle.yaml`; `check_world_targets.py` fails when a world and

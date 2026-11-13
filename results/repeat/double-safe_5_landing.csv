@@ -1,0 +1,2 @@
+trial,target_id,error_m,latency_p50_ms,latency_p95_ms,success,notes
+1,1,0.336,,,True,patrol complete

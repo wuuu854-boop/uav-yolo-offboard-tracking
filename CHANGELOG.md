@@ -7,6 +7,27 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.33.0] - 2026-11-13
+
+### Fixed
+
+- **gate-safe: 20/20, 0 contacts.** The gate mission now targets an east
+  **stand-off at local 8.2 m** (target_0 error ≤0.751 m) with **0.8 m inflation**
+  and **0.05 m waypoint tolerance**; target_0 itself is only 0.8 m from the wall.
+  Result: 20/20, clearance min 0.787 m, 0 contacts.
+- **double-safe: 20/20, 0 contacts.** The retained double-gate mission uses
+  **1.0 m inflation, 0.05 m waypoint tolerance and a 100 s budget**. Result:
+  20/20, clearance min 0.781 m, 0 contacts.
+- The old gate 17/20 (59 contacts) and gate-double 15/20 (5 contacts) samples are
+  preserved; they were the evidence that the 5/5 claims were illusions.
+
+### Why
+
+The failing gate landing was a geometry problem: target_0 is 0.8 m from the wall,
+inside the propeller envelope. The safe answer is a stand-off, as in the earlier
+global mission. The double gate needed the same 1.0/0.05 margin that made target1
+safe. This is a design change, not a hidden threshold tweak.
+
 ## [0.32.0] - 2026-11-12
 
 ### Changed

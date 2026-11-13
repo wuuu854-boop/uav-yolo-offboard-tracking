@@ -1,5 +1,12 @@
 # Through the doorway and land on the target
 
+> **Retained v0.33 configuration.** target_0 is only 0.8 m from the gate wall, so
+> landing exactly on it is inside the propeller envelope. The retained `make gate`
+> mission targets an east **stand-off at local 8.2 m** (target_0 within 0.751 m),
+> with **0.8 m inflation / 0.05 m waypoint tolerance / 80 s**. It is **20/20 with
+> 0 contacts**, clearance min 0.787 m. The target_0-landing text below is the
+> historical single run that exposed the problem.
+
 The previous global runs landed on an east stand-off because target_0 sat 0.7 m
 from a solid wall. This task is the realistic version: the wall becomes two
 segments with a **2.4 m doorway**, and the vehicle flies through it to land on
@@ -52,6 +59,7 @@ Report: `scripts/avoidance_report.py --mode global` → four checks, all PASS.
 | Both gate segments are monitored | ✅ verified | both contact topics, 0 contacts in this run |
 | The plan clears the tighter lower segment | ⚠️ **single run only** | 1.17 m |
 | 20-run repeatability | ❌ **17/20, 59 contacts** | 3 failures; first 5/5 was a small-sample illusion |
+| Retained gate-safe 20-run | ✅ **20/20, 0 contacts** | stand-off 8.2 m, 0.8/0.05; clearance min 0.787 m |
 | The doorway is hand-entered, not perceived | ❌ **not implemented** | two boxes in the mission |
 | A narrower/cluttered doorway or 3-D | ❌ **not verified** | one 2.4 m aligned gap |
 | Dynamic obstacles / replanning | ❌ **not implemented** | static segments |

@@ -86,12 +86,11 @@ Ordered by (market weight × what is feasible without hardware we do not have):
    (0.586 m target error, zero contacts on either sensor), a doorway landing
    (0.49 m target error, zero contacts), an offset doorway before target_1
    (0.277 m target error, zero contacts) and two doorways before target_1
-   (0.082 m target error, zero contacts); repeatability at n=20 is gate
-   **17/20** (59 contacts), gate-double **15/20** (5 contacts), and gate-target1
-   **20/20 landings / 19/20 final-row** with a 100 s budget. The gate/gate-double
-   5/5 samples were small-sample illusions. Still missing: occupancy-map
-   perception, replanning after the handoff, dynamic or 3-D obstacles, and a real
-   sensor.
+   (0.082 m target error, zero contacts); repeatability at n=20 is gate-safe
+   **20/20** and double-safe **20/20**, both 0 contacts; the old gate/gate-double
+   configs were 17/20 and 15/20. target1 is 20/20 landings / 19/20 final-row.
+   Still missing: occupancy-map perception, replanning after the handoff, dynamic
+   or 3-D obstacles, and a real sensor.
 
 ## What we deliberately stop pretending
 

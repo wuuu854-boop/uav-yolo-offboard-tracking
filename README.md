@@ -352,16 +352,26 @@ sample, not evidence. The final table is:
 
 | Scenario | PASS | Target error mean (m) | Clearance min (m) | Contacts |
 |---|---:|---:|---:|---:|
-| gate | **17/20** | 0.551 | 0.307 | **59** |
-| gate-double | **15/20** | 0.612 | 0.265 | **5** |
+| gate (old 0.5/0.2, target_0) | **17/20** | 0.551 | 0.307 | **59** |
+| gate-double (old 0.8/0.1) | **15/20** | 0.612 | 0.265 | **5** |
+| **gate-safe (stand-off, 0.8/0.05)** | **20/20** | 0.331 | 0.787 | 0 |
+| **double-safe (1.0/0.05, 100 s)** | **20/20** | 0.226 | 0.781 | 0 |
 | gate-target1, original 0.5 m / 0.2 m | **0/3** | 0.393 | 0.018 | 4 |
 | gate-target1, fixed 0.8 m / 0.1 m | **9/10** | 0.287 | 0.667 | 1 |
 | gate-target1, margin 1.0 m / 0.05 m, 70 s | **16/20** | 1.191 | 0.469 | **186** |
 | gate-target1, margin + 100 s budget | **20/20 landings / 19/20 final-row** | 0.461 | 0.756 | 0 |
 
 The first gate 5/5 and gate-double 5/5 were **small-sample illusions**: at n=20
-they are 17/20 with 59 contacts and 15/20 with 5 contacts. The target1 100 s
-budget is the best safety result: 20/20 landings and 0 contacts, with one
+they are 17/20 with 59 contacts and 15/20 with 5 contacts. The retained safe
+configurations fix them both:
+
+- **gate-safe**: goal is an east stand-off at local 8.2 m (target_0 within 0.7 m),
+  0.8 m inflation, 0.05 m waypoint tolerance, 80 s budget: **20/20, 0 contacts**,
+  clearance min 0.787 m, target error max 0.751 m.
+- **double-safe**: 1.0 m inflation, 0.05 m waypoint tolerance, 100 s budget:
+  **20/20, 0 contacts**, clearance min 0.781 m, target error max 0.351 m.
+
+The target1 100 s budget is also **20/20 landings, 0 contacts**, with one
 post-landing final-row drift (run 16 landed at 0.285 m, final row 2.149 m). See
 [`docs/repeatability.md`](docs/repeatability.md).
 
@@ -410,9 +420,9 @@ Gazebo rendered headless through WSL2.
 | Depth stop → box → replan | ✅ **verified (one-shot)** | empty initial map, 2.46 m stop → box `(6.57, 0.17)`, 3-waypoint replan, target 0.777 m, 0 contacts; [`results/global_perception_summary.json`](results/global_perception_summary.json) |
 | Rotated-box known-map path | ✅ **verified (one static box)** | 30° wall, 2 waypoints, target 0.218 m, landing 0.391 m, exact clearance 0.509 m, 0 contacts; [`results/global_rotated_summary.json`](results/global_rotated_summary.json) |
 | Two rotated obstacles | ✅ **verified (two static boxes)** | 3 waypoints, target 0.586 m, landing 0.439 m, clearance 0.698 m, 0 contacts on wall and pillar; [`results/global_rotated_multi_summary.json`](results/global_rotated_multi_summary.json) |
-| Doorway traversal and target landing | ⚠️ **17/20, 59 contacts** | target 0.551 m mean, clearance min 0.307 m, 3 failures; the first 5/5 was a small-sample illusion; [`results/repeat_report.md`](results/repeat_report.md) |
+| Doorway traversal and target landing | ✅ **20/20, 0 contacts (gate-safe)** | stand-off 8.2 m, 0.8/0.05; target_0 error max 0.751 m, clearance min 0.787 m; [`results/repeat_report.md`](results/repeat_report.md) |
 | Offset doorway, then turn to target_1 | ✅ **20/20 landings; 19/20 final-row** | 100 s budget: landings 20/20, 0 contacts; one final-row 2.149 m drift after a 0.285 m landing; 70 s was 16/20; [`results/repeat_report.md`](results/repeat_report.md) |
-| Two doorways, then target_1 | ⚠️ **15/20, 5 contacts** | target 0.612 m mean, clearance min 0.265 m, 18/20 landings; the first 5/5 was a small-sample illusion; [`results/repeat_report.md`](results/repeat_report.md) |
+| Two doorways, then target_1 | ✅ **20/20, 0 contacts (double-safe)** | 1.0/0.05, 100 s; target 0.226 m mean, clearance min 0.781 m; [`results/repeat_report.md`](results/repeat_report.md) |
 | Contact sensor can report a contact | ✅ **checked positively** | a 0.5 kg box dropped on the wall produced 4632 messages; [`results/contact_sensor_check.txt`](results/contact_sensor_check.txt) |
 | Depth-sensor noise, holes, real hardware | ❌ **not verified** | Gazebo returns ideal float32 depth; there is no real depth camera, no multipath, no missing-return model |
 | Dynamic obstacles / global planning | ❌ **not implemented** | local stop + one detour + one hold; no obstacle track, no global planner |
@@ -593,8 +603,8 @@ Failure modes this system actually produced, each with the check that catches it
   拒绝猜方向并保持、后退重看、0.2 m 步进重复后退、按实测距离计算后退量，以及停住后
   侧移 2 m 重新读条带并恢复、已知地图 A* 单/多障碍绕墙、30° 旋转墙与双旋转障碍、
   2.4 m 门洞降落 target_0、偏置门洞转弯降落 target_1、连续双门洞转弯降落 target_1，
-  以及 5/20× 重复性验证（gate 20 次仅 17/20、59 次接触；gate-double 20 次 15/20、5 次接触；
-  gate-target1 20/20 降落、最终行 19/20），
+  以及 20× 重复性验证（gate-safe 20/20、double-safe 20/20，均 0 接触；
+  旧 gate/gate-double 配置为 17/20、15/20；gate-target1 20/20 降落、最终行 19/20），
   还有一次深度停障→单框→重规划：静态障碍、理想深度图、0.6–0.8 m/s；
   已验证停点双侧 blocked 的正例；仍没有占据栅格/持续重规划、动态/3D 障碍、
   交替/二维搜索、自适应方向、真实深度相机的噪声/空洞（见

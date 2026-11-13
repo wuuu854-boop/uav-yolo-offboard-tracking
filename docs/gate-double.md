@@ -1,5 +1,10 @@
 # Two doorways, then target_1
 
+> **Retained v0.33 configuration.** `make gate-double` now uses **1.0 m inflation,
+> 0.05 m waypoint tolerance and a 100 s budget**: **20/20, 0 contacts**, clearance
+> min 0.781 m. The old 0.8/0.1 configuration was 15/20 with 5 contacts; that
+> evidence is preserved.
+
 Phase 15 chains two offset gates:
 
 - gate 1 at world x = 1.2, 2.4 m gap at y ∈ [1.2, 3.6] (north),
@@ -42,7 +47,8 @@ waypoint tolerance, which makes the route thread both gaps with 0.45 m clearance
 |---|---|---|
 | Two offset gates in sequence, target_1 | ⚠️ **single run only** | 5 waypoints, 0.082 m target, 0 contacts in this run |
 | All four gate segments monitored | ✅ verified | four contact topics, 0 contacts in this run |
-| Threading two 2.4 m gaps is repeatable | ❌ **15/20, 5 contacts** | 5 failures, 18/20 landings; the first 5/5 was a small-sample illusion |
+| Threading two 2.4 m gaps is repeatable | ❌ **old 15/20, 5 contacts** | 5 failures, 18/20 landings; first 5/5 was a small-sample illusion |
+| Retained double-safe 20-run | ✅ **20/20, 0 contacts** | 1.0/0.05, 100 s; clearance min 0.781 m |
 | Gates hand-entered | ❌ **not implemented** | four boxes in the mission |
 | Narrower/cluttered/3-D/dynamic | ❌ **not verified** | two 2.4 m aligned gaps |
 

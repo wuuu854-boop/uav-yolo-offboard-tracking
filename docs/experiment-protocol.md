@@ -116,11 +116,11 @@ The double-doorway task uses `target_tracking_gate_double.sdf`,
 north, gate 2 is south, and the target is target_1; the report uses
 `--target-id 1`.
 
-Repeatability uses `make repeat5` (`scripts/repeat_scenarios.sh 5`) for a quick
-sample, plus twenty-run samples for the acceptance table: gate **17/20**,
-gate-double **15/20**, and gate-target1 **20/20 landings / 19/20 final-row** at
-100 s. `make repeat-target1-20` reproduces the target1 sample. The gate and
-gate-double 5/5 samples were small-sample illusions.
+Repeatability uses twenty-run samples: **gate-safe 20/20**, **double-safe 20/20**,
+both 0 contacts; the old gate/gate-double configs were 17/20 and 15/20.
+`make repeat-target1-20` reproduces the target1 100 s sample
+(**20/20 landings / 19/20 final-row**). The 5/5 gate samples were small-sample
+illusions.
 
 Restart the simulation between targets; do not teleport a running vehicle.
 
