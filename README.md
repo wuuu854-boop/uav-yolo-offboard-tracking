@@ -386,8 +386,13 @@ row 215) into local ENU and checks it against the three known search boxes.
   sparse outliers that the component filter does not remove. no map SITL run is
   attempted.
 
-This is a projection/quality gate, not a map planner. See
+This is a projection/quality gate, not a map planner. The occupancy grid fails
+at precision 0.678 < 0.80, so no map SITL run is attempted. See
 [`docs/map-gate.md`](docs/map-gate.md).
+
+The gated long-term plan — clean grid, map planner + SITL, dynamic obstacles,
+3D/altitude, real sensor/hardware, mission product — is in
+[`docs/roadmap.md`](docs/roadmap.md).
 
 ![One waypoint through the doorway and landing on target_0](results/gate_run.png)
 

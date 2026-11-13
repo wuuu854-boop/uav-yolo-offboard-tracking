@@ -7,6 +7,22 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.36.0] - 2026-11-13
+
+### Added
+
+- **Long-term roadmap** (`docs/roadmap.md`): gated phases for a clean occupancy
+  grid, occupancy-map planner/SITL, dynamic obstacles, 3D/altitude reasoning,
+  real sensor/hardware, and mission-level product work.
+- Each phase has explicit exit criteria, risks and a stop/go gate; 5-run claims,
+  threshold lowering and map SITL before the grid gate are forbidden.
+
+### Why
+
+The project now has a verified static baseline (gate-safe/double-safe 20/20,
+target1 20/20 landings) and a failing occupancy-grid gate. A long-term plan is
+needed so the next work is chosen by evidence, not by adding another demo.
+
 ## [0.35.0] - 2026-11-13
 
 ### Changed
