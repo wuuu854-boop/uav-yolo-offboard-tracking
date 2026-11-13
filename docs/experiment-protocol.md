@@ -122,7 +122,10 @@ both 0 contacts; the old gate/gate-double configs were 17/20 and 15/20.
 (**20/20 landings / 19/20 final-row**). The 5/5 gate samples were small-sample
 illusions.
 
-Restart the simulation between targets; do not teleport a running vehicle.
+The offline depth-map gate is separate from flight: `make map-gate` projects
+`results/search_depth_frame.npy` with pose row 215 and checks the known
+wall/pillars. It passes at 83.4% within 1 m. It is a projection gate, not an
+occupancy map; no SITL map run is claimed.
 
 ## Trial procedure
 

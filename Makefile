@@ -14,7 +14,7 @@ PX4_MODEL ?= gz_x500_mono_cam_down
 # Per-target poses are listed in docs/experiment-protocol.md.
 POSE     ?= -3.5,0,0.05
 
-.PHONY: help setup doctor demo trials qa shots pipeline patch-px4 install-world sim detect e2e avoid detour auto-detour blocked backoff backoff-sweep adaptive search global global-multi global-perception global-rotated global-rotated-multi gate gate-target1 gate-double repeat repeat5 repeat-target1-10 repeat-target1-20 preflight test lint fmt lock bench check clean
+.PHONY: help setup doctor demo trials qa shots pipeline patch-px4 install-world sim detect e2e avoid detour auto-detour blocked backoff backoff-sweep adaptive search global global-multi global-perception global-rotated global-rotated-multi gate gate-target1 gate-double repeat repeat5 repeat-target1-10 repeat-target1-20 map-gate preflight test lint fmt lock bench check clean
 
 help: ## show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-8s\033[0m %s\n", $$1, $$2}'
@@ -133,6 +133,9 @@ repeat-target1-10: install-world ## ten repeats of the retained margin target1 m
 
 repeat-target1-20: install-world ## twenty repeats of the retained margin target1 mission
 	bash scripts/repeat_target1.sh 20
+
+map-gate: ## offline depth-map quality gate on the recorded search frame
+	PYTHONPATH=src python3 scripts/check_depth_map.py --depth results/search_depth_frame.npy --run-csv results/search_run.csv --row 215 --box 6.7,0,0.2,3.0 --box 6.0,-0.8,0.8,0.8 --box 6.0,1.8,0.8,0.8 --out results/map_gate
 
 trials: ## run N closed-loop trials (N=3 default), restarting the sim each time
 	bash scripts/run_trials.sh --count $(or $(N),3)

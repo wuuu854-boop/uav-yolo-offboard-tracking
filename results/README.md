@@ -105,6 +105,7 @@ README and in the resume, so they are written by scripts, never by hand.
 | `repeat_report.md` / `.json` | `scripts/repeat_report.py` over `results/repeat/` | gate-safe **20/20**, double-safe **20/20**, gate old 17/20, gate-double old 15/20, target1 20/20 landings / 19/20 final |
 | `repeat/<scenario>_<n>_summary.json` | per-run `avoidance_report.py` output | 133 repeat summaries (20 + 20 + 20 + 20 + 3 + 10 + 20 + 20) |
 | `repeat/<scenario>_<n>_landing.csv` | per-run `offboard_node` landing row | landing error and success per repeat |
+| `map_gate.md` / `.json` | `scripts/check_depth_map.py` on `search_depth_frame.npy` + row 215 | PASS: 1080 points, 83.4% within 1 m, median 0.339 m |
 | `detections.geojson` | `scripts/export_geojson.py` on the moving-target capture | 88 Point features with track id, timestamp and ENU offsets — the GIS-ready deliverable an inspection operator asks for |
 | `qa_moving.json` | `scripts/qa_report.py` on the moving-target capture | the asset was 3 m from its declared position, and the report says so (association 7.1 m, FAIL) |
 | `qa_north.json` | the same report with the asset position passed in | median association drops from 4.95 m to 0.62 m when the asset is where it actually was |

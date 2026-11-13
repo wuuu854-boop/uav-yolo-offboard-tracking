@@ -7,6 +7,24 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.34.0] - 2026-11-13
+
+### Added
+
+- **Offline depth-map quality gate.** `make map-gate` projects a recorded depth
+  frame (search frame, explicit pose row 215) into local ENU and checks it
+  against the known wall/pillars. It passes: **1080 points, 83.4% within 1 m,
+  median 0.339 m**.
+- The gate found the camera-sign bug behind the failed occupancy-map attempts:
+  the opposite sign gives **55.6%** and a 0.827 m median.
+
+### Why
+
+The occupancy-map attempts failed before planning; the projection convention was
+wrong. The gate makes that check explicit, fixed and reproducible without flying.
+It is not an occupancy grid: no map planning or SITL map run is claimed in this
+release.
+
 ## [0.33.0] - 2026-11-13
 
 ### Fixed

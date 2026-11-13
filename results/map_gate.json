@@ -1,0 +1,44 @@
+{
+  "depth": "results/search_depth_frame.npy",
+  "run_csv": "results/search_run.csv",
+  "pose": {
+    "row": 215,
+    "t_s": 21.5,
+    "east_m": 2.797,
+    "north_m": 0.353,
+    "altitude_m": 4.969,
+    "yaw_deg": 0.18
+  },
+  "boxes": [
+    [
+      6.7,
+      0.0,
+      0.2,
+      3.0
+    ],
+    [
+      6.0,
+      -0.8,
+      0.8,
+      0.8
+    ],
+    [
+      6.0,
+      1.8,
+      0.8,
+      0.8
+    ]
+  ],
+  "summary": {
+    "points": 1080,
+    "near_fraction": 0.8342592592592593,
+    "median_distance_m": 0.3394113161050337,
+    "tolerance_m": 1.0
+  },
+  "thresholds": {
+    "min_points": 100,
+    "min_near_fraction": 0.7,
+    "max_median_distance_m": 1.0
+  },
+  "verdict": "PASS"
+}

@@ -19,6 +19,7 @@
 | [gate-target1](gate-target1.md) | Offset gap, turn, target_1; why target_0 could not do this |
 | [gate-double](gate-double.md) | Two offset gates in sequence, and the inflation that makes it safe |
 | [repeatability](repeatability.md) | 3×3 repeats, the flaky gate-target1 config, and the fix |
+| [map-gate](map-gate.md) | The camera-sign bug, the recorded-frame gate, and why it is not a map |
 | [model](model.md) | The YOLO detector: dataset, training, the decoder bug it exposed, and how it was made to fly |
 | [deployment](deployment.md) | Detector throughput per input size and thread count, and what it does not measure |
 | [market](market.md) | What UAV-autonomy postings ask for, where this project stands, what to build next |

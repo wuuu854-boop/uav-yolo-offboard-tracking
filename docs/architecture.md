@@ -216,6 +216,11 @@ old gate/gate-double configs are **17/20** and **15/20**; the retained **gate-sa
 (stand-off, 0.8/0.05) and **double-safe** (1.0/0.05, 100 s) are **20/20 with 0
 contacts**. See [`repeatability.md`](repeatability.md).
 
+Phase 17 adds an offline depth-map quality gate. It projects a recorded frame with
+the measured y-up camera convention and checks the points against known boxes:
+83.4% within 1 m, median 0.339 m. It is not an occupancy map. See
+[`map-gate.md`](map-gate.md).
+
 Two different ways into `HOVER` with two different exits — this is the part that
 a naive implementation gets wrong: if you land after a target-loss hover, a
 single missed frame ends the mission.
