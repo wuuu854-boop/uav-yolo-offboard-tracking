@@ -216,9 +216,10 @@ old gate/gate-double configs are **17/20** and **15/20**; the retained **gate-sa
 (stand-off, 0.8/0.05) and **double-safe** (1.0/0.05, 100 s) are **20/20 with 0
 contacts**. See [`repeatability.md`](repeatability.md).
 
-Phase 17 adds an offline depth-map quality gate. Point projection passes: 83.4%
-within 1 m, median 0.339 m. The occupancy cells fail: 174 cells, precision 0.678
-< 0.80. The gate therefore blocks any occupancy-map SITL run. See
+Phase 17 adds an offline depth-map quality gate. Point projection passes (90.2%
+within 1 m, median 0.260 m) and the occupancy grid passes at **precision 0.825**
+after raising the height floor to 2.5 m. This clears the single-frame gate; a
+second frame/pose pair and the occupancy planner are still pending. See
 [`map-gate.md`](map-gate.md).
 
 Two different ways into `HOVER` with two different exits — this is the part that

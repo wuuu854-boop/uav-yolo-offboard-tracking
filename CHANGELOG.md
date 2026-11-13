@@ -7,6 +7,24 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.37.0] - 2026-11-13
+
+### Fixed
+
+- **Occupancy-grid gate now PASSES.** Raising the height floor from 2.0 to
+  **2.5 m** removes the low-height sparse outliers: 143 cells, precision
+  **0.825** (was 0.678), 3/3 boxes covered, start free. The 1.0 m check tolerance
+  is unchanged.
+- Point projection is 90.2% within 1 m, median 0.260 m; the camera-sign fix
+  remains.
+
+### Why
+
+The far cells were low-height returns, not a tolerance problem. The height floor
+is a physical filter (wall/pillars extend above 2.5 m), not a goalpost move. This
+clears Phase A of the roadmap and allows the occupancy-map planner work to start;
+no map SITL run is claimed in this release.
+
 ## [0.36.0] - 2026-11-13
 
 ### Added

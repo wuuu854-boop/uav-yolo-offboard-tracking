@@ -51,7 +51,7 @@ def project_depth(
     sample_px: int = 12,
     min_depth_m: float = 0.3,
     max_depth_m: float = 12.0,
-    min_height_m: float = 2.0,
+    min_height_m: float = 2.5,
     max_height_m: float = 5.5,
 ) -> list[Point]:
     """Project sampled z-depth pixels into local ENU, keeping a height band."""

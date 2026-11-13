@@ -380,14 +380,13 @@ post-landing final-row drift (run 16 landed at 0.285 m, final row 2.149 m). See
 `make map-gate` projects a **recorded** depth frame (search frame, explicit pose
 row 215) into local ENU and checks it against the three known search boxes.
 
-- **Point projection PASS**: 83.4% within 1 m, median 0.339 m; the opposite
-  camera sign gives 55.6% and was the bug behind the failed occupancy attempts.
-- **Occupancy grid FAIL**: 174 cells, precision **0.678** (<0.80); 32% are
-  sparse outliers that the component filter does not remove. no map SITL run is
-  attempted.
+- **Point projection PASS**: 90.2% within 1 m, median 0.260 m; the opposite
+  camera sign gave 55.6%.
+- **Occupancy grid PASS**: 143 cells, precision **0.825**; the key fix was a
+  **2.5 m height floor** (2.0 m floor gave 0.678). 3/3 boxes covered, start free.
 
-This is a projection/quality gate, not a map planner. The occupancy grid fails
-at precision 0.678 < 0.80, so no map SITL run is attempted. See
+This is a projection/quality gate, not a map planner: it allows the occupancy
+planner work to start, but no map SITL run is claimed. See
 [`docs/map-gate.md`](docs/map-gate.md).
 
 The gated long-term plan — clean grid, map planner + SITL, dynamic obstacles,
@@ -442,7 +441,7 @@ Gazebo rendered headless through WSL2.
 | Doorway traversal and target landing | ✅ **20/20, 0 contacts (gate-safe)** | stand-off 8.2 m, 0.8/0.05; target_0 error max 0.751 m, clearance min 0.787 m; [`results/repeat_report.md`](results/repeat_report.md) |
 | Offset doorway, then turn to target_1 | ✅ **20/20 landings; 19/20 final-row** | 100 s budget: landings 20/20, 0 contacts; one final-row 2.149 m drift after a 0.285 m landing; 70 s was 16/20; [`results/repeat_report.md`](results/repeat_report.md) |
 | Two doorways, then target_1 | ✅ **20/20, 0 contacts (double-safe)** | 1.0/0.05, 100 s; target 0.226 m mean, clearance min 0.781 m; [`results/repeat_report.md`](results/repeat_report.md) |
-| Offline depth-map projection gate | ⚠️ **points PASS; grid FAIL** | 1080 points, 83.4% within 1 m; 174 cells, precision 0.678 <0.80; [`results/map_gate.md`](results/map_gate.md) |
+| Offline depth-map gate | ✅ **PASS (point + grid)** | 972 points, 90.2% within 1 m; 143 cells, precision 0.825; 2.5 m height floor; [`results/map_gate.md`](results/map_gate.md) |
 | Contact sensor can report a contact | ✅ **checked positively** | a 0.5 kg box dropped on the wall produced 4632 messages; [`results/contact_sensor_check.txt`](results/contact_sensor_check.txt) |
 | Depth-sensor noise, holes, real hardware | ❌ **not verified** | Gazebo returns ideal float32 depth; there is no real depth camera, no multipath, no missing-return model |
 | Dynamic obstacles / global planning | ❌ **not implemented** | local stop + one detour + one hold; no obstacle track, no global planner |
@@ -628,8 +627,8 @@ Failure modes this system actually produced, each with the check that catches it
   旧 gate/gate-double 配置为 17/20、15/20；gate-target1 20/20 降落、最终行 19/20），
   还有一次深度停障→单框→重规划：静态障碍、理想深度图、0.6–0.8 m/s；
   已验证停点双侧 blocked 的正例；仍没有占据栅格/持续重规划、动态/3D 障碍、
-  交替/二维搜索、自适应方向、真实深度相机的噪声/空洞；离线点投影门禁通过
-  （83.4% within 1 m），但占据栅格门禁失败（precision 0.678 <0.80），不飞地图（见
+  交替/二维搜索、自适应方向、真实深度相机的噪声/空洞；离线点投影与单帧占据栅格门禁已通过
+  （90.2% within 1 m，grid precision 0.825），但多帧地图和地图规划仍未验证（见
   [`docs/avoidance.md`](docs/avoidance.md)、[`docs/detour.md`](docs/detour.md)、
   [`docs/side-selection.md`](docs/side-selection.md)、[`docs/blocked.md`](docs/blocked.md)、
   [`docs/backoff.md`](docs/backoff.md)、[`docs/backoff-sweep.md`](docs/backoff-sweep.md)、

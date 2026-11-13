@@ -12,8 +12,9 @@ hard way that a 5-run sample can hide a 15–25% failure rate.
 | double-safe two doorways | ✅ **20/20, 0 contacts** | `results/repeat_report.md` |
 | target1 offset doorway | ✅ **20/20 landings / 19/20 final-row** | `results/repeat_report.md` |
 | depth projection convention | ✅ point gate PASS (83.4% within 1 m) | `results/map_gate.md` |
-| occupancy grid from one frame | ❌ **FAIL** precision 0.678 < 0.80 | `results/map_cells.json` |
-| occupancy-map planning / SITL | ⛔ blocked by the grid gate | — |
+| occupancy grid from one frame | ✅ **PASS** precision 0.825 (2.5 m height floor) | `results/map_cells.json` |
+| multi-frame grid / second frame pair | ⏳ next | Phase A remaining work |
+| occupancy-map planning / SITL | ⛔ not started | — |
 | dynamic obstacles, 3D, real sensor | ❌ not started | — |
 
 The verified scope is static, hand-entered gate geometry at constant altitude,
@@ -42,6 +43,10 @@ Work:
 
 **Exit criteria:** `make map-gate` PASS with precision ≥0.80, 3/3 boxes covered,
 start free, and a second recorded frame/pose pair also PASS.
+
+**Status (v0.37):** the single recorded frame now passes at precision 0.825 after
+raising the height floor to 2.5 m. The second frame/pose pair is still pending, so
+Phase A is not fully closed and Phase B has not started.
 
 **Do not:** loosen tolerance from 1.0 m to 1.25 m to pass. That was explicitly
 rejected in v0.35.

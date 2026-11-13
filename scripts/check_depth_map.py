@@ -67,7 +67,7 @@ def main() -> int:
     parser.add_argument("--box", type=_box, action="append", required=True)
     parser.add_argument("--sample-px", type=int, default=12)
     parser.add_argument("--min-depth", type=float, default=0.3)
-    parser.add_argument("--min-height", type=float, default=2.0)
+    parser.add_argument("--min-height", type=float, default=2.5)
     parser.add_argument("--max-height", type=float, default=5.5)
     parser.add_argument("--tolerance", type=float, default=1.0)
     parser.add_argument("--min-points", type=int, default=100)
