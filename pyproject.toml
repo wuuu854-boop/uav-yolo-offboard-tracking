@@ -13,7 +13,7 @@ dependencies = [
     "numpy>=1.26,<2.0",
     # headless: the GUI wheel links libGL, which CI containers and headless SITL
     # machines do not have. This list must match requirements.txt.
-    "opencv-python-headless>=4.9,<4.11",
+    "opencv-python-headless>=4.9,<5.1",
     "onnxruntime>=1.17,<2.0",
     "PyYAML>=6.0,<7.0",
     # read-only MAVLink telemetry mirror (scripts/mavlink_bridge.py)

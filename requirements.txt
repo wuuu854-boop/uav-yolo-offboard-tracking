@@ -15,7 +15,7 @@ numpy>=1.26,<2.0
 # 4.11+ requires numpy>=2, which the pin above forbids: pip then backtracks
 # through every opencv release, downloading 70 MB wheels each time, and takes
 # minutes to fail on a fresh Ubuntu 22.04. Keep the ceiling.
-opencv-python-headless>=4.9,<4.11
+opencv-python-headless>=4.9,<5.1
 onnxruntime>=1.17,<2.0
 PyYAML>=6.0,<7.0
 # The read-only telemetry mirror. Optional at runtime — nothing in the control
