@@ -7,6 +7,23 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.35.0] - 2026-11-13
+
+### Changed
+
+- **The offline gate now checks occupancy cells too, and the grid fails.** Point
+  projection is good (83.4% within 1 m, median 0.339 m), but 174 occupied cells
+  have precision **0.678** (<0.80); 32% are sparse outliers. The gate verdict is
+  **FAIL**, and no occupancy-map SITL run is attempted.
+- The camera-sign bug is still fixed and documented: the opposite sign gives
+  55.6% points.
+
+### Why
+
+A good point projection is not a good occupancy map. The grid check catches the
+second failure before any planner/flight work. v0.34's "PASS" was only the point
+gate; v0.35 makes the full verdict explicit.
+
 ## [0.34.0] - 2026-11-13
 
 ### Added

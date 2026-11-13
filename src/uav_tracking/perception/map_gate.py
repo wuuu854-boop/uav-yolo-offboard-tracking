@@ -148,3 +148,135 @@ def passes(
         and float(summary["near_fraction"]) >= float(min_near_fraction)
         and float(summary["median_distance_m"]) <= float(max_median_distance_m)
     )
+
+
+class OccupancyGrid:
+    """Small local ENU count grid built from projected depth points."""
+
+    def __init__(
+        self,
+        bounds: tuple[float, float, float, float] = (-10.0, 10.0, -10.0, 10.0),
+        resolution_m: float = 0.25,
+    ) -> None:
+        x_min, x_max, y_min, y_max = (float(v) for v in bounds)
+        if x_min >= x_max or y_min >= y_max:
+            raise ValueError("bounds must have min < max on both axes")
+        if not math.isfinite(resolution_m) or resolution_m <= 0.0:
+            raise ValueError(f"resolution_m must be positive, got {resolution_m!r}")
+        self.bounds = (x_min, x_max, y_min, y_max)
+        self.resolution_m = float(resolution_m)
+        self.width = int(math.ceil((x_max - x_min) / self.resolution_m))
+        self.height = int(math.ceil((y_max - y_min) / self.resolution_m))
+        self.counts: dict[tuple[int, int], int] = {}
+
+    def index(self, x: float, y: float) -> tuple[int, int] | None:
+        x_min, x_max, y_min, y_max = self.bounds
+        if not (x_min <= x < x_max and y_min <= y < y_max):
+            return None
+        i = min(int((x - x_min) / self.resolution_m), self.width - 1)
+        j = min(int((y - y_min) / self.resolution_m), self.height - 1)
+        return i, j
+
+    def add_points(self, points: list[Point]) -> None:
+        for x, y in points:
+            cell = self.index(x, y)
+            if cell is not None:
+                self.counts[cell] = self.counts.get(cell, 0) + 1
+
+    def occupied_cells(self, min_points: int = 2) -> set[tuple[int, int]]:
+        if min_points < 1:
+            raise ValueError("min_points must be at least 1")
+        return {cell for cell, count in self.counts.items() if count >= min_points}
+
+    def filtered_cells(
+        self,
+        min_points: int = 2,
+        min_neighbours: int = 0,
+        min_component: int = 1,
+    ) -> set[tuple[int, int]]:
+        """Occupied cells, optionally dropping sparse cells/small components."""
+        occupied = self.occupied_cells(min_points)
+        if min_neighbours > 0:
+            neighbours = ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1))
+            occupied = {
+                cell
+                for cell in occupied
+                if sum((cell[0] + di, cell[1] + dj) in occupied for di, dj in neighbours)
+                >= min_neighbours
+            }
+        if min_component <= 1 or not occupied:
+            return occupied
+        kept: set[tuple[int, int]] = set()
+        unseen = set(occupied)
+        neighbours = ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1))
+        while unseen:
+            seed = unseen.pop()
+            component = {seed}
+            stack = [seed]
+            while stack:
+                cell = stack.pop()
+                for di, dj in neighbours:
+                    other = (cell[0] + di, cell[1] + dj)
+                    if other in unseen:
+                        unseen.remove(other)
+                        component.add(other)
+                        stack.append(other)
+            if len(component) >= min_component:
+                kept.update(component)
+        return kept
+
+    def cell_centre(self, cell: tuple[int, int]) -> Point:
+        x_min, _, y_min, _ = self.bounds
+        return (
+            x_min + (cell[0] + 0.5) * self.resolution_m,
+            y_min + (cell[1] + 0.5) * self.resolution_m,
+        )
+
+    def to_boxes(self, min_points: int = 2) -> list[BoxSpec]:
+        boxes = []
+        for cell in sorted(self.occupied_cells(min_points)):
+            x, y = self.cell_centre(cell)
+            boxes.append((x, y, self.resolution_m, self.resolution_m))
+        return boxes
+
+    def cell_is_occupied(self, x: float, y: float, min_points: int = 2) -> bool:
+        cell = self.index(x, y)
+        return cell is not None and self.counts.get(cell, 0) >= min_points
+
+
+def grid_quality(
+    grid: OccupancyGrid,
+    boxes: list[BoxSpec],
+    *,
+    start_xy: Point,
+    min_points: int = 2,
+    min_neighbours: int = 0,
+    min_component: int = 1,
+    tolerance_m: float = 0.75,
+) -> dict:
+    """Check occupied cells against known boxes and a start point."""
+    if not boxes:
+        raise ValueError("at least one box is required")
+    occupied = grid.filtered_cells(min_points, min_neighbours, min_component)
+    if not occupied:
+        return {
+            "cells": 0,
+            "precision": 0.0,
+            "boxes_covered": 0,
+            "boxes_total": len(boxes),
+            "start_free": not grid.cell_is_occupied(*start_xy, min_points),
+        }
+    centres = [grid.cell_centre(cell) for cell in occupied]
+    near = [nearest_box_distance(x, y, boxes) <= tolerance_m for x, y in centres]
+    covered = 0
+    for box in boxes:
+        if any(point_to_box_distance(x, y, box) <= tolerance_m for x, y in centres):
+            covered += 1
+    return {
+        "cells": len(occupied),
+        "precision": sum(near) / len(occupied),
+        "boxes_covered": covered,
+        "boxes_total": len(boxes),
+        "start_free": not grid.cell_is_occupied(*start_xy, min_points),
+        "tolerance_m": float(tolerance_m),
+    }

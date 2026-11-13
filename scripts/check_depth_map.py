@@ -19,7 +19,12 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from uav_tracking.perception.map_gate import project_depth, summarise  # noqa: E402
+from uav_tracking.perception.map_gate import (  # noqa: E402
+    OccupancyGrid,
+    grid_quality,
+    project_depth,
+    summarise,
+)
 
 
 def _box(text: str) -> tuple[float, float, float, float]:
@@ -68,6 +73,12 @@ def main() -> int:
     parser.add_argument("--min-points", type=int, default=100)
     parser.add_argument("--min-near-fraction", type=float, default=0.70)
     parser.add_argument("--max-median", type=float, default=1.0)
+    parser.add_argument("--grid-out", default="results/map_cells")
+    parser.add_argument("--grid-resolution", type=float, default=0.25)
+    parser.add_argument("--min-cell-points", type=int, default=2)
+    parser.add_argument("--min-neighbours", type=int, default=2)
+    parser.add_argument("--min-component", type=int, default=3)
+    parser.add_argument("--grid-tolerance", type=float, default=0.75)
     parser.add_argument("--out", default="results/map_gate")
     args = parser.parse_args()
 
@@ -83,10 +94,24 @@ def main() -> int:
         max_height_m=args.max_height,
     )
     summary = summarise(points, args.box, tolerance_m=args.tolerance)
+    grid = OccupancyGrid(resolution_m=args.grid_resolution)
+    grid.add_points(points)
+    quality = grid_quality(
+        grid,
+        args.box,
+        start_xy=(pose["east_m"], pose["north_m"]),
+        min_points=args.min_cell_points,
+        min_neighbours=args.min_neighbours,
+        min_component=args.min_component,
+        tolerance_m=args.grid_tolerance,
+    )
     ok = (
         summary["points"] >= args.min_points
         and summary["near_fraction"] >= args.min_near_fraction
         and summary["median_distance_m"] <= args.max_median
+        and quality["precision"] >= 0.80
+        and quality["boxes_covered"] == quality["boxes_total"]
+        and quality["start_free"]
     )
     report = {
         "depth": str(args.depth),
@@ -94,16 +119,49 @@ def main() -> int:
         "pose": pose,
         "boxes": args.box,
         "summary": summary,
+        "grid_quality": quality,
+        "grid": {
+            "bounds": grid.bounds,
+            "resolution_m": grid.resolution_m,
+            "occupied_cells": sorted(
+                grid.filtered_cells(args.min_cell_points, args.min_neighbours, args.min_component)
+            ),
+        },
         "thresholds": {
             "min_points": args.min_points,
             "min_near_fraction": args.min_near_fraction,
             "max_median_distance_m": args.max_median,
+            "min_grid_precision": 0.80,
+            "all_boxes_covered": True,
+            "start_free": True,
+            "min_cell_points": args.min_cell_points,
+            "min_neighbours": args.min_neighbours,
+            "min_component": args.min_component,
         },
         "verdict": "PASS" if ok else "FAIL",
     }
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.with_suffix(".json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    grid_out = Path(args.grid_out)
+    grid_out.parent.mkdir(parents=True, exist_ok=True)
+    grid_out.with_suffix(".json").write_text(
+        json.dumps(
+            {
+                "bounds": grid.bounds,
+                "resolution_m": grid.resolution_m,
+                "occupied_cells": sorted(
+                    grid.filtered_cells(
+                        args.min_cell_points, args.min_neighbours, args.min_component
+                    )
+                ),
+                "quality": quality,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     lines = [
         "# Depth-map quality gate",
         "",
@@ -112,7 +170,11 @@ def main() -> int:
         f"- points: {summary['points']}",
         f"- near fraction (<= {args.tolerance:g} m): {summary['near_fraction']:.3f}",
         f"- median distance: {summary['median_distance_m']:.3f} m",
-        f"- thresholds: points >= {args.min_points}, near >= {args.min_near_fraction:g}, median <= {args.max_median:g} m",
+        f"- occupied cells: {quality['cells']}",
+        f"- cell precision: {quality['precision']:.3f}",
+        f"- boxes covered: {quality['boxes_covered']}/{quality['boxes_total']}",
+        f"- start free: {quality['start_free']}",
+        f"- thresholds: points >= {args.min_points}, near >= {args.min_near_fraction:g}, median <= {args.max_median:g} m, grid precision >= 0.80",
         "",
         f"**{report['verdict']}**",
         "",

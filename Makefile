@@ -135,7 +135,7 @@ repeat-target1-20: install-world ## twenty repeats of the retained margin target
 	bash scripts/repeat_target1.sh 20
 
 map-gate: ## offline depth-map quality gate on the recorded search frame
-	PYTHONPATH=src python3 scripts/check_depth_map.py --depth results/search_depth_frame.npy --run-csv results/search_run.csv --row 215 --box 6.7,0,0.2,3.0 --box 6.0,-0.8,0.8,0.8 --box 6.0,1.8,0.8,0.8 --out results/map_gate
+	PYTHONPATH=src python3 scripts/check_depth_map.py --depth results/search_depth_frame.npy --run-csv results/search_run.csv --row 215 --box 6.7,0,0.2,3.0 --box 6.0,-0.8,0.8,0.8 --box 6.0,1.8,0.8,0.8 --min-neighbours 2 --min-component 3 --grid-tolerance 1.0 --out results/map_gate --grid-out results/map_cells
 
 trials: ## run N closed-loop trials (N=3 default), restarting the sim each time
 	bash scripts/run_trials.sh --count $(or $(N),3)

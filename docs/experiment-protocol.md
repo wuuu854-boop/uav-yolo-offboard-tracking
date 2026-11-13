@@ -124,8 +124,8 @@ illusions.
 
 The offline depth-map gate is separate from flight: `make map-gate` projects
 `results/search_depth_frame.npy` with pose row 215 and checks the known
-wall/pillars. It passes at 83.4% within 1 m. It is a projection gate, not an
-occupancy map; no SITL map run is claimed.
+wall/pillars. Point projection passes at 83.4%; the occupancy grid **fails** at
+precision 0.678 (<0.80), so no SITL map run is attempted.
 
 ## Trial procedure
 

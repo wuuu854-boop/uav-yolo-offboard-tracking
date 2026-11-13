@@ -9,6 +9,8 @@ import pytest
 
 from uav_tracking.perception.map_gate import (
     CameraIntrinsics,
+    OccupancyGrid,
+    grid_quality,
     nearest_box_distance,
     passes,
     project_depth,
@@ -61,3 +63,16 @@ def test_passes_requires_count_fraction_and_median():
 def test_nearest_box_distance_requires_boxes():
     with pytest.raises(ValueError, match="box"):
         nearest_box_distance(0.0, 0.0, [])
+
+
+def test_occupancy_grid_counts_and_quality():
+    grid = OccupancyGrid(bounds=(-2.0, 2.0, -2.0, 2.0), resolution_m=0.5)
+    grid.add_points([(1.1, 0.0), (1.2, 0.1), (1.1, 0.2), (0.0, 0.0)])
+    assert grid.occupied_cells(min_points=2) == {(6, 4)}
+    assert grid.cell_is_occupied(1.1, 0.0) is True
+    assert grid.cell_is_occupied(0.0, 0.0) is False
+    quality = grid_quality(grid, [(1.0, 0.0, 0.2, 0.2)], start_xy=(0.0, 0.0))
+    assert quality["cells"] == 1
+    assert quality["precision"] == pytest.approx(1.0)
+    assert quality["boxes_covered"] == 1
+    assert quality["start_free"] is True
