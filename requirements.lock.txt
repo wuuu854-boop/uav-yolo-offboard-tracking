@@ -4,7 +4,7 @@ humanfriendly==10.0
 mpmath==1.3.0
 numpy==1.26.4
 onnxruntime==1.23.2
-opencv-python-headless==4.10.0.84
+opencv-python-headless==5.0.0.93
 packaging==26.3
 protobuf==7.36.2
 PyYAML==6.0.3
