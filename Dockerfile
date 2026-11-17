@@ -1,7 +1,7 @@
 FROM ros:humble-ros-base
 
 ENV DEBIAN_FRONTEND=noninteractive
-SHELL ["/bin/bash", "-c"]
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN set -eux; \
     for attempt in 1 2 3 4; do \

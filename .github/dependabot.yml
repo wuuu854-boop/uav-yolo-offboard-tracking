@@ -11,7 +11,7 @@ updates:
     ignore:
       - dependency-name: numpy
         versions: [">=2.0"]
-      - dependency-name: opencv-python
+      - dependency-name: opencv-python-headless
         versions: [">=4.11"]
 
   - package-ecosystem: github-actions
