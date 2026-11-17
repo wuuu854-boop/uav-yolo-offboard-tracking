@@ -51,6 +51,9 @@ jobs:
       - name: Dependencies agree
         run: python scripts/check_dependencies.py
 
+      - name: Locked runtime dependencies resolve
+        run: python -m pip install --dry-run --ignore-installed -r requirements.txt -r requirements.lock.txt
+
       - name: Documentation links
         run: python scripts/check_links.py
 
