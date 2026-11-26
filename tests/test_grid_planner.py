@@ -46,3 +46,22 @@ def test_goal_outside_bounds_is_rejected():
     grid = _grid_with_wall()
     with pytest.raises(ValueError, match="outside"):
         plan_grid_path(grid, (0.0, 3.0), (10.0, 3.0), inflation_cells=1)
+
+
+def _ray_grid() -> OccupancyGrid:
+    grid = OccupancyGrid(bounds=(-1.0, 3.0, -1.0, 3.0), resolution_m=0.5)
+    grid.add_points_with_rays([(2.0, 0.0), (2.0, 0.0), (2.0, 0.0)], (0.0, 0.0))
+    return grid
+
+
+def test_known_free_path_uses_observed_cells():
+    grid = _ray_grid()
+    path = plan_grid_path(grid, (0.0, 0.0), (1.0, 0.0), inflation_cells=0, require_known_free=True)
+    assert path
+    assert path[-1] == (1.0, 0.0)
+
+
+def test_unknown_goal_is_rejected_when_known_free_is_required():
+    grid = _ray_grid()
+    with pytest.raises(ValueError, match="not observed"):
+        plan_grid_path(grid, (0.0, 0.0), (0.0, 2.0), inflation_cells=0, require_known_free=True)

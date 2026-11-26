@@ -54,6 +54,7 @@ def plan_grid_path(
     inflation_cells: int = 2,
     min_cell_points: int = 2,
     min_component: int = 3,
+    require_known_free: bool = False,
 ) -> list[tuple[float, float]]:
     """Plan around occupied cells; returns points after ``start`` ending at ``goal``."""
     for name, value in (("start", start), ("goal", goal)):
@@ -72,6 +73,16 @@ def plan_grid_path(
 
     occupied = grid.filtered_cells(min_cell_points, 0, min_component)
     blocked = _inflate(occupied, inflation_cells)
+    if require_known_free:
+        observed = grid.observed_cells()
+        if start_cell not in observed:
+            raise ValueError("start is not observed free")
+        if goal_cell not in observed:
+            raise ValueError("goal is not observed free")
+        for i in range(grid.width):
+            for j in range(grid.height):
+                if (i, j) not in observed:
+                    blocked.add((i, j))
     if start_cell in blocked:
         raise ValueError("start is inside an inflated obstacle")
     if goal_cell in blocked:

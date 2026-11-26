@@ -7,6 +7,22 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.42.0] - 2026-11-26
+
+### Fixed
+
+- **Unknown space is no longer treated as free.** `OccupancyGrid` can mark sensor
+  rays free, and `plan_grid_path(require_known_free=True)` blocks never-observed
+  cells. The v0.40 path to 9.5 m is rejected (`goal is not observed free`), which
+  explains how SITL A* found a gap through a sparse wall map.
+- Adds two planner tests for known-free paths and unknown-goal rejection.
+
+### Why
+
+The SITL map integration failed because the planner assumed unseen cells were
+free. The strict check demonstrates the bug without flying and sets the next
+requirement: free-space coverage/scanning before any map SITL.
+
 ## [0.41.0] - 2026-11-26
 
 ### Changed

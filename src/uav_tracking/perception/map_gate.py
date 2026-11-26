@@ -175,6 +175,7 @@ class OccupancyGrid:
         self.width = int(math.ceil((x_max - x_min) / self.resolution_m))
         self.height = int(math.ceil((y_max - y_min) / self.resolution_m))
         self.counts: dict[tuple[int, int], int] = {}
+        self.free: set[tuple[int, int]] = set()
 
     def index(self, x: float, y: float) -> tuple[int, int] | None:
         x_min, x_max, y_min, y_max = self.bounds
@@ -189,6 +190,32 @@ class OccupancyGrid:
             cell = self.index(x, y)
             if cell is not None:
                 self.counts[cell] = self.counts.get(cell, 0) + 1
+
+    def add_points_with_rays(self, points: list[Point], sensor_xy: Point) -> None:
+        """Add hits and mark the free cells along each sensor ray.
+
+        Cells before the endpoint are observed free; the endpoint is a hit. This
+        is what lets the planner distinguish "unoccupied because unseen" from
+        "observed free".
+        """
+        self.add_points(points)
+        sensor_cell = self.index(*sensor_xy)
+        if sensor_cell is not None:
+            self.free.add(sensor_cell)
+        for x, y in points:
+            distance = math.hypot(x - sensor_xy[0], y - sensor_xy[1])
+            steps = max(1, int(math.ceil(distance / max(self.resolution_m / 2.0, 1e-6))))
+            for index in range(steps):
+                t = index / steps
+                cell = self.index(
+                    sensor_xy[0] + (x - sensor_xy[0]) * t,
+                    sensor_xy[1] + (y - sensor_xy[1]) * t,
+                )
+                if cell is not None:
+                    self.free.add(cell)
+
+    def observed_cells(self) -> set[tuple[int, int]]:
+        return set(self.counts) | self.free
 
     def occupied_cells(self, min_points: int = 2) -> set[tuple[int, int]]:
         if min_points < 1:

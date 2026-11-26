@@ -92,6 +92,7 @@ def main() -> int:
     parser.add_argument("--goal", type=_xy, default=(9.5, 0.0))
     parser.add_argument("--resolution", type=float, default=0.25)
     parser.add_argument("--inflation-cells", type=int, default=3)
+    parser.add_argument("--require-known-free", action="store_true")
     parser.add_argument("--roi-fraction", type=float, default=0.6)
     parser.add_argument("--max-depth", type=float, default=4.0)
     parser.add_argument("--min-height", type=float, default=2.5)
@@ -113,7 +114,10 @@ def main() -> int:
         roi_fraction=args.roi_fraction,
     )
     grid = OccupancyGrid(resolution_m=args.resolution)
-    grid.add_points(points)
+    if args.require_known_free:
+        grid.add_points_with_rays(points, start)
+    else:
+        grid.add_points(points)
 
     began = time.perf_counter()
     try:
@@ -124,6 +128,7 @@ def main() -> int:
             inflation_cells=args.inflation_cells,
             min_cell_points=2,
             min_component=3,
+            require_known_free=args.require_known_free,
         )
         error = ""
     except ValueError as exc:

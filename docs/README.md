@@ -23,6 +23,7 @@
 | [roadmap](roadmap.md) | The gated long-term plan: clean grid, map planner, dynamic, 3D, hardware |
 | [grid-planner](grid-planner.md) | Offline grid A* on the Phase A map; no SITL yet |
 | [map-integration](map-integration.md) | Nine failed SITL map trials, why the integration was reverted |
+| [map-unknown-space](map-unknown-space.md) | Why unknown cells must not be free; the known-free gate |
 | [model](model.md) | The YOLO detector: dataset, training, the decoder bug it exposed, and how it was made to fly |
 | [deployment](deployment.md) | Detector throughput per input size and thread count, and what it does not measure |
 | [market](market.md) | What UAV-autonomy postings ask for, where this project stands, what to build next |
