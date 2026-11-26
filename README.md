@@ -448,6 +448,7 @@ Gazebo rendered headless through WSL2.
 | Two doorways, then target_1 | ✅ **20/20, 0 contacts (double-safe)** | 1.0/0.05, 100 s; target 0.226 m mean, clearance min 0.781 m; [`results/repeat_report.md`](results/repeat_report.md) |
 | Offline depth-map gate | ✅ **PASS, two frames** | search precision 0.967, avoidance 0.968; central 60% ROI; [`results/map_gate.md`](results/map_gate.md) |
 | Offline grid A* on the map | ✅ **PASS (no SITL)** | 4.42 m path, 1.39 ms, 0.901 m clearance; [`results/grid_plan.md`](results/grid_plan.md) |
+| Map planner SITL | ❌ **9 trials failed, integration reverted** | incomplete wall maps, contacts up to 257; [`docs/map-integration.md`](docs/map-integration.md) |
 | Contact sensor can report a contact | ✅ **checked positively** | a 0.5 kg box dropped on the wall produced 4632 messages; [`results/contact_sensor_check.txt`](results/contact_sensor_check.txt) |
 | Depth-sensor noise, holes, real hardware | ❌ **not verified** | Gazebo returns ideal float32 depth; there is no real depth camera, no multipath, no missing-return model |
 | Dynamic obstacles / global planning | ❌ **not implemented** | local stop + one detour + one hold; no obstacle track, no global planner |

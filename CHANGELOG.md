@@ -7,6 +7,25 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.41.0] - 2026-11-26
+
+### Changed
+
+- **SITL map-planner integration attempted and reverted.** Nine trials produced
+  an empty/incomplete wall map, paths through unseen gaps, and contacts up to
+  257. The best run landed at 0.173 m with 0 contacts but clipped the wall at
+  0.227 m clearance. No map-planner code is merged; no map SITL claim.
+- Added `docs/map-integration.md` and `results/map_integration_trials.md` with the
+  trial table and root causes.
+
+### Why
+
+The offline two-frame gate is not a completeness gate. At first use the wall is
+only a few cells; A* finds a gap that is not there. Accumulated frames add
+outliers and can make the goal "inside an inflated obstacle". The next design
+needs a map-completeness gate, wall extraction and moving multi-frame updates
+before another SITL attempt.
+
 ## [0.40.0] - 2026-11-26
 
 ### Added

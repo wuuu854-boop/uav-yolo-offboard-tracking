@@ -68,9 +68,11 @@ Work:
 **Exit criteria:** 20/20 with 0 contacts on the map mission, with the map gate
 PASS in the same commit. Otherwise the feature stays unverified.
 
-**Status (v0.40):** the offline grid A* passes on the avoidance map (4.42 m,
-1.39 ms, 0.901 m clearance). ROS integration, map-ready/stale handling, replan
-and SITL are still pending.
+**Status (v0.41):** the offline grid A* passes on the avoidance map (4.42 m,
+1.39 ms, 0.901 m clearance). Nine SITL integration trials failed (incomplete wall
+map, paths through unseen gaps, up to 257 contacts); the integration was reverted.
+A map-completeness gate, wall extraction and moving multi-frame updates are
+required before another SITL attempt.
 
 **Risk:** map latency and false cells; mitigation is the Phase A gate and a
 "wait for map" state, not faster flight.
