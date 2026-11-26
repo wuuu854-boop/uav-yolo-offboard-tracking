@@ -19,6 +19,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from uav_tracking.perception.frame_meta import read_frame_meta  # noqa: E402
 from uav_tracking.perception.map_gate import (  # noqa: E402
     OccupancyGrid,
     grid_quality,
@@ -64,9 +65,11 @@ def main() -> int:
     parser.add_argument("--depth", default="results/search_depth_frame.npy")
     parser.add_argument("--run-csv", default="results/search_run.csv")
     parser.add_argument("--row", type=int, default=None)
+    parser.add_argument("--meta", default=None)
     parser.add_argument("--box", type=_box, action="append", required=True)
     parser.add_argument("--sample-px", type=int, default=12)
     parser.add_argument("--min-depth", type=float, default=0.3)
+    parser.add_argument("--max-depth", type=float, default=12.0)
     parser.add_argument("--min-height", type=float, default=2.5)
     parser.add_argument("--max-height", type=float, default=5.5)
     parser.add_argument("--tolerance", type=float, default=1.0)
@@ -83,13 +86,31 @@ def main() -> int:
     args = parser.parse_args()
 
     depth = np.load(args.depth)
-    pose = _pose_from_run(Path(args.run_csv), args.row)
+    meta_path = args.meta
+    if meta_path is None:
+        candidate = Path(args.depth).with_suffix(Path(args.depth).suffix + ".json")
+        if candidate.exists():
+            meta_path = str(candidate)
+    if meta_path:
+        meta = read_frame_meta(meta_path)
+        pose = {
+            "row": -1,
+            "t_s": meta.t_s,
+            "east_m": meta.east_m,
+            "north_m": meta.north_m,
+            "altitude_m": meta.altitude_m,
+            "yaw_deg": meta.yaw_deg,
+            "meta": meta_path,
+        }
+    else:
+        pose = _pose_from_run(Path(args.run_csv), args.row)
     points = project_depth(
         depth,
         (pose["east_m"], pose["north_m"], pose["altitude_m"]),
         math.radians(pose["yaw_deg"]),
         sample_px=args.sample_px,
         min_depth_m=args.min_depth,
+        max_depth_m=args.max_depth,
         min_height_m=args.min_height,
         max_height_m=args.max_height,
     )
@@ -117,6 +138,7 @@ def main() -> int:
         "depth": str(args.depth),
         "run_csv": str(args.run_csv),
         "pose": pose,
+        "meta": meta_path,
         "boxes": args.box,
         "summary": summary,
         "grid_quality": quality,

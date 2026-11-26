@@ -52,6 +52,7 @@ from uav_tracking.perception.depth import (  # noqa: E402
     depth_from_bytes,
     roi_bounds,
 )
+from uav_tracking.perception.frame_meta import FrameMeta, write_frame_meta  # noqa: E402
 
 HEADER = [
     "t_s",
@@ -168,6 +169,12 @@ class AvoidanceRecorder(Node):
         self.depth_frames += 1
         if not self._save_pending or not self.args.frame_out:
             return
+        # A stop during the landing descent is not a wall encounter. Capture only
+        # while the vehicle is still at mission altitude; this was the bug that
+        # paired the saved frame with a post-landing pose.
+        if self.altitude < float(self.args.min_capture_altitude):
+            self._save_pending = False
+            return
         try:
             depth = depth_from_bytes(msg.data, msg.width, msg.height)
         except ValueError:
@@ -270,7 +277,30 @@ class AvoidanceRecorder(Node):
         cv2.imwrite(self.args.frame_out, colour)
         # The PNG is the human view; the array is what a reader can re-analyse
         # without trusting the colour map.
-        np.save(str(Path(self.args.frame_out).with_suffix(".npy")), depth.astype(np.float32))
+        frame_npy = Path(self.args.frame_out).with_suffix(".npy")
+        np.save(str(frame_npy), depth.astype(np.float32))
+        now_s = self.get_clock().now().nanoseconds / 1e9
+        t_s = 0.0 if self.start_s is None else max(0.0, now_s - self.start_s)
+        meta = FrameMeta(
+            source="avoidance",
+            t_s=t_s,
+            east_m=self.east,
+            north_m=self.north,
+            altitude_m=self.altitude,
+            yaw_deg=math.degrees(self.yaw),
+            nearest_m=nearest,
+            stop_event=self.stop_events,
+            width=depth.shape[1],
+            height=depth.shape[0],
+        )
+        write_frame_meta(frame_npy, meta)
+        if self.args.frames_dir:
+            frames_dir = Path(self.args.frames_dir)
+            frames_dir.mkdir(parents=True, exist_ok=True)
+            base = frames_dir / f"stop_{self.stop_events:02d}_depth"
+            cv2.imwrite(str(base) + ".png", colour)
+            np.save(str(base) + ".npy", depth.astype(np.float32))
+            write_frame_meta(str(base) + ".npy", meta)
         self.get_logger().info(f"saved stopped depth frame to {self.args.frame_out}")
 
     def close(self) -> None:
@@ -281,6 +311,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", default="results/avoidance_run.csv")
     parser.add_argument("--frame-out", default="results/avoidance_depth_frame.png")
+    parser.add_argument("--frames-dir", default="")
+    parser.add_argument("--min-capture-altitude", type=float, default=3.0)
     parser.add_argument("--contact-topic", default="")
     parser.add_argument("--rate", type=float, default=10.0)
     parser.add_argument("--min-valid-m", type=float, default=0.25)

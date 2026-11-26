@@ -47,6 +47,19 @@ Raw output: [`results/map_gate.md`](../results/map_gate.md) /
 | Map planning / SITL | ❌ **not attempted** | this gate is the pre-flight condition, not a flight |
 | Real sensor noise | ❌ **not verified** | ideal Gazebo depth |
 
+## Frame-pose binding (v0.38)
+
+The recorder now writes `<frame>.npy.json` at the same instant as the array:
+pose, timestamp, nearest distance, stop event and image size. It also refuses to
+capture a stop below 3.0 m altitude, because a landing-descent stop used to
+overwrite the wall frame. `make map-gate` reads the sidecar automatically.
+
+The second pair (`meta_avoid2_depth_frame.npy`, a clean 0-contact avoidance stop)
+still **fails** the grid gate: 58.3% of points within 1 m (median 0.892 m, grid
+precision 0.691). The metadata fixed the pose pairing, so the remaining error is a
+camera/extrinsic or edge-background issue, not a wrong CSV row. Phase A therefore
+remains open; no map planner/SITL is started.
+
 ## Reproducing it
 
 ```bash

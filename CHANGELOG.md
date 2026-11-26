@@ -7,6 +7,23 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.38.0] - 2026-11-26
+
+### Fixed
+
+- **Frame-pose binding.** The recorder now writes a JSON sidecar beside every
+  saved depth frame with the pose, timestamp, nearest distance, stop event and
+  image size. It also refuses to save a stop below 3.0 m, which previously let a
+  landing-descent stop overwrite the wall frame.
+- `make map-gate` reads the sidecar automatically; `--max-depth` is exposed.
+
+### Why
+
+The avoidance second-pair failure was first blamed on guessing the CSV row. The
+sidecar removed that ambiguity. The second pair still fails (58.3% within 1 m,
+grid precision 0.691), so Phase A remains open; this release fixes the capture
+bug, not the camera/extrinsic error.
+
 ## [0.37.0] - 2026-11-13
 
 ### Fixed

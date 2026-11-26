@@ -44,9 +44,10 @@ Work:
 **Exit criteria:** `make map-gate` PASS with precision ≥0.80, 3/3 boxes covered,
 start free, and a second recorded frame/pose pair also PASS.
 
-**Status (v0.37):** the single recorded frame now passes at precision 0.825 after
-raising the height floor to 2.5 m. The second frame/pose pair is still pending, so
-Phase A is not fully closed and Phase B has not started.
+**Status (v0.38):** the single recorded frame passes at precision 0.825 after
+raising the height floor to 2.5 m. Frame-pose sidecars are now written, but the
+second clean avoidance pair still fails (58.3% within 1 m, grid precision 0.691),
+so Phase A is not fully closed and Phase B has not started.
 
 **Do not:** loosen tolerance from 1.0 m to 1.25 m to pass. That was explicitly
 rejected in v0.35.
