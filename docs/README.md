@@ -21,6 +21,7 @@
 | [repeatability](repeatability.md) | 3×3 repeats, the flaky gate-target1 config, and the fix |
 | [map-gate](map-gate.md) | The camera-sign bug, the recorded-frame gate, and why it is not a map |
 | [roadmap](roadmap.md) | The gated long-term plan: clean grid, map planner, dynamic, 3D, hardware |
+| [grid-planner](grid-planner.md) | Offline grid A* on the Phase A map; no SITL yet |
 | [model](model.md) | The YOLO detector: dataset, training, the decoder bug it exposed, and how it was made to fly |
 | [deployment](deployment.md) | Detector throughput per input size and thread count, and what it does not measure |
 | [market](market.md) | What UAV-autonomy postings ask for, where this project stands, what to build next |

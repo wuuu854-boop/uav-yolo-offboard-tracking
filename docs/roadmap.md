@@ -68,6 +68,10 @@ Work:
 **Exit criteria:** 20/20 with 0 contacts on the map mission, with the map gate
 PASS in the same commit. Otherwise the feature stays unverified.
 
+**Status (v0.40):** the offline grid A* passes on the avoidance map (4.42 m,
+1.39 ms, 0.901 m clearance). ROS integration, map-ready/stale handling, replan
+and SITL are still pending.
+
 **Risk:** map latency and false cells; mitigation is the Phase A gate and a
 "wait for map" state, not faster flight.
 

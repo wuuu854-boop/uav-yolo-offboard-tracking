@@ -7,6 +7,22 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.40.0] - 2026-11-26
+
+### Added
+
+- **Offline grid A* on the Phase A map.** `make grid-plan` builds the occupancy
+  grid from the sidecar-bound avoidance frame and plans around the wall:
+  **4 points, 4.42 m, 1.39 ms, 0.901 m minimum grid clearance, PASS**.
+- Pure `planning/grid_planner.py` with 4 unit tests (gap, no path, blocked start,
+  outside bounds).
+
+### Why
+
+Phase B needs a planner that is correct on the map before it is wired into ROS.
+The offline result proves the grid cells are usable; it is not a SITL claim. The
+next step is map-ready/replan integration and the 20-run SITL acceptance.
+
 ## [0.39.0] - 2026-11-26
 
 ### Fixed

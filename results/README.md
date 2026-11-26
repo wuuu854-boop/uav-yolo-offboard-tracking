@@ -109,6 +109,7 @@ README and in the resume, so they are written by scripts, never by hand.
 | `map_gate_avoidance.md` / `.json` | `make map-gate-avoidance` on the sidecar-bound frame | **PASS**: 756 points, 99.2% within 1 m, 62 cells precision 0.968 |
 | `meta_avoid4_depth_frame.npy` / `.json` | clean avoidance stop with pose metadata | frame + exact capture pose for the second gate |
 | `map_cells.json` / `map_cells_avoidance.json` | the two gates | 61 / 62 occupied cells, precision 0.967 / 0.968 |
+| `grid_plan.md` / `.json` / `.png` | `make grid-plan` | offline A*: 4.42 m path, 1.39 ms, 0.901 m clearance |
 | `detections.geojson` | `scripts/export_geojson.py` on the moving-target capture | 88 Point features with track id, timestamp and ENU offsets — the GIS-ready deliverable an inspection operator asks for |
 | `qa_moving.json` | `scripts/qa_report.py` on the moving-target capture | the asset was 3 m from its declared position, and the report says so (association 7.1 m, FAIL) |
 | `qa_north.json` | the same report with the asset position passed in | median association drops from 4.95 m to 0.62 m when the asset is where it actually was |

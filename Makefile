@@ -14,7 +14,7 @@ PX4_MODEL ?= gz_x500_mono_cam_down
 # Per-target poses are listed in docs/experiment-protocol.md.
 POSE     ?= -3.5,0,0.05
 
-.PHONY: help setup doctor demo trials qa shots pipeline patch-px4 install-world sim detect e2e avoid detour auto-detour blocked backoff backoff-sweep adaptive search global global-multi global-perception global-rotated global-rotated-multi gate gate-target1 gate-double repeat repeat5 repeat-target1-10 repeat-target1-20 map-gate map-gate-avoidance preflight test lint fmt lock bench check clean
+.PHONY: help setup doctor demo trials qa shots pipeline patch-px4 install-world sim detect e2e avoid detour auto-detour blocked backoff backoff-sweep adaptive search global global-multi global-perception global-rotated global-rotated-multi gate gate-target1 gate-double repeat repeat5 repeat-target1-10 repeat-target1-20 map-gate map-gate-avoidance grid-plan preflight test lint fmt lock bench check clean
 
 help: ## show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-8s\033[0m %s\n", $$1, $$2}'
@@ -139,6 +139,9 @@ map-gate: ## offline depth-map quality gate on the recorded search frame
 
 map-gate-avoidance: ## second-frame depth-map gate with pose sidecar
 	PYTHONPATH=src python3 scripts/check_depth_map.py --depth results/meta_avoid4_depth_frame.npy --box 6.7,0,0.2,3.0 --max-depth 4.0 --roi-fraction 0.6 --min-neighbours 2 --min-component 3 --grid-tolerance 1.0 --out results/map_gate_avoidance --grid-out results/map_cells_avoidance
+
+grid-plan: ## offline grid A* on the clean avoidance frame (no SITL)
+	PYTHONPATH=src python3 scripts/plan_depth_map.py --depth results/meta_avoid4_depth_frame.npy --meta results/meta_avoid4_depth_frame.npy.json --box 6.7,0,0.2,3.0 --goal 9.5,0 --out results/grid_plan
 
 trials: ## run N closed-loop trials (N=3 default), restarting the sim each time
 	bash scripts/run_trials.sh --count $(or $(N),3)
