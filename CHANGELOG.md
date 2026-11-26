@@ -7,6 +7,23 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.46.0] - 2026-11-26
+
+### Added
+
+- **Experimental receding-horizon map integration.** `map_planner_node.py`
+  accumulates observed-free space and publishes either a known-free goal path or
+  a known-free frontier path. The offboard map branch is opt-in
+  (`global_map_planning`), so default missions are unchanged.
+- SITL h2 moved ~2.5 m with **0 contacts** and 1.235 m clearance before losing a
+  reachable frontier; target error 2.26 m. h1 held with 4.04 m error.
+
+### Why
+
+The frontier loop is the right direction but the single forward frame does not
+observe enough connected free space; coverage collapses as the vehicle moves. This
+release preserves the experiment and its failures; no map acceptance is claimed.
+
 ## [0.45.0] - 2026-11-26
 
 ### Added

@@ -448,7 +448,7 @@ Gazebo rendered headless through WSL2.
 | Two doorways, then target_1 | ✅ **20/20, 0 contacts (double-safe)** | 1.0/0.05, 100 s; target 0.226 m mean, clearance min 0.781 m; [`results/repeat_report.md`](results/repeat_report.md) |
 | Offline depth-map gate | ✅ **PASS, two frames** | search precision 0.967, avoidance 0.968; central 60% ROI; [`results/map_gate.md`](results/map_gate.md) |
 | Offline grid A* on the map | ✅ **PASS (no SITL)** | 5.86 m path, 1.72 ms, 1.414 m clearance; 2-cell closing; [`results/grid_plan.md`](results/grid_plan.md) |
-| Map planner SITL | ❌ **9 trials failed, integration reverted** | incomplete wall maps, contacts up to 257; [`docs/map-integration.md`](docs/map-integration.md) |
+| Map planner SITL | ❌ **experimental, no goal** | h2: 2.5 m, 0 contacts, 1.235 m clearance, then no frontier; target error 2.26 m; [`docs/map-receding.md`](docs/map-receding.md) |
 | Known-free map planning | ❌ **rejects the 9.5 m path** | goal unobserved; v0.43 path is only 5.1% observed free; [`docs/map-unknown-space.md`](docs/map-unknown-space.md) |
 | Frontier selection | ✅ **offline** | 0.69 m frontier path, known-free; [`results/frontier_plan.md`](results/frontier_plan.md) |
 | Contact sensor can report a contact | ✅ **checked positively** | a 0.5 kg box dropped on the wall produced 4632 messages; [`results/contact_sensor_check.txt`](results/contact_sensor_check.txt) |

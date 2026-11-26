@@ -68,10 +68,10 @@ Work:
 **Exit criteria:** 20/20 with 0 contacts on the map mission, with the map gate
 PASS in the same commit. Otherwise the feature stays unverified.
 
-**Status (v0.42):** the offline grid A* passes under the unknown-free assumption,
-but the known-free gate rejects the 9.5 m path because the goal was never
-observed. The nine SITL trials failed for the same reason; integration is
-reverted. Free-space coverage/scanning is required before another SITL attempt.
+**Status (v0.46):** an experimental receding-horizon node moves the vehicle with
+0 contacts (h2, 2.5 m, 1.235 m clearance) but dead-ends when the observed-free
+frontier chain breaks; target error 2.26 m. The map branch is opt-in; no map SITL
+acceptance is claimed. An active scan is required before another acceptance run.
 
 **Risk:** map latency and false cells; mitigation is the Phase A gate and a
 "wait for map" state, not faster flight.

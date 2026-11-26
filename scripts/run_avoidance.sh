@@ -88,15 +88,16 @@ DEPTH_BRIDGE_PID=""
 DEPTH_NODE_PID=""
 RECORDER_PID=""
 OFFBOARD_PID=""
+MAP_PID=""
 
 stop_nodes() {
   local pid
-  for pid in "$OFFBOARD_PID" "$RECORDER_PID" "$DEPTH_NODE_PID" "$DEPTH_BRIDGE_PID"; do
+  for pid in "$OFFBOARD_PID" "$MAP_PID" "$RECORDER_PID" "$DEPTH_NODE_PID" "$DEPTH_BRIDGE_PID"; do
     if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
       kill -INT "$pid" 2>/dev/null || true
     fi
   done
-  for pid in "$OFFBOARD_PID" "$RECORDER_PID" "$DEPTH_NODE_PID" "$DEPTH_BRIDGE_PID"; do
+  for pid in "$OFFBOARD_PID" "$MAP_PID" "$RECORDER_PID" "$DEPTH_NODE_PID" "$DEPTH_BRIDGE_PID"; do
     if [[ -n "$pid" ]]; then
       wait "$pid" 2>/dev/null || true
     fi
@@ -194,6 +195,20 @@ if ! kill -0 "$OFFBOARD_PID" 2>/dev/null; then
   echo "ERROR: offboard node exited at startup. log/offboard_avoidance.log:" >&2
   tail -30 log/offboard_avoidance.log >&2
   exit 1
+fi
+
+if [[ "${MAP_PLANNING:-0}" == "1" ]]; then
+  MAP_GOAL="${MAP_GOAL:-5.7,0}"
+  python3 scripts/map_planner_node.py --goal "$MAP_GOAL" \
+    > log/map_planner.log 2>&1 &
+  MAP_PID=$!
+  sleep 1
+  if ! kill -0 "$MAP_PID" 2>/dev/null; then
+    echo "ERROR: map planner exited at startup. log/map_planner.log:" >&2
+    tail -30 log/map_planner.log >&2
+    exit 1
+  fi
+  echo "map planner started (goal $MAP_GOAL)"
 fi
 
 ROWS_BEFORE=$(($(wc -l < "$RESULTS") - 1))

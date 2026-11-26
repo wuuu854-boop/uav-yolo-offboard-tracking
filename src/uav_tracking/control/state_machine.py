@@ -112,6 +112,8 @@ class MissionConfig:
     global_perception: bool = False
     global_perception_width_m: float = 4.0
     global_perception_thickness_m: float = 0.4
+    # Receding-horizon map path from /map/path; the offboard holds until ready.
+    global_map_planning: bool = False
 
     # Empty unless the mission is a patrol: local ENU (east, north) waypoints
     # visited in order, with a hover at each and a landing after the last.

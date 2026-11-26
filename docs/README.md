@@ -25,6 +25,7 @@
 | [map-integration](map-integration.md) | Nine failed SITL map trials, why the integration was reverted |
 | [map-unknown-space](map-unknown-space.md) | Why unknown cells must not be free; the known-free gate |
 | [frontier](frontier.md) | Receding-horizon frontier selection for observing the route |
+| [map-receding](map-receding.md) | Experimental receding-horizon SITL; 0 contacts but no goal |
 | [model](model.md) | The YOLO detector: dataset, training, the decoder bug it exposed, and how it was made to fly |
 | [deployment](deployment.md) | Detector throughput per input size and thread count, and what it does not measure |
 | [market](market.md) | What UAV-autonomy postings ask for, where this project stands, what to build next |

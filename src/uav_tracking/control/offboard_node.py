@@ -184,6 +184,8 @@ class OffboardNode(Node):
         # usable return on either side; the planner then uses detour_side.
         self.clear_side = "unknown"
         self.global_path: list[tuple[float, float]] = []
+        self.map_path: list[tuple[float, float]] = []
+        self._map_ready = False
         self._global_goal: tuple[float, float] | None = None
         self.nearest_m = math.nan
         self._perception_box: tuple[float, float, float, float] | None = None
@@ -211,6 +213,8 @@ class OffboardNode(Node):
         self.create_subscription(
             Float32MultiArray, "/avoidance/side_clearance", self.on_side_clearance, 10
         )
+        self.create_subscription(Bool, "/map/ready", self.on_map_ready, 10)
+        self.create_subscription(Float32MultiArray, "/map/path", self.on_map_path, 10)
 
         self.offboard_pub = self.create_publisher(
             OffboardControlMode, "/fmu/in/offboard_control_mode", 10
@@ -258,6 +262,18 @@ class OffboardNode(Node):
         values = [float(value) for value in msg.data]
         if len(values) >= 2:
             self.side_left_m, self.side_right_m = values[0], values[1]
+
+    def on_map_ready(self, msg: Bool) -> None:
+        self._map_ready = bool(msg.data)
+        if not self._map_ready:
+            self.map_path = []
+
+    def on_map_path(self, msg: Float32MultiArray) -> None:
+        values = [float(value) for value in msg.data]
+        if len(values) < 2 or len(values) % 2:
+            self.get_logger().warn(f"ignoring map path with {len(values)} floats")
+            return
+        self.map_path = [(values[i], values[i + 1]) for i in range(0, len(values), 2)]
 
     # ------------------------------------------------------------- perception
     def _project_best_detection(self) -> tuple[float, float] | None:
@@ -376,7 +392,22 @@ class OffboardNode(Node):
         # single-target mission keeps following detections.
         target = estimate if self.patrol.done() else self.patrol.current()
         move_target = target
-        if self.cfg.global_planning and target is not None:
+        if self.cfg.global_map_planning and target is not None:
+            if self._map_ready and self.map_path:
+                while (
+                    self.map_path
+                    and math.hypot(
+                        self.map_path[0][0] - self.east,
+                        self.map_path[0][1] - self.north,
+                    )
+                    <= self.cfg.global_waypoint_tolerance_m
+                ):
+                    self.map_path.pop(0)
+                if self.map_path:
+                    move_target = self.map_path[0]
+            else:
+                move_target = (self.east, self.north)
+        elif self.cfg.global_planning and target is not None:
             goal = (float(target[0]), float(target[1]))
             if self._global_goal != goal:
                 obstacles = [Box(*spec) for spec in self.cfg.global_obstacles]
@@ -792,6 +823,7 @@ def main() -> int:
         global_perception=bool(mission_raw.get("global_perception", False)),
         global_perception_width_m=float(mission_raw.get("global_perception_width_m", 4.0)),
         global_perception_thickness_m=float(mission_raw.get("global_perception_thickness_m", 0.4)),
+        global_map_planning=bool(mission_raw.get("global_map_planning", False)),
         patrol_waypoints=tuple(
             (float(pair[0]), float(pair[1])) for pair in mission_raw.get("patrol_waypoints", ())
         ),

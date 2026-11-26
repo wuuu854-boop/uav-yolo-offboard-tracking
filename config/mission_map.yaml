@@ -1,0 +1,37 @@
+# Receding-horizon map-planner mission.
+#
+# Spawn at local 0; wall at 4.2 m; target_0 at 5.0 m; goal stand-off 5.7 m
+# (target_0 error 0.7 m). The offboard holds until /map/ready + /map/path, then
+# follows frontier paths until the goal is observed.
+takeoff_altitude_m: 5.0
+spawn_offset_enu: [-5.0, 0.0]
+reach_tolerance_m: 0.3
+max_speed_mps: 0.6
+hover_duration_s: 3.0
+
+target_loss_hover_s: 2.0
+setpoint_jump_limit_m: 3.0
+land_after_hover: true
+max_mission_s: 90.0
+
+confirm_frames: 3
+geofence_radius_m: 30.0
+control_rate_hz: 50.0
+
+heading_yaw_deg: 90.0
+
+patrol_waypoints:
+  - [5.7, 0.0]
+
+target_selection: nearest_centre
+search_after_s: 8.0
+search_area_m: 20.0
+search_spacing_m: 8.9
+
+avoidance_timeout_s: 1.0
+avoidance_stop_enabled: false
+detour_enabled: false
+
+global_planning: false
+global_map_planning: true
+global_waypoint_tolerance_m: 0.3
