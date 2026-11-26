@@ -259,6 +259,35 @@ class OccupancyGrid:
                 kept.update(component)
         return kept
 
+    def closed_cells(
+        self,
+        min_points: int = 2,
+        min_component: int = 3,
+        radius: int = 1,
+    ) -> set[tuple[int, int]]:
+        """Morphological closing: bridge small gaps in a wall/column.
+
+        A depth wall is physically continuous; a few missing cells in a sparse
+        frame should not become a doorway. Closing with a 1-2 cell disk bridges
+        such gaps without inventing large obstacles.
+        """
+        if radius < 0:
+            raise ValueError("radius must be non-negative")
+        occupied = self.filtered_cells(min_points, 0, min_component)
+        if radius == 0 or not occupied:
+            return occupied
+        offsets = [
+            (di, dj)
+            for di in range(-radius, radius + 1)
+            for dj in range(-radius, radius + 1)
+            if di * di + dj * dj <= radius * radius
+        ]
+        dilated = {(i + di, j + dj) for i, j in occupied for di, dj in offsets}
+        # A dilation is intentionally conservative here: it bridges a one-cell
+        # sparse gap and slightly thickens the wall. The planner adds its own
+        # inflation on top, so the path stays outside this conservative surface.
+        return dilated | occupied
+
     def cell_centre(self, cell: tuple[int, int]) -> Point:
         x_min, _, y_min, _ = self.bounds
         return (

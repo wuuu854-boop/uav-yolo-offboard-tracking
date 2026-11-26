@@ -141,7 +141,7 @@ map-gate-avoidance: ## second-frame depth-map gate with pose sidecar
 	PYTHONPATH=src python3 scripts/check_depth_map.py --depth results/meta_avoid4_depth_frame.npy --box 6.7,0,0.2,3.0 --max-depth 4.0 --roi-fraction 0.6 --min-neighbours 2 --min-component 3 --grid-tolerance 1.0 --out results/map_gate_avoidance --grid-out results/map_cells_avoidance
 
 grid-plan: ## offline grid A* on the clean avoidance frame (no SITL)
-	PYTHONPATH=src python3 scripts/plan_depth_map.py --depth results/meta_avoid4_depth_frame.npy --meta results/meta_avoid4_depth_frame.npy.json --box 6.7,0,0.2,3.0 --goal 9.5,0 --out results/grid_plan
+	PYTHONPATH=src python3 scripts/plan_depth_map.py --depth results/meta_avoid4_depth_frame.npy --meta results/meta_avoid4_depth_frame.npy.json --box 6.7,0,0.2,3.0 --start 4.2037,-0.5488 --goal 9.5,0 --close-radius 2 --inflation-cells 3 --out results/grid_plan
 
 trials: ## run N closed-loop trials (N=3 default), restarting the sim each time
 	bash scripts/run_trials.sh --count $(or $(N),3)

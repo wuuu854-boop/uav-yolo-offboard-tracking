@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/v/release/wuuu854-boop/uav-yolo-offboard-tracking?include_prereleases&sort=semver)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-455-brightgreen)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-456-brightgreen)](https://github.com/wuuu854-boop/uav-yolo-offboard-tracking/actions/workflows/ci.yml)
 
 **UAV vision in the loop, measured.** Detection → pixel-to-ground projection → PX4 Offboard approach in Gazebo SITL, plus a forward depth camera that stops the approach before a wall — with a trial harness that turns every run into a CSV row and an environment doctor that diagnoses this stack's setup failures.
 
@@ -419,7 +419,7 @@ Gazebo rendered headless through WSL2.
 
 | Layer | Status | Evidence |
 |---|---|---|
-| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (455 tests) + `make demo` || YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
+| Geometry, frame conversions, mission logic, recorder | ✅ verified | `pytest` (456 tests) + `make demo` || YOLO letterbox / decode / NMS | ✅ verified | `tests/test_yolo.py` (13 tests) |
 | Cross-frame identity (`track_id`) | ✅ verified | `tests/test_tracking.py` (12 tests) + a ROS test that the id survives two frames |
 | ROS 2 packages build, both nodes run | ✅ verified in CI | `ROS build` workflow on `ros:humble`: detector against synthetic images, controller against fake PX4 traffic |
 | Version matrix, world structure, camera intrinsics | ✅ checked | `make doctor`, `check_world_targets.py` in CI |
@@ -447,7 +447,7 @@ Gazebo rendered headless through WSL2.
 | Offset doorway, then turn to target_1 | ✅ **20/20 landings; 19/20 final-row** | 100 s budget: landings 20/20, 0 contacts; one final-row 2.149 m drift after a 0.285 m landing; 70 s was 16/20; [`results/repeat_report.md`](results/repeat_report.md) |
 | Two doorways, then target_1 | ✅ **20/20, 0 contacts (double-safe)** | 1.0/0.05, 100 s; target 0.226 m mean, clearance min 0.781 m; [`results/repeat_report.md`](results/repeat_report.md) |
 | Offline depth-map gate | ✅ **PASS, two frames** | search precision 0.967, avoidance 0.968; central 60% ROI; [`results/map_gate.md`](results/map_gate.md) |
-| Offline grid A* on the map | ✅ **PASS (no SITL)** | 4.42 m path, 1.39 ms, 0.901 m clearance; [`results/grid_plan.md`](results/grid_plan.md) |
+| Offline grid A* on the map | ✅ **PASS (no SITL)** | 5.86 m path, 1.72 ms, 1.414 m clearance; 2-cell closing; [`results/grid_plan.md`](results/grid_plan.md) |
 | Map planner SITL | ❌ **9 trials failed, integration reverted** | incomplete wall maps, contacts up to 257; [`docs/map-integration.md`](docs/map-integration.md) |
 | Known-free map planning | ❌ **rejects the 9.5 m path** | goal unobserved; v0.40 path assumed unknown free; [`docs/map-unknown-space.md`](docs/map-unknown-space.md) |
 | Contact sensor can report a contact | ✅ **checked positively** | a 0.5 kg box dropped on the wall produced 4632 messages; [`results/contact_sensor_check.txt`](results/contact_sensor_check.txt) |

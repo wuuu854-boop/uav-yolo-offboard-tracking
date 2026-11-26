@@ -61,6 +61,20 @@ def test_known_free_path_uses_observed_cells():
     assert path[-1] == (1.0, 0.0)
 
 
+def test_closing_bridges_a_one_cell_gap():
+    grid = OccupancyGrid(bounds=(-1.0, 3.0, -1.0, 3.0), resolution_m=0.5)
+    wall_i = 6
+    for j in range(0, 8):
+        if j == 4:
+            continue
+        x, y = grid.cell_centre((wall_i, j))
+        for _ in range(3):
+            grid.add_points([(x, y)])
+    gap = grid.cell_centre((wall_i, 4))
+    assert grid.index(*gap) not in grid.filtered_cells(2, 0, 3)
+    assert grid.index(*gap) in grid.closed_cells(2, 3, 1)
+
+
 def test_unknown_goal_is_rejected_when_known_free_is_required():
     grid = _ray_grid()
     with pytest.raises(ValueError, match="not observed"):

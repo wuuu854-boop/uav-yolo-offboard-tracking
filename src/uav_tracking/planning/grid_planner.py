@@ -54,6 +54,7 @@ def plan_grid_path(
     inflation_cells: int = 2,
     min_cell_points: int = 2,
     min_component: int = 3,
+    close_radius: int = 0,
     require_known_free: bool = False,
 ) -> list[tuple[float, float]]:
     """Plan around occupied cells; returns points after ``start`` ending at ``goal``."""
@@ -71,7 +72,11 @@ def plan_grid_path(
     if goal_cell is None:
         raise ValueError("goal is outside the grid bounds")
 
-    occupied = grid.filtered_cells(min_cell_points, 0, min_component)
+    occupied = (
+        grid.closed_cells(min_cell_points, min_component, close_radius)
+        if close_radius > 0
+        else grid.filtered_cells(min_cell_points, 0, min_component)
+    )
     blocked = _inflate(occupied, inflation_cells)
     if require_known_free:
         observed = grid.observed_cells()

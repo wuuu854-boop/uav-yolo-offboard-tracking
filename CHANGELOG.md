@@ -7,6 +7,22 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.43.0] - 2026-11-26
+
+### Fixed
+
+- **Sparse wall gaps are closed before planning.** `OccupancyGrid.closed_cells`
+  applies a conservative 2-cell dilation; `plan_grid_path(close_radius=2)` uses
+  it. The offline path is now 5.86 m with 1.414 m clearance (was 4.42 m / 0.901 m
+  and crossed a one-cell sparse gap).
+- Adds `--close-radius` and a closing unit test.
+
+### Why
+
+The SITL through-wall paths came from one-cell gaps in the sparse wall. Bridging
+them before inflation makes the planner go around the wall. This is still an
+offline result; the known-free gate and Phase B SITL remain open.
+
 ## [0.42.0] - 2026-11-26
 
 ### Fixed
