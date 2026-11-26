@@ -7,6 +7,22 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.47.0] - 2026-11-26
+
+### Added
+
+- **Active yaw scan for the map branch**: initial 12 s ±80° sweep and an optional
+  continuous sweep. Coverage rises to 0.72–0.80, but the reachable frontier chain
+  still does not lead around the wall.
+- SITL h3–h5: 0 contacts each; h4 moved to (0.03, -1.27); h5 stalled with a
+  westward frontier. Target errors 5.13–5.97 m.
+
+### Why
+
+Scanning improves observation but not the connected known-free route. The map
+branch remains experimental and cannot meet the 20-run acceptance with the
+current forward-depth/2-D approach; this is recorded rather than hidden.
+
 ## [0.46.0] - 2026-11-26
 
 ### Added

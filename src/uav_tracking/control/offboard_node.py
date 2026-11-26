@@ -127,6 +127,8 @@ class OffboardNode(Node):
         self.north = 0.0
         self.altitude = 0.0
         self.yaw = 0.0
+        self.command_yaw = math.radians(self.cfg.heading_yaw_deg)
+        self._scan_start_ns: int | None = None
         # Attitude, because a projection that assumes a level camera loses about
         # a metre per 10 deg of pitch (docs/model.md).
         self.roll = 0.0
@@ -444,6 +446,22 @@ class OffboardNode(Node):
                 self.global_path.pop(0)
             if self.global_path:
                 move_target = self.global_path[0]
+        # Active scan: hover at the takeoff point and sweep yaw so the depth
+        # camera observes more of the corridor before the map planner commits.
+        self.command_yaw = math.radians(self.cfg.heading_yaw_deg)
+        scan_active = False
+        if self.cfg.global_map_scan and self.altitude >= 4.0:
+            if self._scan_start_ns is None:
+                self._scan_start_ns = self.get_clock().now().nanoseconds
+            elapsed = (self.get_clock().now().nanoseconds - self._scan_start_ns) / 1e9
+            if self.cfg.global_map_scan_continuous or elapsed < self.cfg.map_scan_duration_s:
+                phase = elapsed / max(self.cfg.map_scan_duration_s, 1e-6)
+                self.command_yaw += math.radians(self.cfg.map_scan_amplitude_deg) * math.sin(
+                    2.0 * math.pi * phase
+                )
+                scan_active = elapsed < self.cfg.map_scan_duration_s
+        if scan_active:
+            move_target = (self.east, self.north)
         if estimate is None:
             # A lost target releases the identity lock: the next sighting may be
             # a different object, and holding the id would make the mission
@@ -702,7 +720,7 @@ class OffboardNode(Node):
         # mission sets 90 deg (east) so its forward depth camera faces the wall.
         # NaN would let PX4 keep whatever heading it had, which is not something
         # a camera-based decision can rely on.
-        setpoint.yaw = math.radians(self.cfg.heading_yaw_deg)
+        setpoint.yaw = self.command_yaw
         setpoint.timestamp = timestamp
         self.setpoint_pub.publish(setpoint)
 
@@ -824,6 +842,10 @@ def main() -> int:
         global_perception_width_m=float(mission_raw.get("global_perception_width_m", 4.0)),
         global_perception_thickness_m=float(mission_raw.get("global_perception_thickness_m", 0.4)),
         global_map_planning=bool(mission_raw.get("global_map_planning", False)),
+        global_map_scan=bool(mission_raw.get("global_map_scan", False)),
+        global_map_scan_continuous=bool(mission_raw.get("global_map_scan_continuous", False)),
+        map_scan_duration_s=float(mission_raw.get("map_scan_duration_s", 12.0)),
+        map_scan_amplitude_deg=float(mission_raw.get("map_scan_amplitude_deg", 75.0)),
         patrol_waypoints=tuple(
             (float(pair[0]), float(pair[1])) for pair in mission_raw.get("patrol_waypoints", ())
         ),

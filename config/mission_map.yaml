@@ -34,4 +34,8 @@ detour_enabled: false
 
 global_planning: false
 global_map_planning: true
+global_map_scan: true
+global_map_scan_continuous: true
+map_scan_duration_s: 12.0
+map_scan_amplitude_deg: 80.0
 global_waypoint_tolerance_m: 0.3

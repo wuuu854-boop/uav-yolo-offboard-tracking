@@ -164,7 +164,7 @@ def main() -> int:
     parser.add_argument("--frame-topic", default="/camera/depth/image_raw")
     parser.add_argument("--bounds", type=float, nargs=4, default=(-10.0, 10.0, -10.0, 10.0))
     parser.add_argument("--resolution", type=float, default=0.25)
-    parser.add_argument("--inflation-cells", type=int, default=2)
+    parser.add_argument("--inflation-cells", type=int, default=1)
     parser.add_argument("--close-radius", type=int, default=1)
     parser.add_argument("--min-cell-points", type=int, default=2)
     parser.add_argument("--min-component", type=int, default=3)

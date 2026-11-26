@@ -111,7 +111,7 @@ README and in the resume, so they are written by scripts, never by hand.
 | `map_cells.json` / `map_cells_avoidance.json` | the two gates | 61 / 62 occupied cells, precision 0.967 / 0.968 |
 | `grid_plan.md` / `.json` / `.png` | `make grid-plan` | offline A*: 5.86 m path, 1.72 ms, 1.414 m clearance; 2-cell closing |
 | `map_integration_trials.md` | SITL map integration attempts | 9 failures; integration reverted, no map SITL claim |
-| `map_receding_trials.md` | experimental receding-horizon SITL | h1 held; h2 moved 2.5 m, 0 contacts, no goal |
+| `map_receding_trials.md` | experimental receding-horizon SITL | h1–h5; best h2 moved 2.5 m, 0 contacts, no goal |
 | `docs/map-unknown-space.md` | known-free gate | v0.43 path only 5.1% observed free |
 | `frontier_plan.md` / `.json` | `make frontier-plan` | frontier 0.69 m ahead, known-free path 0.69 m, total cost 5.33 m |
 | `detections.geojson` | `scripts/export_geojson.py` on the moving-target capture | 88 Point features with track id, timestamp and ENU offsets — the GIS-ready deliverable an inspection operator asks for |

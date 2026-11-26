@@ -19,11 +19,13 @@ no 20-run acceptance has passed.
 |---|---|---|
 | h1 | 5.7 m, wall 4.2 m | no reachable frontier; held; target error 4.04 m; 0 contacts |
 | h2 | same, inflation 2, 50 frontier candidates | moved ~2.5 m; 0 contacts; clearance 1.235 m; then no frontier; target error 2.26 m |
+| h3 | add 12 s yaw scan ±80 deg | coverage 0.72, but no reachable frontier; held; error 5.35 m; 0 contacts |
+| h4 | h3 + inflation 1 | frontier 0.1 m; moved to (0.03, -1.27); error 5.13 m; 0 contacts |
+| h5 | continuous yaw scan | coverage 0.80, but frontier points west; moved ~0.5 m and stalled; error 5.97 m; 0 contacts |
 
-h2 is the first map trial with **0 contacts and >1 m clearance** while moving, but
-it did not reach the goal. The frontier loop dead-ends when the observed-free
-corridor narrows; coverage collapses to 0 as the vehicle moves into unobserved
-space.
+h2 is the farthest run (about 2.5 m) and the only one with both movement, 0
+contacts and >1 m clearance. The scan improves coverage (0.72–0.80) but the
+reachable frontier chain still does not lead around the wall.
 
 ## What this means
 

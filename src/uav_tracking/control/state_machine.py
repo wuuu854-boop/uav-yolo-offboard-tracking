@@ -114,6 +114,10 @@ class MissionConfig:
     global_perception_thickness_m: float = 0.4
     # Receding-horizon map path from /map/path; the offboard holds until ready.
     global_map_planning: bool = False
+    global_map_scan: bool = False
+    global_map_scan_continuous: bool = False
+    map_scan_duration_s: float = 12.0
+    map_scan_amplitude_deg: float = 75.0
 
     # Empty unless the mission is a patrol: local ENU (east, north) waypoints
     # visited in order, with a hover at each and a landing after the last.
