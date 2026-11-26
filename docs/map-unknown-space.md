@@ -27,6 +27,19 @@ ray fan is sparse at 0.25 m cells, so even a nearby goal can be unobserved. A re
 map planner needs a **free-space coverage** gate (or a deliberate scan), not only
 point count and wall cells.
 
+## Path coverage on the v0.43 path
+
+The v0.43 path (5.86 m, closing enabled) was sampled every 0.25 m and each cell
+was classified as observed free, occupied or unknown:
+
+| Free | Occupied | Unknown | Coverage |
+|---:|---:|---:|---:|
+| 2 | 0 | 37 | **5.1%** |
+
+The path is almost entirely in unobserved space, even though it is geometrically
+clear of the known wall. The clipping/dilation fixed the wall gap; it did not make
+the route observed. A planner must not fly this path.
+
 ## What this changes
 
 - v0.40 remains an offline path under the unknown-free assumption; it is **not** a

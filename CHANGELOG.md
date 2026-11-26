@@ -7,6 +7,21 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.44.0] - 2026-11-26
+
+### Added
+
+- **Corridor coverage diagnostic** (`perception/map_quality.py`): samples a
+  straight start-goal corridor and reports free/blocked/unknown fractions.
+- Measured the v0.43 path: **5.1% observed free** (2 free, 0 occupied, 37 unknown
+  cells), so the path is geometrically clear but almost entirely unobserved.
+
+### Why
+
+Closing the wall gaps (v0.43) fixed one failure mode, not the core one: the route
+must be observed. This release records the 5.1% path coverage and makes the
+missing scan/coverage explicit; no flight is attempted.
+
 ## [0.43.0] - 2026-11-26
 
 ### Fixed

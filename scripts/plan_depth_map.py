@@ -30,6 +30,10 @@ from uav_tracking.perception.map_gate import (  # noqa: E402
     OccupancyGrid,
     project_depth,
 )
+from uav_tracking.perception.map_quality import (  # noqa: E402
+    corridor_coverage,
+    coverage_passes,
+)
 from uav_tracking.planning.grid_planner import plan_grid_path  # noqa: E402
 
 
@@ -94,6 +98,7 @@ def main() -> int:
     parser.add_argument("--inflation-cells", type=int, default=3)
     parser.add_argument("--close-radius", type=int, default=0)
     parser.add_argument("--require-known-free", action="store_true")
+    parser.add_argument("--require-coverage", action="store_true")
     parser.add_argument("--roi-fraction", type=float, default=0.6)
     parser.add_argument("--max-depth", type=float, default=4.0)
     parser.add_argument("--min-height", type=float, default=2.5)
@@ -115,10 +120,26 @@ def main() -> int:
         roi_fraction=args.roi_fraction,
     )
     grid = OccupancyGrid(resolution_m=args.resolution)
-    if args.require_known_free:
+    if args.require_known_free or args.require_coverage:
         grid.add_points_with_rays(points, start)
     else:
         grid.add_points(points)
+    coverage = corridor_coverage(grid, start, goal, half_width_m=0.3)
+    if args.require_coverage and not coverage_passes(coverage):
+        report = {
+            "depth": args.depth,
+            "start": list(start),
+            "goal": list(goal),
+            "points": len(points),
+            "coverage": coverage,
+            "verdict": "FAIL",
+            "error": "corridor coverage below 0.95 or blocked",
+        }
+        out = Path(args.out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.with_suffix(".json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        print(f"FAIL: corridor coverage {coverage['coverage']:.3f} {coverage}")
+        return 1
 
     began = time.perf_counter()
     try:
@@ -164,6 +185,7 @@ def main() -> int:
         "goal": list(goal),
         "points": len(points),
         "occupied_cells": len(occupied),
+        "coverage": coverage,
         "path": [list(p) for p in path],
         "path_length_m": path_length,
         "min_grid_clearance_m": min(clearances) if clearances else None,
@@ -182,6 +204,8 @@ def main() -> int:
         f"- pose: ({position[0]:.2f}, {position[1]:.2f}, {position[2]:.2f}) yaw {math.degrees(yaw):.2f} deg",
         f"- start: {start}, goal: {goal}",
         f"- points: {len(points)}, occupied cells: {len(occupied)}",
+        f"- corridor coverage: {coverage['coverage']:.3f} "
+        f"(free {coverage['free']}, blocked {coverage['blocked']}, unknown {coverage['unknown']})",
         f"- path points: {len(path)}, length: {path_length:.2f} m",
         f"- plan time: {elapsed_ms:.2f} ms",
         f"- min grid clearance: {report['min_grid_clearance_m']}",
