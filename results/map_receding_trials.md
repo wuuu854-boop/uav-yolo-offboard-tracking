@@ -9,5 +9,6 @@ Experimental; no acceptance. These runs used the opt-in `MAP_PLANNING=1` path.
 | h3 | 12 s yaw scan ±80° | coverage 0.72, no reachable frontier; error 5.35 m; 0 contacts |
 | h4 | h3 + inflation 1 | frontier 0.1 m; moved to (0.03, -1.27); error 5.13 m; 0 contacts |
 | h5 | continuous yaw scan | coverage 0.80, frontier west; moved ~0.5 m, stalled; error 5.97 m; 0 contacts |
+| g1 | gate world 2.4 m doorway | coverage 0.30, no reachable frontier; held; error 6.24 m; 0 contacts |
 
 Details and next requirements: [`docs/map-receding.md`](../docs/map-receding.md).

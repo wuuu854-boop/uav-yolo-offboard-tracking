@@ -22,6 +22,7 @@ no 20-run acceptance has passed.
 | h3 | add 12 s yaw scan ±80 deg | coverage 0.72, but no reachable frontier; held; error 5.35 m; 0 contacts |
 | h4 | h3 + inflation 1 | frontier 0.1 m; moved to (0.03, -1.27); error 5.13 m; 0 contacts |
 | h5 | continuous yaw scan | coverage 0.80, but frontier points west; moved ~0.5 m and stalled; error 5.97 m; 0 contacts |
+| g1 | gate world (2.4 m doorway), no scan | coverage 0.30; no reachable frontier; held; error 6.24 m; 0 contacts |
 
 h2 is the farthest run (about 2.5 m) and the only one with both movement, 0
 contacts and >1 m clearance. The scan improves coverage (0.72–0.80) but the

@@ -7,6 +7,24 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.48.0] - 2026-11-26
+
+### Changed
+
+- **Gate-world map SITL also fails to produce a route.** g1: coverage 0.30, no
+  reachable frontier, held, target error 6.24 m, 0 contacts.
+- Records the full map-SITL tally: 9 early trials + h1–h5 + g1 = **15 attempts,
+  0 acceptance**. Best is h2 (moved ~2.5 m, 0 contacts, clearance 1.235 m, no
+  goal).
+
+### Why
+
+With a single forward depth camera, a 2-D occupancy grid and the current
+known-free/frontier planner, the map branch cannot produce a connected route to
+the goal. The gate doorway was the last scenario with a real observed free
+corridor; it also yields no frontier. Further parameter changes are not evidence
+of progress. The default 20/20 flight missions remain unchanged.
+
 ## [0.47.0] - 2026-11-26
 
 ### Added
