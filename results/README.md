@@ -112,6 +112,7 @@ README and in the resume, so they are written by scripts, never by hand.
 | `grid_plan.md` / `.json` / `.png` | `make grid-plan` | offline A*: 5.86 m path, 1.72 ms, 1.414 m clearance; 2-cell closing |
 | `map_integration_trials.md` | SITL map integration attempts | 9 failures; integration reverted, no map SITL claim |
 | `docs/map-unknown-space.md` | known-free gate | v0.43 path only 5.1% observed free |
+| `frontier_plan.md` / `.json` | `make frontier-plan` | frontier 0.69 m ahead, known-free path 0.69 m, total cost 5.33 m |
 | `detections.geojson` | `scripts/export_geojson.py` on the moving-target capture | 88 Point features with track id, timestamp and ENU offsets — the GIS-ready deliverable an inspection operator asks for |
 | `qa_moving.json` | `scripts/qa_report.py` on the moving-target capture | the asset was 3 m from its declared position, and the report says so (association 7.1 m, FAIL) |
 | `qa_north.json` | the same report with the asset position passed in | median association drops from 4.95 m to 0.62 m when the asset is where it actually was |

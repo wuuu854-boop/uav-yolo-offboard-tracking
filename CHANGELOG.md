@@ -7,6 +7,23 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.45.0] - 2026-11-26
+
+### Added
+
+- **Receding-horizon frontier selection** (`planning/frontier.py`): find
+  observed-free cells adjacent to unknown space and plan a known-free path to the
+  best one. Offline result: frontier at 0.69 m, path 0.69 m, total cost 5.33 m;
+  final goal still only 23% corridor coverage.
+- `make frontier-plan`, `docs/frontier.md`, and 3 frontier tests.
+
+### Why
+
+The map cannot observe a route around the wall from one frame. Instead of flying
+through unknown space, the planner should move to the observed frontier and look
+again. This is the algorithmic step needed before a receding-horizon SITL loop;
+no flight is claimed.
+
 ## [0.44.0] - 2026-11-26
 
 ### Added
