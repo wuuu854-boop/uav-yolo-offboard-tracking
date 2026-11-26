@@ -53,6 +53,7 @@ def project_depth(
     max_depth_m: float = 12.0,
     min_height_m: float = 2.5,
     max_height_m: float = 5.5,
+    roi_fraction: float = 1.0,
 ) -> list[Point]:
     """Project sampled z-depth pixels into local ENU, keeping a height band."""
     camera = camera or CameraIntrinsics()
@@ -71,6 +72,8 @@ def project_depth(
         raise ValueError("min_depth_m must be < max_depth_m and non-negative")
     if not (0.0 <= min_height_m < max_height_m):
         raise ValueError("min_height_m must be < max_height_m and non-negative")
+    if not (0.0 < roi_fraction <= 1.0):
+        raise ValueError("roi_fraction must be in (0, 1]")
 
     east, north, altitude = (float(v) for v in position_enu)
     yaw = float(yaw_rad)
@@ -83,8 +86,12 @@ def project_depth(
     right_unit = (math.sin(yaw), -math.cos(yaw))
 
     points: list[Point] = []
-    for v in range(0, camera.height, sample_px):
-        for u in range(0, camera.width, sample_px):
+    u0 = int(round((1.0 - roi_fraction) * camera.width / 2.0))
+    u1 = camera.width - u0
+    v0 = int(round((1.0 - roi_fraction) * camera.height / 2.0))
+    v1 = camera.height - v0
+    for v in range(v0, v1, sample_px):
+        for u in range(u0, u1, sample_px):
             z = float(depth[v, u])
             if not math.isfinite(z) or z < min_depth_m or z > max_depth_m:
                 continue

@@ -13,8 +13,8 @@ hard way that a 5-run sample can hide a 15–25% failure rate.
 | target1 offset doorway | ✅ **20/20 landings / 19/20 final-row** | `results/repeat_report.md` |
 | depth projection convention | ✅ point gate PASS (83.4% within 1 m) | `results/map_gate.md` |
 | occupancy grid from one frame | ✅ **PASS** precision 0.825 (2.5 m height floor) | `results/map_cells.json` |
-| multi-frame grid / second frame pair | ⏳ next | Phase A remaining work |
-| occupancy-map planning / SITL | ⛔ not started | — |
+| multi-frame grid / second frame pair | ✅ **two independent frames PASS** | `results/map_gate*.md` |
+| occupancy-map planning / SITL | ⛔ not started (Phase B) | — |
 | dynamic obstacles, 3D, real sensor | ❌ not started | — |
 
 The verified scope is static, hand-entered gate geometry at constant altitude,
@@ -44,10 +44,10 @@ Work:
 **Exit criteria:** `make map-gate` PASS with precision ≥0.80, 3/3 boxes covered,
 start free, and a second recorded frame/pose pair also PASS.
 
-**Status (v0.38):** the single recorded frame passes at precision 0.825 after
-raising the height floor to 2.5 m. Frame-pose sidecars are now written, but the
-second clean avoidance pair still fails (58.3% within 1 m, grid precision 0.691),
-so Phase A is not fully closed and Phase B has not started.
+**Status (v0.39):** Phase A is closed. The search frame passes at precision 0.967
+and the sidecar-bound avoidance frame at 0.968, both with a central 60% ROI. The
+avoidance run itself had 0 contacts and 2.108 m clearance (its drift 0.305 m just
+missed the 0.3 m report threshold). Phase B has not started.
 
 **Do not:** loosen tolerance from 1.0 m to 1.25 m to pass. That was explicitly
 rejected in v0.35.

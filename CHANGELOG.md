@@ -7,6 +7,24 @@ Notable changes to this project. The format follows
 
 ## [Unreleased]
 
+## [0.39.0] - 2026-11-26
+
+### Fixed
+
+- **Phase A closed: two recorded frames pass the map gate.** A central **60% ROI**
+  removes the edge background that dominated the close avoidance frame. Search:
+  320 points, 97.8% within 1 m, 61 cells, precision **0.967**. Avoidance (with
+  pose sidecar, 4 m depth limit): 756 points, 99.2% within 1 m, 62 cells,
+  precision **0.968**. The 1.0 m/0.80 thresholds are unchanged.
+- Adds `make map-gate-avoidance` and the sidecar-bound frame evidence.
+
+### Why
+
+The second-pair failure was edge background, not the grid algorithm: the wall
+fills the centre, while the FOV edges see open sky/ground beyond it. The ROI is
+the obstacle corridor. This closes Phase A and allows the occupancy planner work
+to start; no map SITL is claimed yet.
+
 ## [0.38.0] - 2026-11-26
 
 ### Fixed

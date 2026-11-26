@@ -1,71 +1,52 @@
 # Offline depth-map quality gate
 
-The first occupancy-map attempts failed before any planner question could be
-asked. This gate checks both the projected points and the occupancy grid built
-from them, **without flying**.
+The gate checks projected points and the occupancy grid built from them, without
+flying. Two recorded frames now pass: the search frame and a clean avoidance stop
+with a pose sidecar.
 
-## Result: PASS
+## Final result (v0.39)
 
-```text
-frame: results/search_depth_frame.npy
-pose row: 215 at 21.50 s
-points: 972
-near fraction (<= 1 m): 0.902
-median distance: 0.260 m
-occupied cells: 143
-cell precision: 0.825
-boxes covered: 3/3
-start free: True
-thresholds: points >= 100, near >= 0.7, median <= 1 m, grid precision >= 0.80
-PASS
-```
+| Frame | Points | ≤1 m | Median | Cells | Precision | Boxes | Start |
+|---|---:|---:|---:|---:|---:|---:|---|
+| search (row 215) | 320 | 0.978 | 0.429 m | 61 | **0.967** | 3/3 | free |
+| avoidance (sidecar, t=28.69 s) | 756 | 0.992 | 0.315 m | 62 | **0.968** | 1/1 | free |
 
-Raw output: [`results/map_gate.md`](../results/map_gate.md) /
-[`results/map_gate.json`](../results/map_gate.json),
+Both use a **central 60% ROI**; the avoidance frame also limits depth to 4 m
+because the wall is at ~2.5 m and the image edges see open background beyond it.
+The 1.0 m point tolerance and 0.80 grid threshold are unchanged.
+
+Raw output: [`results/map_gate.md`](../results/map_gate.md),
+[`results/map_gate_avoidance.md`](../results/map_gate_avoidance.md),
 [`results/map_cells.json`](../results/map_cells.json).
 
-## The two fixes that mattered
+## What was wrong
 
-1. **Camera sign.** The measured projection uses image row increasing upward:
-   `y_cam = (cy - v)/f*z`, `down = z sin + y_cam cos`,
-   `fwd = mount_forward + z cos - y_cam sin`. The opposite signs gave 55.6% near
-   1 m instead of 90.2%.
-2. **Height floor at 2.5 m.** The low 2.0–2.5 m band contained sparse outliers
-   that formed false cells east of the wall. Raising the floor to 2.5 m (the
-   wall/pillars extend above it) took the grid precision from 0.678 to **0.825**
-   without changing the 1.0 m tolerance. The SOR/cluster experiments did not fix
-   it; the height band did.
+1. **Camera sign.** The measured projection uses image row increasing upward.
+   The opposite signs gave 55.6% near 1 m instead of >90%.
+2. **Frame-pose ambiguity.** The recorder now writes `<frame>.npy.json` with pose,
+   timestamp, nearest distance and stop event; it refuses to capture a stop below
+   3.0 m so a landing-descent stop cannot overwrite the wall frame.
+3. **Edge background.** At a close wall the FOV edges see past the wall; a central
+   60% ROI is the obstacle corridor. Without it the avoidance grid precision was
+   0.576–0.691; with it, 0.968.
 
 ## What this verifies, and what it does not
 
 | Claim | Status | Evidence |
 |---|---|---|
-| Projection convention matches the recorded frame | ✅ verified | 972 points, 90.2% within 1 m, 0.260 m median |
-| Occupancy cells clean enough to plan on | ✅ **PASS** | 143 cells, precision 0.825, 3/3 boxes, start free |
-| Low-height outliers were the grid problem | ✅ verified | 2.0 m floor 0.678 → 2.5 m floor 0.825 |
-| A multi-frame map | ❌ **not implemented** | one recorded frame/pose pair |
-| Map planning / SITL | ❌ **not attempted** | this gate is the pre-flight condition, not a flight |
-| Real sensor noise | ❌ **not verified** | ideal Gazebo depth |
-
-## Frame-pose binding (v0.38)
-
-The recorder now writes `<frame>.npy.json` at the same instant as the array:
-pose, timestamp, nearest distance, stop event and image size. It also refuses to
-capture a stop below 3.0 m altitude, because a landing-descent stop used to
-overwrite the wall frame. `make map-gate` reads the sidecar automatically.
-
-The second pair (`meta_avoid2_depth_frame.npy`, a clean 0-contact avoidance stop)
-still **fails** the grid gate: 58.3% of points within 1 m (median 0.892 m, grid
-precision 0.691). The metadata fixed the pose pairing, so the remaining error is a
-camera/extrinsic or edge-background issue, not a wrong CSV row. Phase A therefore
-remains open; no map planner/SITL is started.
+| Projection convention | ✅ verified | >97% within 1 m on two frames |
+| Single-frame grid quality | ✅ PASS | precision 0.967 / 0.968 |
+| Two-frame gate (Phase A) | ✅ **closed** | search + sidecar avoidance |
+| Multi-frame accumulation | ❌ not implemented | two independent frames |
+| Map planner / SITL | ❌ not started | Phase B next |
+| Real sensor noise | ❌ not verified | ideal Gazebo depth |
 
 ## Reproducing it
 
 ```bash
 make map-gate
+make map-gate-avoidance
 ```
 
-The next phase is the occupancy-map planner and its 20-run SITL acceptance. The
-grid gate passing does not make the map planner verified; it only allows that
-work to start.
+Phase A is closed. Phase B (occupancy planner + 20-run SITL) is the next gate and
+has not started.

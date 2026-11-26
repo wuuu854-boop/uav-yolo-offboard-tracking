@@ -60,6 +60,19 @@ def test_passes_requires_count_fraction_and_median():
     assert passes({"points": 200, "near_fraction": 0.9, "median_distance_m": 2.0}) is False
 
 
+def test_roi_keeps_only_central_pixels():
+    full = project_depth(_plane(4.0), (0.0, 0.0, 5.0), 0.0, sample_px=16)
+    central = project_depth(_plane(4.0), (0.0, 0.0, 5.0), 0.0, sample_px=16, roi_fraction=0.6)
+    assert central
+    assert len(central) < len(full)
+    assert max(abs(y) for _, y in central) < max(abs(y) for _, y in full)
+
+
+def test_invalid_roi_is_rejected():
+    with pytest.raises(ValueError, match="roi_fraction"):
+        project_depth(_plane(4.0), (0.0, 0.0, 5.0), 0.0, roi_fraction=0.0)
+
+
 def test_nearest_box_distance_requires_boxes():
     with pytest.raises(ValueError, match="box"):
         nearest_box_distance(0.0, 0.0, [])

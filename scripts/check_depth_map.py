@@ -72,6 +72,7 @@ def main() -> int:
     parser.add_argument("--max-depth", type=float, default=12.0)
     parser.add_argument("--min-height", type=float, default=2.5)
     parser.add_argument("--max-height", type=float, default=5.5)
+    parser.add_argument("--roi-fraction", type=float, default=1.0)
     parser.add_argument("--tolerance", type=float, default=1.0)
     parser.add_argument("--min-points", type=int, default=100)
     parser.add_argument("--min-near-fraction", type=float, default=0.70)
@@ -113,6 +114,7 @@ def main() -> int:
         max_depth_m=args.max_depth,
         min_height_m=args.min_height,
         max_height_m=args.max_height,
+        roi_fraction=args.roi_fraction,
     )
     summary = summarise(points, args.box, tolerance_m=args.tolerance)
     grid = OccupancyGrid(resolution_m=args.grid_resolution)
